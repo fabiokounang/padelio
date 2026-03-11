@@ -19,69 +19,70 @@
      crossorigin="anonymous"></script>
 </head>
 
-<body class="h-full bg-emerald-950 text-white overflow-auto pb-20">
+<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
   <div id="app" class="w-full min-h-full flex flex-col">
     <!-- Home Page -->
     <div id="page-home" class="page flex-1 flex flex-col p-6">
       <div class="text-center py-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500 rounded-2xl mb-4 shadow-lg">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-4 shadow-lg hero-icon">
           <svg class="w-8 h-8" fill="currentColor" viewbox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
             <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" />
           </svg>
         </div>
-        <h1 id="main-title" class="text-3xl font-bold mb-2">Padelio</h1>
-        <p class="text-emerald-200 text-sm">Powered By Otaku Developer</p>
+        <h1 id="main-title" class="text-3xl font-bold mb-2 hero-title">Padelio</h1>
+        <p class="text-slate-200 text-sm">Powered By Otaku Developer</p>
         <button class="text-xs text-center underline hover:text-white" onclick="navigateTo('privacy')">Privacy Policy</button>
         <button class="text-xs text-center underline hover:text-white" onclick="navigateTo('terms')">Terms of Service</button>
       </div>
 
 
-      <button onclick="navigateTo('new-title')" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-3 mb-6">
+      <button onclick="navigateTo('new-mode')" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-3 mb-6">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg> New Tournament </button>
+        </svg> New Tournament
+      </button>
         <button onclick="navigateTo('about')"
-          class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-700 text-emerald-100 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-6">
+          class="w-full bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-6">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M11 10h1v8h-1" />
           </svg>
           How it works (FAQ)
         </button>
       <div class="flex-1">
-        <h2 class="text-sm font-medium text-emerald-300 uppercase tracking-wider mb-3">Tournaments</h2>
+        <h2 class="text-sm font-medium text-slate-300 uppercase tracking-wider mb-3">Tournaments</h2>
         <div id="tournament-list" class="space-y-3">
-          <p class="text-emerald-400 text-center py-8 text-sm">No tournaments yet</p>
+          <p class="text-lime-400 text-center py-8 text-sm">No tournaments yet</p>
         </div>
 
-        <div class="mt-8 bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="mt-8 bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="text-lg font-bold mb-2">What is Padelio?</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Americano is a fun tournament format where you keep playing short matches while rotating partners and opponents.
             Your goal is simple: score as many points as you can across all rounds. This app helps you set up a tournament,
             generate matches per court, track scores fast, and view a live leaderboard.
           </p>
 
           <div class="mt-4 grid gap-3">
-            <div class="bg-emerald-900/40 border border-emerald-700 rounded-xl p-4">
+            <div class="bg-slate-900/40 border border-slate-700 rounded-xl p-4">
               <div class="font-semibold">How scoring works</div>
-              <p class="text-emerald-100/80 text-sm leading-relaxed mt-1">
+              <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
                 Each match is played to a target score (16 / 21 / 24 / 32). If Team A scores X, Team B automatically becomes
                 (target - X). This keeps matches consistent and fast, perfect for social tournaments.
               </p>
             </div>
 
-            <div class="bg-emerald-900/40 border border-emerald-700 rounded-xl p-4">
+            <div class="bg-slate-900/40 border border-slate-700 rounded-xl p-4">
               <div class="font-semibold">Best use cases</div>
-              <p class="text-emerald-100/80 text-sm leading-relaxed mt-1">
+              <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
                 Weekend gatherings, club sessions, friendly tournaments, and events where you want everyone to play equally.
                 Add players, choose courts, start, and let the app handle the round flow.
               </p>
             </div>
           </div>
 
-          <p class="text-emerald-200 text-xs mt-4">
+          <p class="text-slate-200 text-xs mt-4">
             Tip: Install this PWA to your home screen for faster access and offline-like convenience. 
             <a style="text-decoration: underline; color: lightblue; cursor: pointer" onclick="navigateTo('about')">Read how to install here</a> 
           </p>
@@ -92,7 +93,7 @@
     <!-- About / FAQ -->
     <div id="page-about" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')"
-        class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+        class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -100,44 +101,44 @@
       </button>
 
       <h2 class="text-2xl font-bold mb-2">About & FAQ</h2>
-      <p class="text-emerald-200 text-sm mb-6">
+      <p class="text-slate-200 text-sm mb-6">
         This app is designed for quick Americano sessions: create a tournament, rotate players, track scores, and keep the vibe fun.
       </p>
 
       <div class="space-y-4">
-        <!-- <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <!-- <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">What is Americano?</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Americano is a social tournament format where players rotate partners and opponents across rounds. Instead of
             focusing on “win or lose” per match, the main objective is to collect points consistently.
           </p>
         </div> -->
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">How do points work in this app?</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             You pick a target score per match (16 / 21 / 24 / 32). When you input Team 1’s score, Team 2 is automatically
             set to (target - score). This prevents long matches and keeps the tournament moving smoothly.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">Does it save my data?</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Yes. Your tournaments and scores are stored only in your browser (eg. Safari, Chrome, Firefox, etc) so you can reopen the app without losing progress.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">Is this official?</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             This is a community utility app. It’s made to support friendly games and club sessions, not as an official federation tool.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">How to install the app (PWA)</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             <strong>iPhone / iPad (Safari):</strong><br>
             1) Open the website in <strong>Safari</strong> (not Chrome).<br>
             2) Tap the <strong>Share</strong> button (square with an arrow).<br>
@@ -152,22 +153,22 @@
           </p>
         </div>
 
-        <!-- <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <!-- <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">Contact</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Powered by Kawanua Basketball Jakarta. If you want feature requests or improvements, reach out via community admin on Instagram<a href="">Kawanua Basketball</a>.
           </p>
         </div> -->
       </div>
 
-      <div class="mt-6 text-xs text-emerald-300">
+      <div class="mt-6 text-xs text-slate-300">
         Note: Ads are shown only on content pages to comply with AdSense policies.
       </div>
     </div>
 
     <!-- Privacy Policy -->
     <div id="page-privacy" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -175,71 +176,71 @@
       </button>
 
       <h2 class="text-2xl font-bold mb-2">Privacy Policy</h2>
-      <p class="text-emerald-200 text-sm mb-6">Last updated: February 2026</p>
+      <p class="text-slate-200 text-sm mb-6">Last updated: February 2026</p>
 
       <div class="space-y-4">
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">1) Introduction</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Padelio is a community utility app designed to help players organize friendly Americano padel tournaments.
             We respect your privacy and keep the experience simple and transparent.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">2) What data we collect</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             This app does not require account registration and does not collect personal identity information.
             Your tournament data (tournament name, player names, scores, rounds) is stored locally in your browser (local storage).
             We do not store your data on our servers.
           </p>
-          <p class="text-emerald-200 text-xs mt-3">
+          <p class="text-slate-200 text-xs mt-3">
             Note: If you clear your browser data or reinstall the app, your tournaments may be permanently deleted.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">3) Advertising</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             This app may display Google AdSense ads. Google and its partners may use cookies to show relevant ads and measure ad performance.
             You can manage ad preferences through your Google Ads settings.
           </p>
-          <p class="text-emerald-200 text-xs mt-3">
+          <p class="text-slate-200 text-xs mt-3">
             We do not personally track users.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">4) Third-party services</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             This app may use hosting and delivery services (e.g., Netlify, CDN) and advertising services (Google AdSense).
             These services may collect standard technical information such as device type, browser type, and anonymous usage data.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">5) Data security</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Because your data is stored locally in your browser, we cannot access, view, or recover it.
             You are responsible for keeping your device and browser storage safe.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">6) Changes to this policy</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             We may update this Privacy Policy occasionally. Updates will be shown on this page with a new “Last updated” date.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">7) Contact</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             For questions or feature requests, please contact the developer through your community channel.
           </p>
         </div>
 
-        <div class="text-xs text-emerald-300 pt-2">
+        <div class="text-xs text-slate-300 pt-2">
           Tip: This app stores data only on your device. If you switch devices/browsers, your tournaments won’t transfer.
         </div>
       </div>
@@ -247,7 +248,7 @@
 
     <!-- Terms of Service -->
     <div id="page-terms" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -255,173 +256,213 @@
       </button>
 
       <h2 class="text-2xl font-bold mb-2">Terms of Service</h2>
-      <p class="text-emerald-200 text-sm mb-6">Last updated: February 2026</p>
+      <p class="text-slate-200 text-sm mb-6">Last updated: February 2026</p>
 
       <div class="space-y-4">
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">1) Acceptance of terms</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             By using Padelio, you agree to these Terms of Service. If you do not agree, please do not use the app.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">2) Purpose of the app</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             Padelio is a community utility tool for friendly Americano sessions. It is not an official federation system,
             and it is not certified competition software. The app is provided for convenience and fun.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">3) User responsibility</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             You are responsible for entering correct scores, managing your tournament rules, and maintaining fair play.
             We are not responsible for disputes, disagreements, or match outcomes.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">4) Data storage</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             All tournament data is stored locally in your browser. We are not responsible for data loss due to clearing cache,
             browser resets, device changes, or uninstalling the PWA.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">5) Advertising</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             This app may display ads to support development and maintenance. Ads are optional and users are not required to click them.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">6) Limitation of liability</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             The app is provided “as is” without warranties of any kind. We are not liable for technical interruptions, data loss,
             misuse of the app, or any indirect damages.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">7) Modifications</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             We may update the app, features, or these terms at any time. Continued use of the app means you accept the updated terms.
           </p>
         </div>
 
-        <div class="bg-emerald-800/30 border border-emerald-700 rounded-2xl p-5">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">8) Termination</h3>
-          <p class="text-emerald-100/90 text-sm leading-relaxed">
+          <p class="text-slate-300/90 text-sm leading-relaxed">
             We may discontinue or remove the app at any time.
           </p>
         </div>
 
-        <div class="text-xs text-emerald-300 pt-2">
+        <div class="text-xs text-slate-300 pt-2">
           Note: This app is made for community use. Please use it respectfully and keep the vibe friendly.
+        </div>
+      </div>
+    </div>
+
+
+    <!-- New Tournament - Mode -->
+    <div id="page-new-mode" class="page hidden flex-1 flex flex-col p-6">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg> Back
+      </button>
+      <div class="flex-1 flex flex-col">
+        <h2 class="text-2xl font-bold mb-2">Tournament Mode</h2>
+        <p class="text-slate-300 text-sm mb-6">Choose your Americano format</p>
+
+        <div class="space-y-3">
+          <button onclick="selectMode('normal')" class="w-full bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 font-semibold py-4 px-6 rounded-xl transition-all">
+            Normal Americano
+            <div class="text-slate-200/80 text-xs mt-1 font-normal">No gender balancing</div>
+          </button>
+
+          <button onclick="selectMode('mix')" class="w-full bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 font-semibold py-4 px-6 rounded-xl transition-all">
+            Mix Americano
+            <div class="text-slate-200/80 text-xs mt-1 font-normal">Male & Female must be balanced</div>
+          </button>
         </div>
       </div>
     </div>
   
     <!-- New Tournament - Title -->
     <div id="page-new-title" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-bold mb-2">Tournament Name</h2>
-        <p class="text-emerald-300 text-sm mb-6">Give your tournament a name</p>
-        <input type="text" id="tournament-title" placeholder="e.g. Sunday Padel Fun" class="w-full bg-emerald-800/50 border border-emerald-600 rounded-xl px-4 py-4 text-white placeholder-emerald-400 focus:outline-none focus:border-emerald-400 mb-6">
-        <button onclick="goToCourts()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200"> Continue </button>
+        <p class="text-slate-300 text-sm mb-6">Give your tournament a name</p>
+        <input type="text" id="tournament-title" placeholder="e.g. Sunday Padel Fun" class="w-full bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-lime-400 mb-6">
+        <button onclick="goToCourts()" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200"> Continue </button>
       </div>
     </div>
 
     <!-- New Tournament - Courts -->
     <div id="page-new-courts" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('new-title')" class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('new-title')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-bold mb-2">Number of Courts</h2>
-        <p class="text-emerald-300 text-sm mb-6">How many courts will be used?</p>
+        <p class="text-slate-300 text-sm mb-6">How many courts will be used?</p>
         <div class="grid grid-cols-3 gap-3 mb-6">
-          <button onclick="selectCourts(1)" class="court-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="1">1</button>
-          <button onclick="selectCourts(2)" class="court-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="2">2</button>
-          <button onclick="selectCourts(3)" class="court-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="3">3</button>
-          <button onclick="selectCourts(4)" class="court-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="4">4</button>
-          <button onclick="selectCourts(5)" class="court-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="5">5</button>
-          <button onclick="selectCourts(6)" class="court-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="6">6</button>
+          <button onclick="selectCourts(1)" class="court-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="1">1</button>
+          <button onclick="selectCourts(2)" class="court-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="2">2</button>
+          <button onclick="selectCourts(3)" class="court-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="3">3</button>
+          <button onclick="selectCourts(4)" class="court-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="4">4</button>
+          <button onclick="selectCourts(5)" class="court-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="5">5</button>
+          <button onclick="selectCourts(6)" class="court-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-6 text-xl font-bold transition-all" data-courts="6">6</button>
         </div>
-        <button onclick="goToPoints()" id="btn-to-points" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
+        <button onclick="goToPoints()" id="btn-to-points" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
       </div>
     </div>
 
     <!-- New Tournament - Points -->
     <div id="page-new-points" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('new-courts')" class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('new-courts')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-bold mb-2">Points to Win</h2>
-        <p class="text-emerald-300 text-sm mb-6">Select points per match</p>
+        <p class="text-slate-300 text-sm mb-6">Select points per match</p>
         <div class="grid grid-cols-2 gap-3 mb-6">
-          <button onclick="selectPoints(16)" class="points-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="16">16</button>
-          <button onclick="selectPoints(21)" class="points-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="21">21</button>
-          <button onclick="selectPoints(24)" class="points-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="24">24</button>
-          <button onclick="selectPoints(32)" class="points-btn bg-emerald-800/50 border-2 border-emerald-600 hover:border-emerald-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="32">32</button>
+          <button onclick="selectPoints(16)" class="points-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="16">16</button>
+          <button onclick="selectPoints(21)" class="points-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="21">21</button>
+          <button onclick="selectPoints(24)" class="points-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="24">24</button>
+          <button onclick="selectPoints(32)" class="points-btn bg-slate-800/50 border-2 border-slate-600 hover:border-lime-400 rounded-xl py-5 text-xl font-bold transition-all" data-points="32">32</button>
         </div>
-        <button onclick="goToPlayers()" id="btn-to-players" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
+        <button onclick="goToPlayers()" id="btn-to-players" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
       </div>
     </div>
 
     <!-- New Tournament - Players -->
     <div id="page-new-players" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-emerald-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg> Back </button>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> Back 
+        </button>
       <h2 class="text-2xl font-bold mb-2">Add Players</h2>
-      <p id="min-players-text" class="text-emerald-300 text-sm mb-2">
+      <p id="min-players-text" class="text-slate-300 text-sm mb-2">
         Minimum 4 players required
       </p>
-      <p class="text-emerald-300 text-sm mb-4" style="color: orange; font-size: .7rem; line-height: 1;">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
+      <p class="text-slate-300 text-sm mb-2" style="color: orange; font-size: .7rem; line-height: 1;">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
       
-      <div class="flex gap-2 mb-4">
-        <input type="text" id="player-name" placeholder="Player name" class="flex-1 bg-emerald-800/50 border border-emerald-600 rounded-xl px-4 py-3 text-white placeholder-emerald-400 focus:outline-none focus:border-emerald-400" onkeypress="if(event.key==='Enter')addPlayer()">
-        <button onclick="addPlayer()" class="bg-emerald-500 hover:bg-emerald-400 px-5 rounded-xl transition-all">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+      <p id="gender-balance-warning" class="text-xs text-red-400 hidden mb-2"></p>
+      
+      <div class="flex gap-3 mb-4 items-stretch">
+        <input
+          type="text"
+          id="player-name"
+          placeholder="Player name"
+          class="flex-[4] bg-slate-800/50 border border-slate-600 rounded-xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-lime-400"
+          onkeypress="if(event.key==='Enter')addPlayer()"
+        />
+
+        <button
+          type="button"
+          onclick="addPlayer()"
+          class="flex-[1] min-w-[56px] h-[56px] flex items-center justify-center bg-slate-800/50 hover:bg-slate-700/50 rounded-xl transition-all shadow-lg"
+          aria-label="Add player"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
         </button>
       </div>
       <div id="players-list" class="space-y-2 overflow-auto mb-4"></div>
-      <div class="text-sm text-emerald-300 mb-3" id="player-count"> 0 players added </div>
-      <button onclick="startTournament()" id="btn-start" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Start Tournament </button>
+      <div class="text-sm text-slate-300 mb-3" id="player-count"> 0 players added </div>
+      <button onclick="startTournament()" id="btn-start" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Start Tournament </button>
     </div>
 
     <!-- Tournament Rounds -->
     <div id="page-rounds" class="page hidden flex-1 flex flex-col">
-      <div class="bg-emerald-800/50 p-4 flex items-center justify-between">
-        <button onclick="navigateTo('home')" class="text-emerald-300 hover:text-white transition-colors">
+      <div class="bg-slate-800/50 p-4 flex items-center justify-between">
+        <button onclick="navigateTo('home')" class="text-slate-300 hover:text-white transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <h2 id="round-title" class="text-lg font-bold truncate mx-4">Tournament</h2>
         <div class="relative">
-          <button onclick="toggleMenu()" class="text-emerald-300 hover:text-white transition-colors p-1">
+          <button onclick="toggleMenu()" class="text-slate-300 hover:text-white transition-colors p-1">
             <svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
               <circle cx="12" cy="5" r="2" />
               <circle cx="12" cy="12" r="2" />
               <circle cx="12" cy="19" r="2" />
             </svg>
           </button>
-          <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-2 bg-emerald-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-40">
-            <button onclick="showLeaderboard()" class="w-full px-4 py-3 text-left hover:bg-emerald-600 transition-colors flex items-center gap-3">
+          <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-2 bg-slate-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-40">
+            <button onclick="showLeaderboard()" class="w-full px-4 py-3 text-left hover:bg-slate-600 transition-colors flex items-center gap-3">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg> Leaderboard </button>
@@ -436,22 +477,22 @@
       <div id="delete-confirm" class="hidden bg-red-900/90 p-4 flex items-center justify-between">
         <span class="text-sm">Delete this tournament?</span>
         <div class="flex gap-2">
-          <button onclick="cancelDelete()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-sm transition-colors">Cancel</button>
+          <button onclick="cancelDelete()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors">Cancel</button>
           <button onclick="deleteTournament()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm transition-colors">Delete</button>
         </div>
       </div>
       <div class="overflow-auto p-4">
         <div class="flex items-center justify-center gap-4 mb-4">
           <!-- LEFT ARROW -->
-          <button onclick="prevRoundView()" id="btn-prev-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-800 hover:bg-emerald-700 transition-all">
+          <button onclick="prevRoundView()" id="btn-prev-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <!-- ROUND LABEL -->
-          <span class="bg-emerald-700 px-6 py-2 rounded-full text-sm font-semibold" id="round-indicator"> Round 1 </span>
+          <span class="bg-slate-700 px-6 py-2 rounded-full text-sm font-semibold" id="round-indicator"> Round 1 </span>
           <!-- RIGHT ARROW -->
-          <button onclick="nextRoundView()" id="btn-next-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-800 hover:bg-emerald-700 transition-all">
+          <button onclick="nextRoundView()" id="btn-next-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 hover:bg-slate-700 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -459,8 +500,8 @@
         </div>
         <div id="courts-container" class="space-y-4"></div>
       </div>
-      <div class="p-4 bg-emerald-800/50">
-        <button onclick="nextRound()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+      <div class="p-4 bg-slate-800/50">
+        <button onclick="nextRound()" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -469,8 +510,8 @@
 
     <!-- Leaderboard -->
     <div id="page-leaderboard" class="page hidden flex-1 flex flex-col">
-      <div class="bg-emerald-800/50 p-4 flex items-center">
-        <button onclick="backToRounds()" class="text-emerald-300 hover:text-white transition-colors">
+      <div class="bg-slate-800/50 p-4 flex items-center">
+        <button onclick="backToRounds()" class="text-slate-300 hover:text-white transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
@@ -486,9 +527,11 @@
   <!-- <div id="ad-bottom" class="fixed bottom-0 left-0 w-full bg-zinc-950/95 border-t border-zinc-800 flex justify-center py-2 z-50 hidden"> -->
     <!-- Ads Kawanua -->
     <ins class="adsbygoogle"
-     style="display:inline-block;width:728px;height:90px"
-     data-ad-client="ca-pub-6166203591007712"
-     data-ad-slot="6599285367"></ins>
+       style="display:block"
+       data-ad-client="ca-pub-6166203591007712"
+       data-ad-slot="6599285367"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
 
   <!-- </div> -->
 

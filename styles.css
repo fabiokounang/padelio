@@ -1,8 +1,12 @@
-* {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   font-family: 'Outfit', sans-serif;
 }
+
 
 .slide-in {
   animation: slideIn 0.3s ease-out;
@@ -23,4 +27,29 @@
 
 body {
   box-sizing: border-box;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(163,230,53,0.08), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero-title {
+  background: linear-gradient(90deg, #ffffff, #a3e635);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(163, 230, 53, 0.25);
+}
+
+.hero-icon {
+  background: radial-gradient(circle, rgba(163,230,53,0.25) 0%, rgba(0,0,0,0) 70%);
+  box-shadow: 0 0 40px rgba(163,230,53,0.2);
 }
