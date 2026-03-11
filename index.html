@@ -4,19 +4,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Padelio</title>
+
+  <title>Padelio - Padel Tournament Scoring Helper</title>
+  <meta
+    name="description"
+    content="Padelio is a simple app to organize Americano padel tournaments, rotate players, track scores, and view live leaderboards for friendly club sessions."
+  >
+  <meta
+    name="keywords"
+    content="padel, americano padel, padel tournament, padel scoreboard, padel app, leaderboard, mix americano"
+  >
+  <meta name="author" content="Padelio">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://padelio.id/">
+
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#065f46">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Padelio - Americano Padel Tournament Helper">
+  <meta
+    property="og:description"
+    content="Create padel tournaments, rotate players, track scores, and keep sessions fun and organized."
+  >
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://padelio.id/">
+  <meta property="og:site_name" content="Padelio">
+  <meta property="og:image" content="https://padelio.id/icons/icon-512.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Padelio - Americano Padel Tournament Helper">
+  <meta
+    name="twitter:description"
+    content="A simple tool for friendly Americano padel tournaments, score tracking, and live leaderboards."
+  >
+  <meta name="twitter:image" content="https://padelio.id/icons/icon-512.png">
+
+  <!-- AdSense verification -->
   <meta name="google-adsense-account" content="ca-pub-6166203591007712">
+
+  <!-- Fonts / CSS -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- SDK -->
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
-     crossorigin="anonymous"></script>
+
+  <!-- AdSense script only -->
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
+    crossorigin="anonymous"
+  ></script>
 </head>
 
 <body class="h-full bg-slate-950 text-white overflow-auto pb-20">
@@ -24,68 +82,174 @@
     <!-- Home Page -->
     <div id="page-home" class="page flex-1 flex flex-col p-6">
       <div class="text-center py-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-4 shadow-lg hero-icon">
-          <svg class="w-8 h-8" fill="currentColor" viewbox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" />
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-            <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" />
-          </svg>
+        <div class="flex" style="flex-direction: column; align-items: center;">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-4 shadow-lg hero-icon">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
+              <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2"></path>
+            </svg>
+          </div>
+  
+          <div class="inline-flex items-center gap-2 bg-slate-800/60 border border-slate-700 rounded-full px-3 py-1 text-xs text-slate-300 mb-4">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+            Friendly Padel Scoring Helper
+          </div>
         </div>
-        <h1 id="main-title" class="text-3xl font-bold mb-2 hero-title">Padelio</h1>
-        <p class="text-slate-200 text-sm">Powered By Otaku Developer</p>
-        <button class="text-xs text-center underline hover:text-white" onclick="navigateTo('privacy')">Privacy Policy</button>
-        <button class="text-xs text-center underline hover:text-white" onclick="navigateTo('terms')">Terms of Service</button>
+
+        <h1 id="main-title" class="text-3xl font-bold mb-3 hero-title">
+          Padelio
+        </h1>
+
+        <p class="text-slate-200 text-sm leading-relaxed max-w-md mx-auto mb-3">
+          Create padel tournaments, rotate players fairly, track scores quickly,
+          and keep every session organized from start to finish.
+        </p>
+
+        <p class="text-slate-400 text-xs max-w-sm mx-auto mb-5">
+          Built for clubs, friendly games, weekend sessions, and community events.
+        </p>
+
+        <div class="flex items-center justify-center gap-4 text-xs text-slate-400 flex-wrap">
+          <button
+            class="underline hover:text-white transition-colors"
+            onclick="navigateTo('about')"
+          >
+            How it works
+          </button>
+          <button
+            class="underline hover:text-white transition-colors"
+            onclick="navigateTo('privacy')"
+          >
+            Privacy Policy
+          </button>
+          <button
+            class="underline hover:text-white transition-colors"
+            onclick="navigateTo('terms')"
+          >
+            Terms of Service
+          </button>
+        </div>
       </div>
 
-
-      <button onclick="navigateTo('new-mode')" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-3 mb-6">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg> New Tournament
+      <button
+        onclick="navigateTo('new-mode')"
+        class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-3 mb-4"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Start New Tournament
       </button>
-        <button onclick="navigateTo('about')"
-          class="w-full bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-6">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M11 10h1v8h-1" />
-          </svg>
-          How it works (FAQ)
-        </button>
+
+      <button
+        onclick="navigateTo('about')"
+        class="w-full bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-6"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M11 10h1v8h-1"></path>
+        </svg>
+        Learn how Padelio works
+      </button>
+
+      <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-xl p-4 text-center">
+          <div class="text-lg font-bold text-white">Fast</div>
+          <p class="text-slate-400 text-xs mt-1">Set up rounds and scores in minutes</p>
+        </div>
+        <div class="bg-slate-800/30 border border-slate-700 rounded-xl p-4 text-center">
+          <div class="text-lg font-bold text-white">Simple</div>
+          <p class="text-slate-400 text-xs mt-1">Made for friendly clubs and social sessions</p>
+        </div>
+      </div>
+
       <div class="flex-1">
-        <h2 class="text-sm font-medium text-slate-300 uppercase tracking-wider mb-3">Tournaments</h2>
+        <div class="flex items-center justify-between mb-3 gap-3">
+          <h2 class="text-sm font-medium text-slate-300 uppercase tracking-wider">
+            Saved Tournaments
+          </h2>
+          <span class="text-[11px] text-slate-500">
+            Stored in your browser
+          </span>
+        </div>
+
         <div id="tournament-list" class="space-y-3">
-          <p class="text-lime-400 text-center py-8 text-sm">No tournaments yet</p>
+          <p class="text-slate-400 text-center py-8 text-sm">No tournaments yet</p>
         </div>
 
         <div class="mt-8 bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="text-lg font-bold mb-2">What is Padelio?</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Americano is a fun tournament format where you keep playing short matches while rotating partners and opponents.
-            Your goal is simple: score as many points as you can across all rounds. This app helps you set up a tournament,
-            generate matches per court, track scores fast, and view a live leaderboard.
+            Padelio is a lightweight tournament helper built for Americano padel sessions.
+            It helps organizers create matches faster, rotate players more fairly, track scores clearly,
+            and keep the session flowing without manual spreadsheets or messy note-taking.
           </p>
 
           <div class="mt-4 grid gap-3">
             <div class="bg-slate-900/40 border border-slate-700 rounded-xl p-4">
               <div class="font-semibold">How scoring works</div>
               <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
-                Each match is played to a target score (16 / 21 / 24 / 32). If Team A scores X, Team B automatically becomes
-                (target - X). This keeps matches consistent and fast, perfect for social tournaments.
+                Each match uses a selected target score such as 16, 21, 24, or 32. When one team score is entered,
+                the other team score is completed automatically based on the target. This makes score input faster
+                and keeps every match format consistent.
               </p>
             </div>
 
             <div class="bg-slate-900/40 border border-slate-700 rounded-xl p-4">
-              <div class="font-semibold">Best use cases</div>
+              <div class="font-semibold">Who this is for</div>
               <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
-                Weekend gatherings, club sessions, friendly tournaments, and events where you want everyone to play equally.
-                Add players, choose courts, start, and let the app handle the round flow.
+                Padelio is useful for club organizers, community hosts, social events, weekend padel sessions,
+                and friendly tournaments where players rotate often and want an easy live leaderboard.
+              </p>
+            </div>
+
+            <div class="bg-slate-900/40 border border-slate-700 rounded-xl p-4">
+              <div class="font-semibold">Why people use it</div>
+              <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
+                Instead of managing paper notes or spreadsheets during play, organizers can keep tournament flow,
+                pairings, rounds, and points in one simple app that is easy to open on mobile.
               </p>
             </div>
           </div>
 
-          <p class="text-slate-200 text-xs mt-4">
-            Tip: Install this PWA to your home screen for faster access and offline-like convenience. 
-            <a style="text-decoration: underline; color: lightblue; cursor: pointer" onclick="navigateTo('about')">Read how to install here</a> 
+          <p class="text-slate-200 text-xs mt-4 leading-relaxed">
+            Tip: Install Padelio to your home screen for faster access during club sessions.
+            <a
+              style="text-decoration: underline; color: lightblue; cursor: pointer"
+              onclick="navigateTo('about')"
+            >
+              Read the installation guide here
+            </a>
           </p>
+        </div>
+
+        <div class="mt-8 space-y-4">
+          <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+            <h3 class="text-lg font-bold mb-2">Why Americano works well for social padel</h3>
+            <p class="text-slate-300/90 text-sm leading-relaxed">
+              Americano is popular because it keeps players involved throughout the session. Instead of staying with one partner
+              for the whole event, players rotate across rounds, meet different opponents, and keep collecting points over time.
+              This makes the format feel more social, more dynamic, and often more enjoyable for club gatherings or weekend games.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+            <h3 class="text-lg font-bold mb-2">Why organizers use Padelio</h3>
+            <p class="text-slate-300/90 text-sm leading-relaxed">
+              Running a padel session manually can become confusing when courts, rounds, and scores need to be updated quickly.
+              Organizers often rely on paper notes, chat messages, or spreadsheets, which can slow the event down. Padelio is meant
+              to simplify that process so the session can stay focused on play instead of administration.
+            </p>
+          </div>
+
+          <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+            <h3 class="text-lg font-bold mb-2">Best for clubs, communities, and friendly events</h3>
+            <p class="text-slate-300/90 text-sm leading-relaxed">
+              Padelio is best suited for community padel groups, club sessions, social mixers, and friendly events where the goal
+              is to keep everyone playing and make score tracking easier. It is especially useful for sessions that want a live
+              leaderboard and a clearer round flow without using complex tournament software.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -94,45 +258,76 @@
     <div id="page-about" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')"
         class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         Back
       </button>
 
-      <h2 class="text-2xl font-bold mb-2">About & FAQ</h2>
-      <p class="text-slate-200 text-sm mb-6">
-        This app is designed for quick Americano sessions: create a tournament, rotate players, track scores, and keep the vibe fun.
+      <h2 class="text-2xl font-bold mb-2">About Padelio</h2>
+      <p class="text-slate-200 text-sm mb-6 leading-relaxed">
+        Padelio is a lightweight helper for padel sessions. It is designed to make tournament setup easier,
+        scoring faster, and player rotation more practical for clubs, community games, and friendly events.
       </p>
 
       <div class="space-y-4">
-        <!-- <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">What is Americano?</h3>
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">What Padelio helps you do</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Americano is a social tournament format where players rotate partners and opponents across rounds. Instead of
-            focusing on “win or lose” per match, the main objective is to collect points consistently.
+            Instead of manually organizing names, rounds, and score notes during a session, Padelio helps you create a tournament,
+            choose the number of courts, set a target score, add players, and move through rounds with a live tournament structure.
+            This keeps the session cleaner and easier to manage, especially when many players rotate in and out.
           </p>
-        </div> -->
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">Who this app is for</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio is made for friendly organizers, club admins, community hosts, and padel groups who want a simple system
+            for Americano-style sessions. It is especially useful when you want to keep everyone involved, avoid confusion,
+            and maintain a fair flow across multiple rounds.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">What is Americano in padel?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Americano is a social tournament format where players rotate partners and opponents across rounds.
+            The goal is not only to win one match, but to collect as many points as possible over the whole session.
+            This format is popular because it keeps the event active, social, and competitive at the same time.
+          </p>
+        </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">How do points work in this app?</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            You pick a target score per match (16 / 21 / 24 / 32). When you input Team 1’s score, Team 2 is automatically
-            set to (target - score). This prevents long matches and keeps the tournament moving smoothly.
+            You choose a target score for each match, such as 16, 21, 24, or 32 points. When one team score is entered,
+            the opposing team score is automatically completed based on the selected target. This helps keep matches short,
+            consistent, and easy to track.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">What is the difference between Normal and Mix Americano?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Normal Americano can be used without gender balancing. Mix Americano is designed for sessions where male and female
+            player counts should stay balanced. This helps organizers create a more structured mixed format when needed.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">Does it save my data?</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Yes. Your tournaments and scores are stored only in your browser (eg. Safari, Chrome, Firefox, etc) so you can reopen the app without losing progress.
+            Yes. Your tournaments and scores are stored locally in your browser on your device. This means you can reopen the app
+            later on the same browser and continue where you left off, as long as your browser storage has not been cleared.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">Is this official?</h3>
+          <h3 class="font-semibold text-lg mb-2">Can I use it on mobile?</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            This is a community utility app. It’s made to support friendly games and club sessions, not as an official federation tool.
+            Yes. Padelio is designed to work well on mobile so organizers can manage sessions courtside without needing a laptop.
+            It can also be installed to the home screen as a Progressive Web App for quicker access.
           </p>
         </div>
 
@@ -140,188 +335,249 @@
           <h3 class="font-semibold text-lg mb-2">How to install the app (PWA)</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
             <strong>iPhone / iPad (Safari):</strong><br>
-            1) Open the website in <strong>Safari</strong> (not Chrome).<br>
-            2) Tap the <strong>Share</strong> button (square with an arrow).<br>
-            3) Scroll and tap <strong>Add to Home Screen</strong> or click More and find <strong>Add to Home Screen</strong>.<br>
-            4) Rename it if you want, then tap <strong>Add</strong>.<br><br>
+            1) Open the website in <strong>Safari</strong>.<br>
+            2) Tap the <strong>Share</strong> button.<br>
+            3) Scroll down and tap <strong>Add to Home Screen</strong>.<br>
+            4) Rename it if needed, then tap <strong>Add</strong>.<br><br>
 
             <strong>Android (Chrome):</strong><br>
             1) Open the website in <strong>Chrome</strong>.<br>
-            2) If you see <strong>Install app</strong>, tap it and confirm.<br>
-            3) If you don’t see it, tap <strong>⋮</strong> (top-right) → <strong>Install app</strong> or <strong>Add to Home screen</strong>.<br>
-            4) Tap <strong>Install</strong> / <strong>Add</strong> to finish.
+            2) Tap <strong>Install app</strong> if the prompt appears.<br>
+            3) If it does not appear, tap the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.<br>
+            4) Confirm to finish installation.
           </p>
         </div>
 
-        <!-- <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">Contact</h3>
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">Is this official tournament software?</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Powered by Kawanua Basketball Jakarta. If you want feature requests or improvements, reach out via community admin on Instagram<a href="">Kawanua Basketball</a>.
+            No. Padelio is a community utility app built for friendly and social sessions. It is not an official federation system,
+            not a certified competition platform, and not intended to replace formal event software used in professional tournaments.
           </p>
-        </div> -->
+        </div>
       </div>
 
-      <div class="mt-6 text-xs text-slate-300">
-        Note: Ads are shown only on content pages to comply with AdSense policies.
+      <div class="mt-6 bg-slate-800/20 border border-slate-700 rounded-2xl p-4">
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Note: Padelio is designed to support community play and social tournament organization. For the best experience,
+          use it on a modern browser and keep your device storage active if you want your tournament data to remain available.
+        </p>
       </div>
     </div>
 
     <!-- Privacy Policy -->
     <div id="page-privacy" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         Back
       </button>
 
       <h2 class="text-2xl font-bold mb-2">Privacy Policy</h2>
-      <p class="text-slate-200 text-sm mb-6">Last updated: February 2026</p>
+      <p class="text-slate-200 text-sm mb-6">Last updated: March 2026</p>
 
       <div class="space-y-4">
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">1) Introduction</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Padelio is a community utility app designed to help players organize friendly Americano padel tournaments.
-            We respect your privacy and keep the experience simple and transparent.
+            Padelio is a lightweight community utility app created to help users organize friendly Americano padel sessions.
+            This Privacy Policy explains what information is stored, how the app works on your device, and how third-party
+            services such as advertising providers may interact with the website.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">2) What data we collect</h3>
+          <h3 class="font-semibold text-lg mb-2">2) Information stored in the app</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            This app does not require account registration and does not collect personal identity information.
-            Your tournament data (tournament name, player names, scores, rounds) is stored locally in your browser (local storage).
-            We do not store your data on our servers.
-          </p>
-          <p class="text-slate-200 text-xs mt-3">
-            Note: If you clear your browser data or reinstall the app, your tournaments may be permanently deleted.
+            Padelio does not require account registration and does not ask users to create a personal profile in order to use
+            the core tournament features. Tournament information such as tournament title, player names, scores, rounds,
+            and leaderboard progress may be stored locally in your browser on your own device.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">3) Advertising</h3>
+          <h3 class="font-semibold text-lg mb-2">3) Local storage</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            This app may display Google AdSense ads. Google and its partners may use cookies to show relevant ads and measure ad performance.
-            You can manage ad preferences through your Google Ads settings.
-          </p>
-          <p class="text-slate-200 text-xs mt-3">
-            We do not personally track users.
+            Tournament data is stored in your browser storage so you can reopen the app later without losing progress on the
+            same device and browser. This local data is not intended as cloud backup. If you clear browser data, reset your
+            device, uninstall the app shortcut, or use a different browser, your stored tournaments may no longer be available.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">4) Third-party services</h3>
+          <h3 class="font-semibold text-lg mb-2">4) Personal information</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            This app may use hosting and delivery services (e.g., Netlify, CDN) and advertising services (Google AdSense).
-            These services may collect standard technical information such as device type, browser type, and anonymous usage data.
+            Padelio is designed to work without collecting direct personal identity information such as full legal name,
+            password, billing information, or account credentials. Player names entered into tournaments are created by the user
+            for session organization purposes and remain on the local device unless the user chooses to share them separately.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">5) Data security</h3>
+          <h3 class="font-semibold text-lg mb-2">5) Advertising and third-party services</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Because your data is stored locally in your browser, we cannot access, view, or recover it.
-            You are responsible for keeping your device and browser storage safe.
+            Padelio may use third-party services such as hosting providers, content delivery services, analytics tools,
+            or Google AdSense to support the operation and maintenance of the website. These third parties may collect
+            standard technical information such as browser type, device type, approximate location, referral data,
+            cookies, or anonymous usage signals according to their own policies.
+          </p>
+          <p class="text-slate-200 text-xs mt-3 leading-relaxed">
+            When advertising is shown, Google and its partners may use cookies or similar technologies to deliver and measure ads.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">6) Changes to this policy</h3>
+          <h3 class="font-semibold text-lg mb-2">6) How data is used</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            We may update this Privacy Policy occasionally. Updates will be shown on this page with a new “Last updated” date.
+            Local tournament data is used only to provide the app experience on your device, including saving progress,
+            showing round information, calculating scores, and displaying the leaderboard. Padelio does not sell user-entered
+            tournament data and does not provide a user account system for storing private information on remote servers.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">7) Contact</h3>
+          <h3 class="font-semibold text-lg mb-2">7) Data security</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            For questions or feature requests, please contact the developer through your community channel.
+            Because tournament data is primarily stored locally in your browser, you are responsible for managing access
+            to your device and browser. No method of digital storage is perfectly secure, but Padelio is designed to minimize
+            unnecessary collection of personal data by keeping the app simple and local-first where possible.
           </p>
         </div>
 
-        <div class="text-xs text-slate-300 pt-2">
-          Tip: This app stores data only on your device. If you switch devices/browsers, your tournaments won’t transfer.
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">8) Children’s privacy</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio is a general utility website and is not specifically directed to children. Users should avoid entering
+            sensitive personal information into tournament fields or other parts of the app.
+          </p>
         </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">9) Changes to this policy</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            This Privacy Policy may be updated from time to time to reflect product changes, legal updates, or service changes.
+            When updates are made, the “Last updated” date on this page will also be revised.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">10) Contact</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            If you have questions about this Privacy Policy or want to report an issue related to the app, please contact the
+            developer through the official Padelio contact channel or website contact page when available.
+          </p>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-300 pt-4 leading-relaxed">
+        Reminder: If you switch devices or browsers, tournament data stored locally on the previous device may not transfer automatically.
       </div>
     </div>
 
     <!-- Terms of Service -->
     <div id="page-terms" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         Back
       </button>
 
       <h2 class="text-2xl font-bold mb-2">Terms of Service</h2>
-      <p class="text-slate-200 text-sm mb-6">Last updated: February 2026</p>
+      <p class="text-slate-200 text-sm mb-6">Last updated: March 2026</p>
 
       <div class="space-y-4">
+
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
           <h3 class="font-semibold text-lg mb-2">1) Acceptance of terms</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            By using Padelio, you agree to these Terms of Service. If you do not agree, please do not use the app.
+            By accessing or using Padelio, you agree to these Terms of Service. If you do not agree with these terms,
+            you should discontinue using the website and the associated application features.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">2) Purpose of the app</h3>
+          <h3 class="font-semibold text-lg mb-2">2) Purpose of the application</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            Padelio is a community utility tool for friendly Americano sessions. It is not an official federation system,
-            and it is not certified competition software. The app is provided for convenience and fun.
+            Padelio is a lightweight community utility designed to assist players and organizers in managing
+            Americano-style padel sessions. The app helps create tournaments, rotate players, record match scores,
+            and display leaderboard results for social and club-based play.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">3) User responsibility</h3>
+          <h3 class="font-semibold text-lg mb-2">3) Community and recreational use</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            You are responsible for entering correct scores, managing your tournament rules, and maintaining fair play.
-            We are not responsible for disputes, disagreements, or match outcomes.
+            The application is intended for community and recreational events. It is not official tournament software
+            and is not affiliated with any sports federation, professional tournament system, or governing body.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">4) Data storage</h3>
+          <h3 class="font-semibold text-lg mb-2">4) User responsibility</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            All tournament data is stored locally in your browser. We are not responsible for data loss due to clearing cache,
-            browser resets, device changes, or uninstalling the PWA.
+            Users are responsible for the accuracy of tournament data entered into the system, including player names,
+            match scores, and tournament settings. Organizers should ensure fair play and appropriate conduct during
+            sessions managed using the app.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">5) Advertising</h3>
+          <h3 class="font-semibold text-lg mb-2">5) Data storage</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            This app may display ads to support development and maintenance. Ads are optional and users are not required to click them.
+            Tournament information is stored locally in the user’s browser storage. Padelio does not provide cloud
+            backup or account-based synchronization. Users should be aware that clearing browser data or switching
+            devices may result in the loss of locally stored tournament information.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">6) Limitation of liability</h3>
+          <h3 class="font-semibold text-lg mb-2">6) Advertising</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            The app is provided “as is” without warranties of any kind. We are not liable for technical interruptions, data loss,
-            misuse of the app, or any indirect damages.
+            The website may display advertising to support development and hosting costs. Ads may be provided by
+            third-party networks such as Google AdSense. Users are not required to interact with advertisements
+            while using the app.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">7) Modifications</h3>
+          <h3 class="font-semibold text-lg mb-2">7) Limitation of liability</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            We may update the app, features, or these terms at any time. Continued use of the app means you accept the updated terms.
+            Padelio is provided “as is” without warranties of any kind. The developers are not responsible for
+            tournament disputes, incorrect scores, data loss, or interruptions caused by browser issues,
+            device problems, or network connectivity.
           </p>
         </div>
 
         <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">8) Termination</h3>
+          <h3 class="font-semibold text-lg mb-2">8) Modifications</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
-            We may discontinue or remove the app at any time.
+            The application, features, or these Terms of Service may be updated at any time. Continued use of
+            the website after updates are published indicates acceptance of the revised terms.
           </p>
         </div>
 
-        <div class="text-xs text-slate-300 pt-2">
-          Note: This app is made for community use. Please use it respectfully and keep the vibe friendly.
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">9) Service availability</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            While the goal is to keep Padelio accessible and functional, availability of the website may vary
+            depending on hosting infrastructure, browser compatibility, and maintenance updates.
+          </p>
         </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">10) Contact</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Questions regarding these Terms of Service may be directed to the Padelio developer through
+            the official website contact page or community channel when available.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="text-xs text-slate-400 mt-6 leading-relaxed">
+        By continuing to use Padelio, you acknowledge that you understand these terms and agree to use the app responsibly.
       </div>
     </div>
 
@@ -329,7 +585,7 @@
     <!-- New Tournament - Mode -->
     <div id="page-new-mode" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back
       </button>
@@ -354,7 +610,7 @@
     <!-- New Tournament - Title -->
     <div id="page-new-title" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
@@ -368,7 +624,7 @@
     <!-- New Tournament - Courts -->
     <div id="page-new-courts" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('new-title')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
@@ -389,7 +645,7 @@
     <!-- New Tournament - Points -->
     <div id="page-new-points" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('new-courts')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
@@ -408,7 +664,7 @@
     <!-- New Tournament - Players -->
     <div id="page-new-players" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> Back 
         </button>
       <h2 class="text-2xl font-bold mb-2">Add Players</h2>
@@ -448,14 +704,14 @@
     <div id="page-rounds" class="page hidden flex-1 flex flex-col">
       <div class="bg-slate-800/50 p-4 flex items-center justify-between">
         <button onclick="navigateTo('home')" class="text-slate-300 hover:text-white transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <h2 id="round-title" class="text-lg font-bold truncate mx-4">Tournament</h2>
         <div class="relative">
           <button onclick="toggleMenu()" class="text-slate-300 hover:text-white transition-colors p-1">
-            <svg class="w-6 h-6" fill="currentColor" viewbox="0 0 24 24">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <circle cx="12" cy="5" r="2" />
               <circle cx="12" cy="12" r="2" />
               <circle cx="12" cy="19" r="2" />
@@ -463,11 +719,11 @@
           </button>
           <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-2 bg-slate-700 rounded-xl shadow-xl overflow-hidden z-50 min-w-40">
             <button onclick="showLeaderboard()" class="w-full px-4 py-3 text-left hover:bg-slate-600 transition-colors flex items-center gap-3">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg> Leaderboard </button>
             <button onclick="confirmDelete()" class="w-full px-4 py-3 text-left hover:bg-red-600 transition-colors flex items-center gap-3 text-red-300">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg> Delete Tournament </button>
           </div>
@@ -501,7 +757,7 @@
         <div id="courts-container" class="space-y-4"></div>
       </div>
       <div class="p-4 bg-slate-800/50">
-        <button onclick="nextRound()" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+        <button onclick="nextRound()" class="w-full bg-slate-800/50 hover:bg-slate-700/50 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -512,7 +768,7 @@
     <div id="page-leaderboard" class="page hidden flex-1 flex flex-col">
       <div class="bg-slate-800/50 p-4 flex items-center">
         <button onclick="backToRounds()" class="text-slate-300 hover:text-white transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -522,18 +778,90 @@
         <div id="leaderboard-list" class="space-y-2"></div>
       </div>
     </div>
+
+    <!-- ADS -->
+    <div id="content-ad-wrap" class="hidden px-6 pb-6 min-h-[120px]">
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
+          <p class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Advertisement</p>
+
+          <ins
+            id="adsense-content-unit"
+            class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-6166203591007712"
+            data-ad-slot="6599285367"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          ></ins>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+      <div class="max-w-3xl mx-auto">
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              A lightweight helper for padel tournaments, player rotation,
+              fast score entry, and live leaderboards for social and club sessions.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <div class="flex flex-col gap-2 text-sm">
+              <button
+                onclick="navigateTo('home')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Home
+              </button>
+              <button
+                onclick="navigateTo('about')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                About
+              </button>
+              <button
+                onclick="navigateTo('privacy')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onclick="navigateTo('terms')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Terms of Service
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+              <li>Club sessions</li>
+              <li>Friendly Americano (next update Mexicano) tournaments</li>
+              <li>Weekend social padel</li>
+              <li>Simple mobile score tracking</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 mt-6 pt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-slate-500">
+            © 2026 Padelio. All rights reserved.
+          </p>
+          <p class="text-xs text-slate-500">
+            Built for community padel sessions.
+          </p>
+        </div>
+      </div>
+    </footer>
   </div>
-
-  <!-- <div id="ad-bottom" class="fixed bottom-0 left-0 w-full bg-zinc-950/95 border-t border-zinc-800 flex justify-center py-2 z-50 hidden"> -->
-    <!-- Ads Kawanua -->
-    <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-6166203591007712"
-       data-ad-slot="6599285367"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
-
-  <!-- </div> -->
 
   <script src="js/script.js"></script>     
 </body>
