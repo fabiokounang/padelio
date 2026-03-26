@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Padelio - Padel Tournament Scoring Helper</title>
+  <meta
+    name="description"
+    content="Padelio is a simple app to organize Americano padel tournaments, rotate players, track scores, and view live leaderboards for friendly club sessions."
+  >
+  <meta
+    name="keywords"
+    content="padel, americano padel, padel tournament, padel scoreboard, padel app, leaderboard, mix americano"
+  >
+  <meta name="author" content="Padelio">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://padelio.id/">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#065f46">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Padelio - Americano Padel Tournament Helper">
+  <meta
+    property="og:description"
+    content="Create padel tournaments, rotate players, track scores, and keep sessions fun and organized."
+  >
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://padelio.id/">
+  <meta property="og:site_name" content="Padelio">
+  <meta property="og:image" content="https://padelio.id/icons/icon-512.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Padelio - Americano Padel Tournament Helper">
+  <meta
+    name="twitter:description"
+    content="A simple tool for friendly Americano padel tournaments, score tracking, and live leaderboards."
+  >
+  <meta name="twitter:image" content="https://padelio.id/icons/icon-512.png">
+
+  <!-- AdSense verification -->
+  <meta name="google-adsense-account" content="ca-pub-6166203591007712">
+
+  <!-- Fonts / CSS -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- SDK -->
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+
+  <!-- AdSense script only -->
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
+    crossorigin="anonymous"
+  ></script>
+</head>
+
+<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+  <div id="app" class="w-full min-h-full flex flex-col">
+    <!-- Privacy Policy -->
+    <div id="page-privacy" class="page flex-1 flex flex-col p-6">
+      <a href="index.html" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back
+      </a>
+
+      <h2 class="text-2xl font-bold mb-2">Privacy Policy</h2>
+      <p class="text-slate-200 text-sm mb-6">Last updated: March 2026</p>
+
+      <div class="space-y-4">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">1) Introduction</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio is a lightweight community utility app created to help users organize friendly Americano padel sessions.
+            This Privacy Policy explains what information is stored, how the app works on your device, and how third-party
+            services such as advertising providers may interact with the website.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">2) Information stored in the app</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio does not require account registration and does not ask users to create a personal profile in order to use
+            the core tournament features. Tournament information such as tournament title, player names, scores, rounds,
+            and leaderboard progress may be stored locally in your browser on your own device.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">3) Local storage</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Tournament data is stored in your browser storage so you can reopen the app later without losing progress on the
+            same device and browser. This local data is not intended as cloud backup. If you clear browser data, reset your
+            device, uninstall the app shortcut, or use a different browser, your stored tournaments may no longer be available.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">4) Personal information</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio is designed to work without collecting direct personal identity information such as full legal name,
+            password, billing information, or account credentials. Player names entered into tournaments are created by the user
+            for session organization purposes and remain on the local device unless the user chooses to share them separately.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">5) Advertising and third-party services</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio may use third-party services such as hosting providers, content delivery services, analytics tools,
+            or Google AdSense to support the operation and maintenance of the website. These third parties may collect
+            standard technical information such as browser type, device type, approximate location, referral data,
+            cookies, or anonymous usage signals according to their own policies.
+          </p>
+          <p class="text-slate-200 text-xs mt-3 leading-relaxed">
+            When advertising is shown, Google and its partners may use cookies or similar technologies to deliver and measure ads.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">6) How data is used</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Local tournament data is used only to provide the app experience on your device, including saving progress,
+            showing round information, calculating scores, and displaying the leaderboard. Padelio does not sell user-entered
+            tournament data and does not provide a user account system for storing private information on remote servers.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">7) Data security</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Because tournament data is primarily stored locally in your browser, you are responsible for managing access
+            to your device and browser. No method of digital storage is perfectly secure, but Padelio is designed to minimize
+            unnecessary collection of personal data by keeping the app simple and local-first where possible.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">8) Children’s privacy</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio is a general utility website and is not specifically directed to children. Users should avoid entering
+            sensitive personal information into tournament fields or other parts of the app.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">9) Changes to this policy</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            This Privacy Policy may be updated from time to time to reflect product changes, legal updates, or service changes.
+            When updates are made, the “Last updated” date on this page will also be revised.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">10) Contact</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            If you have questions about this Privacy Policy or want to report an issue related to the app, please contact the
+            developer through the official Padelio contact channel or website contact page when available.
+          </p>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-300 pt-4 leading-relaxed">
+        Reminder: If you switch devices or browsers, tournament data stored locally on the previous device may not transfer automatically.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+      <div class="max-w-3xl mx-auto">
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              A lightweight helper for padel tournaments, player rotation,
+              fast score entry, and live leaderboards for social and club sessions.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <div class="flex flex-col gap-2 text-sm">
+              <button
+                onclick="navigateTo('home')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Home
+              </button>
+              <button
+                onclick="navigateTo('about')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                About
+              </button>
+              <button
+                onclick="navigateTo('privacy')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onclick="navigateTo('terms')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Terms of Service
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+              <li>Club sessions</li>
+              <li>Friendly Americano (next update Mexicano) tournaments</li>
+              <li>Weekend social padel</li>
+              <li>Simple mobile score tracking</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 mt-6 pt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-slate-500">
+            © 2026 Padelio. All rights reserved.
+          </p>
+          <p class="text-xs text-slate-500">
+            Built for community padel sessions.
+          </p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/script.js"></script>     
+</body>
+
+</html>

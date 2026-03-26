@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Padelio - Padel Tournament Scoring Helper</title>
+  <meta
+    name="description"
+    content="Padelio is a simple app to organize Americano padel tournaments, rotate players, track scores, and view live leaderboards for friendly club sessions."
+  >
+  <meta
+    name="keywords"
+    content="padel, americano padel, padel tournament, padel scoreboard, padel app, leaderboard, mix americano"
+  >
+  <meta name="author" content="Padelio">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://padelio.id/">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#065f46">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Padelio - Americano Padel Tournament Helper">
+  <meta
+    property="og:description"
+    content="Create padel tournaments, rotate players, track scores, and keep sessions fun and organized."
+  >
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://padelio.id/">
+  <meta property="og:site_name" content="Padelio">
+  <meta property="og:image" content="https://padelio.id/icons/icon-512.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Padelio - Americano Padel Tournament Helper">
+  <meta
+    name="twitter:description"
+    content="A simple tool for friendly Americano padel tournaments, score tracking, and live leaderboards."
+  >
+  <meta name="twitter:image" content="https://padelio.id/icons/icon-512.png">
+
+  <!-- AdSense verification -->
+  <meta name="google-adsense-account" content="ca-pub-6166203591007712">
+
+  <!-- Fonts / CSS -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- SDK -->
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+
+  <!-- AdSense script only -->
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
+    crossorigin="anonymous"
+  ></script>
+</head>
+
+<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+  <div id="app" class="w-full min-h-full flex flex-col">
+    <!-- About / FAQ -->
+    <div id="page-about" class="page flex-1 flex flex-col p-6">
+      <a href="index.html"
+        class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back
+      </a>
+
+      <h2 class="text-2xl font-bold mb-2">About Padelio</h2>
+      <p class="text-slate-200 text-sm mb-6 leading-relaxed">
+        Padelio is a lightweight helper for padel sessions. It is designed to make tournament setup easier,
+        scoring faster, and player rotation more practical for clubs, community games, and friendly events.
+      </p>
+
+      <div class="space-y-4">
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">What Padelio helps you do</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Instead of manually organizing names, rounds, and score notes during a session, Padelio helps you create a tournament,
+            choose the number of courts, set a target score, add players, and move through rounds with a live tournament structure.
+            This keeps the session cleaner and easier to manage, especially when many players rotate in and out.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">Who this app is for</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Padelio is made for friendly organizers, club admins, community hosts, and padel groups who want a simple system
+            for Americano-style sessions. It is especially useful when you want to keep everyone involved, avoid confusion,
+            and maintain a fair flow across multiple rounds.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">What is Americano in padel?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Americano is a social tournament format where players rotate partners and opponents across rounds.
+            The goal is not only to win one match, but to collect as many points as possible over the whole session.
+            This format is popular because it keeps the event active, social, and competitive at the same time.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">How do points work in this app?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            You choose a target score for each match, such as 16, 21, 24, or 32 points. When one team score is entered,
+            the opposing team score is automatically completed based on the selected target. This helps keep matches short,
+            consistent, and easy to track.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">What is the difference between Normal and Mix Americano?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Normal Americano can be used without gender balancing. Mix Americano is designed for sessions where male and female
+            player counts should stay balanced. This helps organizers create a more structured mixed format when needed.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">Does it save my data?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Yes. Your tournaments and scores are stored locally in your browser on your device. This means you can reopen the app
+            later on the same browser and continue where you left off, as long as your browser storage has not been cleared.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">Can I use it on mobile?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            Yes. Padelio is designed to work well on mobile so organizers can manage sessions courtside without needing a laptop.
+            It can also be installed to the home screen as a Progressive Web App for quicker access.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">How to install the app (PWA)</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            <strong>iPhone / iPad (Safari):</strong><br>
+            1) Open the website in <strong>Safari</strong>.<br>
+            2) Tap the <strong>Share</strong> button.<br>
+            3) Scroll down and tap <strong>Add to Home Screen</strong>.<br>
+            4) Rename it if needed, then tap <strong>Add</strong>.<br><br>
+
+            <strong>Android (Chrome):</strong><br>
+            1) Open the website in <strong>Chrome</strong>.<br>
+            2) Tap <strong>Install app</strong> if the prompt appears.<br>
+            3) If it does not appear, tap the browser menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.<br>
+            4) Confirm to finish installation.
+          </p>
+        </div>
+
+        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+          <h3 class="font-semibold text-lg mb-2">Is this official tournament software?</h3>
+          <p class="text-slate-300/90 text-sm leading-relaxed">
+            No. Padelio is a community utility app built for friendly and social sessions. It is not an official federation system,
+            not a certified competition platform, and not intended to replace formal event software used in professional tournaments.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-slate-800/20 border border-slate-700 rounded-2xl p-4">
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Note: Padelio is designed to support community play and social tournament organization. For the best experience,
+          use it on a modern browser and keep your device storage active if you want your tournament data to remain available.
+        </p>
+      </div>
+    </div>
+
+    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+      <div class="max-w-3xl mx-auto">
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              A lightweight helper for padel tournaments, player rotation,
+              fast score entry, and live leaderboards for social and club sessions.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <div class="flex flex-col gap-2 text-sm">
+              <button
+                onclick="navigateTo('home')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Home
+              </button>
+              <button
+                onclick="navigateTo('about')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                About
+              </button>
+              <button
+                onclick="navigateTo('privacy')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Privacy Policy
+              </button>
+              <button
+                onclick="navigateTo('terms')"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Terms of Service
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+              <li>Club sessions</li>
+              <li>Friendly Americano (next update Mexicano) tournaments</li>
+              <li>Weekend social padel</li>
+              <li>Simple mobile score tracking</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 mt-6 pt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-slate-500">
+            © 2026 Padelio. All rights reserved.
+          </p>
+          <p class="text-xs text-slate-500">
+            Built for community padel sessions.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="js/script.js"></script>     
+</body>
+
+</html>

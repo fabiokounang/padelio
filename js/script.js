@@ -1,1 +1,1310 @@
-(function(_0x124d75,_0x2ace56){const _0x10d15d=_0xf8d0,_0x504146=_0x124d75();while(!![]){try{const _0x1aaedb=-parseInt(_0x10d15d(0x24c))/0x1*(-parseInt(_0x10d15d(0x24f))/0x2)+-parseInt(_0x10d15d(0x283))/0x3+-parseInt(_0x10d15d(0x22f))/0x4+parseInt(_0x10d15d(0x28a))/0x5*(-parseInt(_0x10d15d(0x28d))/0x6)+parseInt(_0x10d15d(0x24d))/0x7+parseInt(_0x10d15d(0x220))/0x8*(parseInt(_0x10d15d(0x1f2))/0x9)+parseInt(_0x10d15d(0x276))/0xa*(parseInt(_0x10d15d(0x1c2))/0xb);if(_0x1aaedb===_0x2ace56)break;else _0x504146['push'](_0x504146['shift']());}catch(_0x5f3219){_0x504146['push'](_0x504146['shift']());}}}(_0x4bb9,0x23526),((()=>{'use strict';const _0x3edc3c=_0xf8d0;const _0x4fb986=_0x1a12d6=>document[_0x3edc3c(0x22b)](_0x1a12d6),_0x4769cd=_0x4a6d1e=>Array[_0x3edc3c(0x257)](document[_0x3edc3c(0x21f)](_0x4a6d1e));let _0x4480fe=![];function _0x268dc2(_0x5c4ad3){const _0x18426a=_0x3edc3c,_0x19da6b=document[_0x18426a(0x22b)](_0x18426a(0x1bd)),_0x767013=[_0x18426a(0x204),_0x18426a(0x1d6),'privacy',_0x18426a(0x219)];if(!_0x19da6b)return;const _0x3411d2=_0x767013[_0x18426a(0x229)](_0x5c4ad3);if(!_0x3411d2){_0x19da6b['classList'][_0x18426a(0x26a)]('hidden');return;}_0x19da6b[_0x18426a(0x1da)]['remove']('hidden');if(!_0x4480fe&&window[_0x18426a(0x25c)])try{(window[_0x18426a(0x25c)]=window[_0x18426a(0x25c)]||[])[_0x18426a(0x27b)]({}),_0x4480fe=!![];}catch(_0x1c4cd2){console['error'](_0x18426a(0x216),_0x1c4cd2);}}const _0x1022e9=(_0x525041,_0x1b7916,_0x448c64)=>Math[_0x3edc3c(0x1e2)](_0x1b7916,Math['min'](_0x448c64,_0x525041)),_0xf8c3e3=(_0x3833e7,_0x118a61)=>{const _0x21e84f=_0x3edc3c;if(_0x3833e7==null)return _0x118a61;if(typeof _0x3833e7!==_0x21e84f(0x1d8))return _0x3833e7;try{const _0x34ad7f=JSON[_0x21e84f(0x20a)](_0x3833e7);return _0x34ad7f==null?_0x118a61:_0x34ad7f;}catch{return _0x118a61;}},_0x3beba0=_0x42b906=>{const _0x5a1391=_0x3edc3c,_0x2a0b58=document[_0x5a1391(0x1fc)](_0x5a1391(0x1fa));return _0x2a0b58[_0x5a1391(0x1e8)]=String(_0x42b906??''),_0x2a0b58[_0x5a1391(0x1c8)];},_0x574313=_0x1b26ce=>{const _0x4c6ddc=_0x3edc3c,_0x3aa398=document[_0x4c6ddc(0x1fc)]('div');_0x3aa398[_0x4c6ddc(0x1c9)]=_0x4c6ddc(0x228),_0x3aa398[_0x4c6ddc(0x1e8)]=_0x1b26ce,document[_0x4c6ddc(0x25e)]['appendChild'](_0x3aa398),setTimeout(()=>_0x3aa398['remove'](),0xbb8);},_0x14d3ad=(_0x270a2b,_0x15f38b)=>{let _0x4d4d93=null;return(..._0x413630)=>{clearTimeout(_0x4d4d93),_0x4d4d93=setTimeout(()=>_0x270a2b(..._0x413630),_0x15f38b);};},_0x288267=_0x740359=>(Array[_0x3edc3c(0x236)](_0x740359)?_0x740359:[])[_0x3edc3c(0x224)](_0x15b4c2=>{const _0x17de0b=_0x3edc3c;if(typeof _0x15b4c2==='string')return{'name':_0x15b4c2,'gender':null};return{'name':String(_0x15b4c2?.[_0x17de0b(0x1fd)]||''),'gender':_0x15b4c2?.[_0x17de0b(0x1ea)]||null};})[_0x3edc3c(0x1c0)](_0x27eb46=>_0x27eb46[_0x3edc3c(0x1fd)][_0x3edc3c(0x1e5)]()[_0x3edc3c(0x1d4)]>0x0),_0x219d25=_0x430285=>{const _0x123de6=_0x3edc3c,_0x86f099=_0x288267(_0x430285);let _0x1e7b8d=0x0,_0x143224=0x0;return _0x86f099['forEach'](_0x581d48=>{const _0x2e9a49=_0xf8d0;if(_0x581d48[_0x2e9a49(0x1ea)]==='M')_0x1e7b8d++;if(_0x581d48[_0x2e9a49(0x1ea)]==='F')_0x143224++;}),{'m':_0x1e7b8d,'f':_0x143224,'total':_0x86f099[_0x123de6(0x1d4)]};},_0x27c953=_0x15e44a=>{const _0x430ff9=_0x3edc3c,_0x38416d=[..._0x15e44a];for(let _0x719e61=_0x38416d['length']-0x1;_0x719e61>0x0;_0x719e61--){const _0x3eaa2c=Math[_0x430ff9(0x245)](Math['random']()*(_0x719e61+0x1));[_0x38416d[_0x719e61],_0x38416d[_0x3eaa2c]]=[_0x38416d[_0x3eaa2c],_0x38416d[_0x719e61]];}return _0x38416d;},_0x475b48=(_0x24a631,_0x2d9588)=>{const _0x44d9a3=String(_0x24a631||''),_0x213578=String(_0x2d9588||'');return _0x44d9a3<_0x213578?_0x44d9a3+'__'+_0x213578:_0x213578+'__'+_0x44d9a3;},_0x18c678=()=>{const _0x116bd6=_0x3edc3c,_0x447b64=_0xf8c3e3(_0x5582ad[_0x116bd6(0x28b)]?.[_0x116bd6(0x206)],[]);return _0x288267(_0x447b64);},_0x20acd9=()=>{const _0xd8fdd8=_0x3edc3c,_0x30201b=_0x51886d(),_0x3f4bdf=new Map(),_0x5be625=new Map();return _0x30201b[_0xd8fdd8(0x270)](_0x6d13c6=>{const _0x343d2d=_0xd8fdd8;(_0x6d13c6[_0x343d2d(0x233)]||[])[_0x343d2d(0x270)](_0x42b6d6=>{const _0x362209=_0x343d2d,_0x44d23=_0x42b6d6[_0x362209(0x282)]||[],_0x38d7ee=_0x42b6d6[_0x362209(0x21c)]||[];if(_0x44d23[_0x362209(0x1d4)]===0x2){const _0x5601b8=_0x475b48(_0x44d23[0x0],_0x44d23[0x1]);_0x3f4bdf[_0x362209(0x1bc)](_0x5601b8,(_0x3f4bdf[_0x362209(0x246)](_0x5601b8)||0x0)+0x1);}if(_0x38d7ee[_0x362209(0x1d4)]===0x2){const _0x3ceca7=_0x475b48(_0x38d7ee[0x0],_0x38d7ee[0x1]);_0x3f4bdf[_0x362209(0x1bc)](_0x3ceca7,(_0x3f4bdf[_0x362209(0x246)](_0x3ceca7)||0x0)+0x1);}_0x44d23[_0x362209(0x270)](_0x515b6c=>{const _0x1600af=_0x362209;_0x38d7ee[_0x1600af(0x270)](_0x53ac72=>{const _0x4f5ecf=_0x1600af,_0x37d2f6=_0x475b48(_0x515b6c,_0x53ac72);_0x5be625['set'](_0x37d2f6,(_0x5be625[_0x4f5ecf(0x246)](_0x37d2f6)||0x0)+0x1);});});});}),{'partnerCount':_0x3f4bdf,'opposeCount':_0x5be625};};function _0x3bc5f9(_0x303b88){const _0x1b935b=_0x3edc3c;_0x5582ad[_0x1b935b(0x258)]['mode']=_0x303b88===_0x1b935b(0x279)?_0x1b935b(0x279):_0x1b935b(0x1dc),_0x5582ad[_0x1b935b(0x243)]='M',_0x59879e(),_0x2a8601('new-title');};function _0x54528b(_0xa7c6d1){const _0x2400fa=_0x3edc3c;_0x5582ad[_0x2400fa(0x243)]=_0xa7c6d1==='F'?'F':'M',_0x59879e();};function _0x2a685a(){const _0x922bac=_0x3edc3c;_0x5582ad[_0x922bac(0x243)]=_0x5582ad[_0x922bac(0x243)]==='M'?'F':'M',_0x59879e();};function _0x59879e(){const _0x4ab08f=_0x3edc3c,_0x1f9c53=_0x5582ad[_0x4ab08f(0x258)]['mode']===_0x4ab08f(0x279),_0x3dbf69=_0x4fb986(_0x4ab08f(0x1c1)),_0x4eb265=_0x4fb986(_0x4ab08f(0x1f1)),_0x4d7961=_0x4fb986(_0x4ab08f(0x290));if(_0x3dbf69)_0x3dbf69[_0x4ab08f(0x1da)][_0x4ab08f(0x277)](_0x4ab08f(0x213),!_0x1f9c53);_0x4eb265&&(_0x4eb265[_0x4ab08f(0x1e8)]=_0x5582ad[_0x4ab08f(0x243)]==='F'?_0x4ab08f(0x288):_0x4ab08f(0x205));if(_0x4d7961){_0x4d7961['classList']['toggle']('hidden',!_0x1f9c53);if(_0x1f9c53){const {m:_0x25ae27,f:_0x3206f5}=_0x219d25(_0x5582ad['newTournament'][_0x4ab08f(0x206)]);_0x4d7961[_0x4ab08f(0x1e8)]=_0x4ab08f(0x1ce)+_0x25ae27+_0x4ab08f(0x20e)+_0x3206f5+_0x4ab08f(0x1cb);}}};const _0x5582ad={'isEditingScore':![],'lastRoundsView':null,'viewingRound':null,'tournaments':[],'currentTournament':null,'playerGenderDraft':'M','newTournament':{'mode':'normal','title':'','courts':0x0,'points':0x0,'players':[]}},_0x12959a={'app_title':'Padelio'},_0x25d7e7=()=>{const _0xebb2c5=_0x3edc3c;if(!_0x5582ad[_0xebb2c5(0x28b)])return;const _0x58dc73=_0x5582ad[_0xebb2c5(0x217)][_0xebb2c5(0x1c5)](_0xe2eea5=>_0xe2eea5[_0xebb2c5(0x214)]===_0x5582ad[_0xebb2c5(0x28b)][_0xebb2c5(0x214)]);if(_0x58dc73)_0x5582ad[_0xebb2c5(0x28b)]=_0x58dc73;},_0x51886d=()=>_0xf8c3e3(_0x5582ad['currentTournament']?.[_0x3edc3c(0x250)],[]),_0x4fde5f=_0x1ee84a=>{const _0x2b2231=_0x3edc3c;if(!_0x5582ad[_0x2b2231(0x28b)])return;_0x5582ad['currentTournament'][_0x2b2231(0x250)]=JSON['stringify'](_0x1ee84a);},_0x518452=()=>{const _0x78f29d=_0x3edc3c,_0x4f97f6=_0xf8c3e3(_0x5582ad[_0x78f29d(0x28b)]?.['players'],[]),_0x2852d6=_0x288267(_0x4f97f6);return _0x2852d6[_0x78f29d(0x224)](_0x195f99=>_0x195f99[_0x78f29d(0x1fd)]);},_0x283ff5=()=>{const _0x2464ff=_0x3edc3c;if(!_0x5582ad[_0x2464ff(0x28b)])return 0x1;const _0x2b45b8=_0x51886d(),_0x246f5f=_0x2b45b8['reduce']((_0x57ea69,_0x24b4a5)=>Math[_0x2464ff(0x1e2)](_0x57ea69,Number(_0x24b4a5['round'])||0x1),0x1),_0x34c3bf=Number(_0x5582ad[_0x2464ff(0x28b)][_0x2464ff(0x1b2)])||0x1;return Math[_0x2464ff(0x1e2)](_0x34c3bf,_0x246f5f,0x1);},_0x4bf4d2=()=>{const _0x2b8347=_0x3edc3c;if(!_0x5582ad['currentTournament'])return;const _0x3cdb78=_0x283ff5();if(_0x5582ad[_0x2b8347(0x1d9)]==null)_0x5582ad[_0x2b8347(0x1d9)]=_0x5582ad['currentTournament'][_0x2b8347(0x1b2)];_0x5582ad[_0x2b8347(0x1d9)]=_0x1022e9(Number(_0x5582ad['viewingRound'])||0x1,0x1,_0x3cdb78);},_0x4a7c93=async()=>{const _0x4debd1=_0x3edc3c;if(!_0x5582ad['currentTournament']||!window[_0x4debd1(0x227)])return;const _0x287a37=await window[_0x4debd1(0x227)]['update'](_0x5582ad['currentTournament']);return _0x287a37&&_0x287a37[_0x4debd1(0x27c)]&&_0x287a37[_0x4debd1(0x1f7)]&&(_0x5582ad['currentTournament']=_0x287a37[_0x4debd1(0x1f7)]),_0x287a37;},_0x16e9ec=_0x14d3ad(()=>{const _0x3764dc=_0x3edc3c;_0x4a7c93()[_0x3764dc(0x1bf)](()=>{});},0xfa),_0x4d82f0={'onDataChanged'(_0x100d4a){const _0x52888f=_0x3edc3c;_0x5582ad['tournaments']=Array[_0x52888f(0x236)](_0x100d4a)?_0x100d4a:[],_0x25d7e7(),_0x17bddc();const _0x222a63=!_0x4fb986('page-rounds')?.[_0x52888f(0x1da)]['contains'](_0x52888f(0x213));_0x222a63&&_0x5582ad['currentTournament']&&(_0x4bf4d2(),!_0x5582ad[_0x52888f(0x1ff)]&&_0x47a9de(_0x5582ad[_0x52888f(0x1d9)]));}};window['elementSdk']&&window[_0x3edc3c(0x285)][_0x3edc3c(0x25f)]({'defaultConfig':_0x12959a,'onConfigChange':async _0x4f0189=>{const _0x110de3=_0x3edc3c,_0x33c477=_0x4f0189?.[_0x110de3(0x230)]||_0x12959a[_0x110de3(0x230)],_0xc80406=_0x4fb986(_0x110de3(0x261));if(_0xc80406)_0xc80406[_0x110de3(0x1e8)]=_0x33c477;},'mapToCapabilities':()=>({'recolorables':[],'borderables':[],'fontEditable':undefined,'fontSizeable':undefined}),'mapToEditPanelValues':_0x3d6e99=>new Map([[_0x3edc3c(0x230),_0x3d6e99?.[_0x3edc3c(0x230)]||_0x12959a[_0x3edc3c(0x230)]]])});const _0x4e8e7e=async()=>{const _0x35746c=_0x3edc3c;if(!window[_0x35746c(0x227)])return;const _0x46279b=await window[_0x35746c(0x227)][_0x35746c(0x25f)](_0x4d82f0);if(!_0x46279b?.['isOk'])console[_0x35746c(0x1e9)](_0x35746c(0x1cc));};_0x4e8e7e(),_0x268dc2(_0x3edc3c(0x204));const _0x2a8601=_0x150a96=>{const _0x99f624=_0x3edc3c;_0x4769cd(_0x99f624(0x1ee))['forEach'](_0x3c72c5=>_0x3c72c5[_0x99f624(0x1da)]['add'](_0x99f624(0x213)));const _0x405b19=_0x4fb986(_0x99f624(0x259)+_0x150a96);if(!_0x405b19)return;_0x405b19['classList'][_0x99f624(0x1f8)]('hidden'),_0x405b19[_0x99f624(0x1da)]['add']('slide-in');if(_0x150a96===_0x99f624(0x204))_0x2f2ae1();_0x268dc2(_0x150a96);},_0x2f2ae1=()=>{const _0x325fac=_0x3edc3c;_0x5582ad[_0x325fac(0x258)]={'mode':_0x325fac(0x1dc),'title':'','courts':0x0,'points':0x0,'players':[]},_0x5582ad[_0x325fac(0x243)]='M';const _0x44f3c9=_0x4fb986(_0x325fac(0x253));if(_0x44f3c9)_0x44f3c9[_0x325fac(0x25a)]='';_0x4769cd(_0x325fac(0x221))[_0x325fac(0x270)](_0x1527ab=>_0x1527ab['classList'][_0x325fac(0x1f8)](_0x325fac(0x23a),_0x325fac(0x1f5))),_0x4769cd(_0x325fac(0x1d1))['forEach'](_0x3a6e9b=>_0x3a6e9b[_0x325fac(0x1da)][_0x325fac(0x1f8)]('border-emerald-400',_0x325fac(0x1f5)));const _0x20d8ab=_0x4fb986(_0x325fac(0x1c4));if(_0x20d8ab)_0x20d8ab['innerHTML']='';const _0xd7054f=_0x4fb986(_0x325fac(0x1df));if(_0xd7054f)_0xd7054f[_0x325fac(0x1e8)]=_0x325fac(0x24a);_0x1c2b31(),_0x59879e(),_0x28fcdb();},_0x28fcdb=()=>{const _0x22bf57=_0x3edc3c,_0x2d6e19=_0x4fb986('btn-to-points'),_0x447c64=_0x4fb986('btn-to-players'),_0x168209=_0x4fb986(_0x22bf57(0x264)),_0x803738=(_0x37e383,_0x3b2578)=>{const _0x2cac60=_0x22bf57;if(!_0x37e383)return;_0x37e383['disabled']=!!_0x3b2578,_0x37e383['classList'][_0x2cac60(0x277)](_0x2cac60(0x238),!!_0x3b2578),_0x37e383[_0x2cac60(0x1da)]['toggle'](_0x2cac60(0x209),!!_0x3b2578);};_0x803738(_0x2d6e19,!(_0x5582ad[_0x22bf57(0x258)][_0x22bf57(0x201)]>0x0)),_0x803738(_0x447c64,!(_0x5582ad[_0x22bf57(0x258)][_0x22bf57(0x25d)]>0x0));const _0x1ce65a=Number(_0x5582ad[_0x22bf57(0x258)][_0x22bf57(0x201)])||0x0,_0x281465=Math['max'](0x4,_0x1ce65a*0x4),_0x508140=_0x288267(_0x5582ad['newTournament']['players']);let _0x5cb9fc=_0x508140[_0x22bf57(0x1d4)]>=_0x281465;if(_0x5582ad[_0x22bf57(0x258)]['mode']===_0x22bf57(0x279)){const {m:_0xe5aa6a,f:_0x3e9ca6,total:_0x2ed6cf}=_0x219d25(_0x508140);_0x5cb9fc=_0x5cb9fc&&_0x2ed6cf%0x2===0x0&&_0xe5aa6a===_0x3e9ca6;}_0x803738(_0x168209,!_0x5cb9fc);},_0x1a8247=()=>{const _0x3f7b8c=_0x3edc3c,_0x22157d=_0x4fb986(_0x3f7b8c(0x253)),_0x16e61f=_0x22157d?.[_0x3f7b8c(0x25a)]?.[_0x3f7b8c(0x1e5)]()||'';if(!_0x16e61f){_0x22157d?.['focus']?.();return;}_0x5582ad['newTournament'][_0x3f7b8c(0x266)]=_0x16e61f,_0x2a8601(_0x3f7b8c(0x272));},_0x19024f=_0x215f43=>{const _0x3dc1dc=_0x3edc3c;_0x5582ad[_0x3dc1dc(0x258)][_0x3dc1dc(0x201)]=Number(_0x215f43)||0x0,_0x4769cd(_0x3dc1dc(0x221))[_0x3dc1dc(0x270)](_0x11482b=>{const _0x3ce706=_0x3dc1dc;_0x11482b[_0x3ce706(0x1da)][_0x3ce706(0x1f8)]('border-emerald-400',_0x3ce706(0x1f5)),Number(_0x11482b[_0x3ce706(0x249)][_0x3ce706(0x201)])===_0x5582ad[_0x3ce706(0x258)]['courts']&&_0x11482b[_0x3ce706(0x1da)][_0x3ce706(0x26a)](_0x3ce706(0x23a),'bg-emerald-600');}),_0x1c2b31(),_0x28fcdb();},_0x2749fe=()=>{const _0xc31ca6=_0x3edc3c;if(_0x5582ad[_0xc31ca6(0x258)][_0xc31ca6(0x201)]>0x0)_0x2a8601(_0xc31ca6(0x1c6));},_0x33df8a=_0x568437=>{const _0x5a79a4=_0x3edc3c;_0x5582ad[_0x5a79a4(0x258)][_0x5a79a4(0x25d)]=Number(_0x568437)||0x0,_0x4769cd(_0x5a79a4(0x1d1))[_0x5a79a4(0x270)](_0x3129af=>{const _0x9a358b=_0x5a79a4;_0x3129af[_0x9a358b(0x1da)][_0x9a358b(0x1f8)]('border-emerald-400',_0x9a358b(0x1f5)),Number(_0x3129af[_0x9a358b(0x249)][_0x9a358b(0x25d)])===_0x5582ad[_0x9a358b(0x258)][_0x9a358b(0x25d)]&&_0x3129af[_0x9a358b(0x1da)]['add'](_0x9a358b(0x23a),_0x9a358b(0x1f5));}),_0x28fcdb();},_0xad5fcd=()=>{const _0x6ed68c=_0x3edc3c,_0x26c59e=_0x4fb986(_0x6ed68c(0x286));if(!_0x26c59e)return;if(_0x5582ad[_0x6ed68c(0x258)]['mode']!==_0x6ed68c(0x279)){_0x26c59e['classList'][_0x6ed68c(0x26a)](_0x6ed68c(0x213));return;}const _0x1e0576=_0x288267(_0x5582ad['newTournament'][_0x6ed68c(0x206)]),_0x3ea094=_0x1e0576['length'],_0x5b2b86=_0x1e0576['filter'](_0x2abe1e=>_0x2abe1e[_0x6ed68c(0x1ea)]==='M')[_0x6ed68c(0x1d4)],_0x5605fc=_0x1e0576[_0x6ed68c(0x1c0)](_0xb9570b=>_0xb9570b[_0x6ed68c(0x1ea)]==='F')[_0x6ed68c(0x1d4)];if(_0x3ea094===0x0){_0x26c59e['classList'][_0x6ed68c(0x26a)](_0x6ed68c(0x213));return;}const _0x196319=Math[_0x6ed68c(0x245)](_0x3ea094/0x2);_0x5b2b86!==_0x5605fc?(_0x26c59e['textContent']='⚠\x20Balance\x20needed:\x20should\x20be\x20'+_0x196319+'\x20Male\x20and\x20'+_0x196319+_0x6ed68c(0x234),_0x26c59e[_0x6ed68c(0x1da)]['remove']('hidden')):_0x26c59e[_0x6ed68c(0x1da)][_0x6ed68c(0x26a)](_0x6ed68c(0x213));},_0x57149f=()=>{const _0x3c1cd7=_0x3edc3c;_0x5582ad[_0x3c1cd7(0x258)]['points']>0x0&&(_0x2a8601(_0x3c1cd7(0x265)),_0x59879e());},_0x4a9d57=()=>{const _0x4dbbf3=_0x3edc3c,_0x2e1b00=_0x4fb986(_0x4dbbf3(0x1c4));if(!_0x2e1b00)return;const _0x29c8c4=_0x288267(_0x5582ad[_0x4dbbf3(0x258)][_0x4dbbf3(0x206)]);_0x2e1b00['innerHTML']=_0x29c8c4[_0x4dbbf3(0x224)]((_0x273be5,_0x603376)=>_0x4dbbf3(0x1ef)+_0x3beba0(_0x273be5[_0x4dbbf3(0x1fd)])+_0x4dbbf3(0x26f)+(_0x5582ad[_0x4dbbf3(0x258)][_0x4dbbf3(0x275)]===_0x4dbbf3(0x279)?_0x4dbbf3(0x267)+_0x603376+_0x4dbbf3(0x241)+(_0x273be5[_0x4dbbf3(0x1ea)]==='F'?'Female':_0x4dbbf3(0x205))+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22ml-1\x20opacity-70\x22>↺</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20':'')+_0x4dbbf3(0x212)+_0x603376+_0x4dbbf3(0x274))[_0x4dbbf3(0x22a)]('');const _0x20d612=_0x4fb986(_0x4dbbf3(0x1df));if(_0x20d612)_0x20d612[_0x4dbbf3(0x1e8)]=_0x29c8c4['length']+_0x4dbbf3(0x26d);},_0x168f88=()=>{const _0x28641e=_0x3edc3c,_0x459910=_0x4fb986(_0x28641e(0x280));let _0x1b4286=_0x459910?.[_0x28641e(0x25a)]?.['trim']()||'';if(!_0x1b4286)return;_0x1b4286=_0x1b4286[_0x28641e(0x20c)](0x0)[_0x28641e(0x1b1)]()+_0x1b4286[_0x28641e(0x1f4)](0x1);const _0x3a6eb9=_0x5582ad[_0x28641e(0x258)][_0x28641e(0x275)]===_0x28641e(0x279),_0x46e90a=_0x3a6eb9?_0x5582ad[_0x28641e(0x243)]:null;_0x5582ad['newTournament']['players']=_0x288267(_0x5582ad['newTournament']['players']),_0x5582ad[_0x28641e(0x258)][_0x28641e(0x206)][_0x28641e(0x27b)]({'name':_0x1b4286,'gender':_0x46e90a}),_0x459910[_0x28641e(0x25a)]='',_0x459910[_0x28641e(0x23b)](),_0x4a9d57(),_0xad5fcd(),_0x59879e(),_0x28fcdb();},_0x2b220e=_0x1c14e1=>{const _0x2eff17=_0x3edc3c,_0x5357a2=_0x288267(_0x5582ad[_0x2eff17(0x258)][_0x2eff17(0x206)]);_0x5357a2[_0x2eff17(0x251)](_0x1c14e1,0x1),_0x5582ad[_0x2eff17(0x258)][_0x2eff17(0x206)]=_0x5357a2,_0x4a9d57(),_0xad5fcd(),_0x59879e(),_0x28fcdb();},_0x2cf3c4=_0x5bc569=>{const _0x1b323d=_0x3edc3c;if(_0x5582ad[_0x1b323d(0x258)][_0x1b323d(0x275)]!==_0x1b323d(0x279))return;const _0x117dca=_0x288267(_0x5582ad[_0x1b323d(0x258)]['players']),_0x1a68a0=_0x117dca[_0x5bc569];if(!_0x1a68a0)return;_0x1a68a0['gender']=_0x1a68a0['gender']==='F'?'M':'F',_0x5582ad[_0x1b323d(0x258)]['players']=_0x117dca,_0x4a9d57(),_0xad5fcd(),_0x59879e(),_0x28fcdb();},_0x2406b5=async()=>{const _0x219d50=_0x3edc3c,_0x253e15=_0x4fb986(_0x219d50(0x264));try{if(_0x5582ad[_0x219d50(0x258)][_0x219d50(0x206)][_0x219d50(0x1d4)]<0x4)return;const _0x5e4378=_0x288267(_0x5582ad['newTournament']['players'])[_0x219d50(0x1d4)],_0x1e3430=_0x5582ad[_0x219d50(0x258)]['courts'],_0x5b8151=_0x1e3430*0x4;if(_0x5e4378<_0x5b8151){_0x574313(_0x219d50(0x278)+_0x5b8151+'\x20players\x20required\x20for\x20'+_0x1e3430+_0x219d50(0x1f3));return;}if(_0x5582ad[_0x219d50(0x258)][_0x219d50(0x275)]==='mix'){const {m:_0x189b8f,f:_0x28d6b0,total:_0x236565}=_0x219d25(_0x5582ad[_0x219d50(0x258)][_0x219d50(0x206)]);if(_0x236565%0x2!==0x0||_0x189b8f!==_0x28d6b0){_0x574313(_0x219d50(0x1b9)+_0x189b8f+_0x219d50(0x1ec)+_0x28d6b0+'.');return;}}if(!window[_0x219d50(0x227)])return;if(_0x5582ad[_0x219d50(0x217)][_0x219d50(0x1d4)]>=0x3e7){_0x574313(_0x219d50(0x1e0));return;}_0x253e15&&(_0x253e15[_0x219d50(0x1d3)]=!![],_0x253e15[_0x219d50(0x249)][_0x219d50(0x23e)]=_0x253e15[_0x219d50(0x249)][_0x219d50(0x23e)]||_0x253e15[_0x219d50(0x1e8)]||_0x219d50(0x1e7),_0x253e15[_0x219d50(0x1c8)]=_0x219d50(0x284),_0x253e15[_0x219d50(0x1da)][_0x219d50(0x26a)]('opacity-50',_0x219d50(0x209)));const _0x4b2c28={'id':Date['now']()['toString'](),'title':_0x5582ad[_0x219d50(0x258)][_0x219d50(0x266)],'mode':_0x5582ad['newTournament'][_0x219d50(0x275)],'courts':_0x5582ad[_0x219d50(0x258)][_0x219d50(0x201)],'points_to_win':_0x5582ad['newTournament'][_0x219d50(0x25d)],'players':JSON[_0x219d50(0x21b)](_0x288267(_0x5582ad[_0x219d50(0x258)][_0x219d50(0x206)])),'rounds':JSON[_0x219d50(0x21b)]([]),'current_round':0x1,'created_at':new Date()[_0x219d50(0x24e)]()},_0x5f21a8=await window[_0x219d50(0x227)][_0x219d50(0x1ba)](_0x4b2c28);if(!_0x5f21a8?.[_0x219d50(0x27c)]){_0x574313(_0x219d50(0x1fe));return;}_0x2f2ae1(),_0x2a8601('home');}catch(_0x40ff0d){_0x574313('Failed\x20to\x20create\x20tournament');}finally{const _0x3acf91=_0x4fb986(_0x219d50(0x264));_0x3acf91&&(_0x3acf91[_0x219d50(0x1d3)]=![],_0x3acf91['textContent']=_0x3acf91[_0x219d50(0x249)][_0x219d50(0x23e)]||_0x219d50(0x1e7),_0x3acf91['classList']['remove'](_0x219d50(0x238),_0x219d50(0x209)));}},_0x1c2b31=()=>{const _0x49d718=_0x3edc3c,_0x26176a=_0x4fb986(_0x49d718(0x248));if(!_0x26176a)return;const _0x119db4=_0x5582ad['newTournament'][_0x49d718(0x201)]||0x1,_0x40bdd3=_0x119db4*0x4;_0x26176a['textContent']=_0x49d718(0x278)+_0x40bdd3+_0x49d718(0x25b);};function _0x17bddc(){const _0x1f6c01=_0x3edc3c,_0x25ff7b=_0x4fb986(_0x1f6c01(0x273));if(!_0x25ff7b)return;if(_0x5582ad[_0x1f6c01(0x217)][_0x1f6c01(0x1d4)]===0x0){_0x25ff7b[_0x1f6c01(0x1c8)]=_0x1f6c01(0x242);return;}_0x25ff7b[_0x1f6c01(0x1c8)]=_0x5582ad[_0x1f6c01(0x217)][_0x1f6c01(0x224)](_0x4c4e97=>{const _0x43db6a=_0x1f6c01,_0x2d2a70=_0xf8c3e3(_0x4c4e97[_0x43db6a(0x206)],[]);return'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22openTournament(\x27'+_0x4c4e97[_0x43db6a(0x214)]+_0x43db6a(0x1c3)+_0x3beba0(_0x4c4e97[_0x43db6a(0x266)])+_0x43db6a(0x1ca)+_0x4c4e97[_0x43db6a(0x201)]+_0x43db6a(0x210)+(_0x4c4e97[_0x43db6a(0x201)]>0x1?'s':'')+_0x43db6a(0x26e)+_0x2d2a70[_0x43db6a(0x1d4)]+_0x43db6a(0x222)+_0x4c4e97[_0x43db6a(0x1b2)]+_0x43db6a(0x27e);})[_0x1f6c01(0x22a)]('');};const _0x5b5d94=_0x41cfd6=>{const _0x10c6e2=_0x3edc3c,_0x1b16be=_0x4fb986(_0x10c6e2(0x202));if(!_0x1b16be)return;_0x1b16be[_0x10c6e2(0x1c8)]=_0x41cfd6[_0x10c6e2(0x233)]['map']((_0x288339,_0x407a9d)=>_0x10c6e2(0x225)+_0x288339['court']+_0x10c6e2(0x1b6)+_0x3beba0(_0x288339['team1'][0x0])+_0x10c6e2(0x1f6)+_0x3beba0(_0x288339['team1'][0x1])+_0x10c6e2(0x203)+_0x407a9d+'-1\x22\x20value=\x22'+(_0x288339[_0x10c6e2(0x26b)]??'')+'\x22\x20min=\x220\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onfocus=\x22setEditingScore(true)\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20oninput=\x22updateScoreLive('+_0x407a9d+_0x10c6e2(0x208)+_0x407a9d+_0x10c6e2(0x231)+_0x3beba0(_0x288339[_0x10c6e2(0x21c)][0x0])+_0x10c6e2(0x1f6)+_0x3beba0(_0x288339[_0x10c6e2(0x21c)][0x1])+_0x10c6e2(0x203)+_0x407a9d+'-2\x22\x20value=\x22'+(_0x288339[_0x10c6e2(0x1e6)]??'')+'\x22\x20min=\x220\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onfocus=\x22setEditingScore(true)\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20oninput=\x22updateScoreLive('+_0x407a9d+',\x202)\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onblur=\x22commitScore('+_0x407a9d+_0x10c6e2(0x1d7))[_0x10c6e2(0x22a)]('');},_0x4874c4=async()=>{const _0x5ad816=_0x3edc3c;_0x25d7e7();if(!_0x5582ad[_0x5ad816(0x28b)])return;const _0x168225=_0x5582ad['currentTournament'][_0x5ad816(0x275)]||_0x5ad816(0x1dc),_0x46c971=Number(_0x5582ad['currentTournament'][_0x5ad816(0x201)])||0x1,_0x50af9f=_0x51886d(),_0xd0bc69=Number(_0x5582ad['currentTournament'][_0x5ad816(0x1b2)])||0x1;let _0x21d400=_0x50af9f[_0x5ad816(0x1c5)](_0x27143f=>Number(_0x27143f[_0x5ad816(0x27d)])===_0xd0bc69);if(_0x21d400){_0x5b5d94(_0x21d400);return;}if(_0x168225!==_0x5ad816(0x279)){const _0x1fe108=_0x518452(),_0x484b15=_0x27c953(_0x1fe108),_0x105f5a=[];for(let _0x5a05e4=0x0;_0x5a05e4<_0x46c971;_0x5a05e4++){const _0x1d16f0=_0x5a05e4*0x4;_0x1d16f0+0x3<_0x484b15['length']&&_0x105f5a[_0x5ad816(0x27b)]({'court':_0x5a05e4+0x1,'team1':[_0x484b15[_0x1d16f0],_0x484b15[_0x1d16f0+0x1]],'team2':[_0x484b15[_0x1d16f0+0x2],_0x484b15[_0x1d16f0+0x3]],'score1':'','score2':''});}_0x21d400={'round':_0xd0bc69,'matches':_0x105f5a},_0x50af9f[_0x5ad816(0x27b)](_0x21d400),_0x4fde5f(_0x50af9f),await _0x4a7c93(),_0x5b5d94(_0x21d400);return;}const _0x14f864=_0x18c678(),_0x30bc80=_0x14f864['filter'](_0x1ce5a4=>_0x1ce5a4['gender']==='M')[_0x5ad816(0x224)](_0x4073de=>_0x4073de[_0x5ad816(0x1fd)]),_0x5a6af9=_0x14f864[_0x5ad816(0x1c0)](_0x38d0d2=>_0x38d0d2[_0x5ad816(0x1ea)]==='F')['map'](_0x40cc80=>_0x40cc80[_0x5ad816(0x1fd)]),_0x19559=Math['min'](_0x46c971,Math[_0x5ad816(0x245)](_0x30bc80['length']/0x2),Math[_0x5ad816(0x245)](_0x5a6af9['length']/0x2));if(_0x19559<=0x0){_0x21d400={'round':_0xd0bc69,'matches':[]},_0x50af9f[_0x5ad816(0x27b)](_0x21d400),_0x4fde5f(_0x50af9f),await _0x4a7c93(),_0x5b5d94(_0x21d400);return;}const _0x22c09f=_0x19559*0x2,_0x9b9734=_0x19559*0x2,_0x3821db=(_0x1a1b53,_0x28e818)=>{const _0x5accf9=_0x5ad816,_0x289a82=_0x1a1b53[_0x5accf9(0x1d4)];if(_0x289a82===0x0)return[];const _0x51e806=(_0x28e818%_0x289a82+_0x289a82)%_0x289a82;return _0x1a1b53['slice'](_0x51e806)[_0x5accf9(0x28f)](_0x1a1b53[_0x5accf9(0x1f4)](0x0,_0x51e806));},_0x280962=_0x3821db(_0x30bc80,_0xd0bc69-0x1),_0x55cb3b=_0x3821db(_0x5a6af9,_0xd0bc69-0x1),_0x3092cc=_0x280962[_0x5ad816(0x1f4)](0x0,_0x22c09f),_0x59773b=_0x55cb3b[_0x5ad816(0x1f4)](0x0,_0x9b9734),{partnerCount:_0x2e847c,opposeCount:_0x284fc7}=_0x20acd9(),_0x48c26b=[],_0x83171c=[..._0x59773b];_0x3092cc[_0x5ad816(0x270)](_0x99ccb6=>{const _0x56d0ef=_0x5ad816;let _0x258e61=-0x1,_0x53ca9e=Infinity;for(let _0x2df0db=0x0;_0x2df0db<_0x83171c[_0x56d0ef(0x1d4)];_0x2df0db++){const _0x1995f8=_0x83171c[_0x2df0db],_0x15c21a=_0x2e847c[_0x56d0ef(0x246)](_0x475b48(_0x99ccb6,_0x1995f8))||0x0;_0x15c21a<_0x53ca9e&&(_0x53ca9e=_0x15c21a,_0x258e61=_0x2df0db);if(_0x53ca9e===0x0)break;}if(_0x258e61>=0x0){const _0x1d1ba3=_0x83171c['splice'](_0x258e61,0x1)[0x0];_0x48c26b[_0x56d0ef(0x27b)]({'m':_0x99ccb6,'f':_0x1d1ba3});}});const _0x20e341=_0x19559*0x2,_0x5c5f18=_0x48c26b['slice'](0x0,_0x20e341),_0x9946=(_0x574df6,_0x3b0780)=>{const _0x3d97c9=_0x5ad816,_0x4ba726=_0x574df6['m'],_0x4b1a50=_0x574df6['f'],_0x2b0a01=_0x3b0780['m'],_0x251055=_0x3b0780['f'];return(_0x284fc7[_0x3d97c9(0x246)](_0x475b48(_0x4ba726,_0x2b0a01))||0x0)+(_0x284fc7[_0x3d97c9(0x246)](_0x475b48(_0x4ba726,_0x251055))||0x0)+(_0x284fc7[_0x3d97c9(0x246)](_0x475b48(_0x4b1a50,_0x2b0a01))||0x0)+(_0x284fc7[_0x3d97c9(0x246)](_0x475b48(_0x4b1a50,_0x251055))||0x0);},_0x45a8a7=[..._0x5c5f18],_0x1cba02=[];for(let _0x25bada=0x0;_0x25bada<_0x19559;_0x25bada++){if(_0x45a8a7[_0x5ad816(0x1d4)]<0x2)break;const _0x1a9b20=_0x45a8a7[_0x5ad816(0x22c)]();let _0x2ecb3a=0x0,_0x55ffb8=Infinity;for(let _0x3288bf=0x0;_0x3288bf<_0x45a8a7[_0x5ad816(0x1d4)];_0x3288bf++){const _0xed097d=_0x9946(_0x1a9b20,_0x45a8a7[_0x3288bf]);_0xed097d<_0x55ffb8&&(_0x55ffb8=_0xed097d,_0x2ecb3a=_0x3288bf);if(_0x55ffb8===0x0)break;}const _0x276686=_0x45a8a7[_0x5ad816(0x251)](_0x2ecb3a,0x1)[0x0];_0x1cba02[_0x5ad816(0x27b)]({'court':_0x25bada+0x1,'team1':[_0x1a9b20['m'],_0x1a9b20['f']],'team2':[_0x276686['m'],_0x276686['f']],'score1':'','score2':''});}_0x21d400={'round':_0xd0bc69,'matches':_0x1cba02},_0x50af9f[_0x5ad816(0x27b)](_0x21d400),_0x4fde5f(_0x50af9f),await _0x4a7c93(),_0x5b5d94(_0x21d400);},_0x47a9de=_0x48ff61=>{const _0xf4a450=_0x3edc3c;_0x25d7e7();if(!_0x5582ad['currentTournament'])return;const _0x2657ba=_0x51886d(),_0x54150e=Number(_0x48ff61)||0x1,_0x4cb174=_0x2657ba[_0xf4a450(0x1c5)](_0x7a3792=>Number(_0x7a3792[_0xf4a450(0x27d)])===_0x54150e),_0x1e556c=_0x4fb986(_0xf4a450(0x20b));if(_0x1e556c)_0x1e556c['textContent']=_0xf4a450(0x232)+_0x54150e;if(!_0x4cb174){const _0x30a418=_0x4fb986(_0xf4a450(0x202));_0x30a418&&(_0x30a418[_0xf4a450(0x1c8)]=_0xf4a450(0x1ed)+_0x54150e+_0xf4a450(0x218));_0x11fdb1();return;}_0x5b5d94(_0x4cb174),_0x11fdb1();},_0xad5b98=_0x7cff99=>{_0x5582ad['isEditingScore']=!!_0x7cff99;},_0x5daf8b=(_0x595c91,_0x16f14c)=>{const _0x4e44c1=_0x3edc3c;_0x25d7e7();if(!_0x5582ad[_0x4e44c1(0x28b)])return;_0x4bf4d2();const _0x405a10=_0x51886d(),_0x68d933=_0x5582ad[_0x4e44c1(0x1d9)]??_0x5582ad[_0x4e44c1(0x28b)]['current_round'],_0x3912a4=_0x405a10[_0x4e44c1(0x1c5)](_0x47a283=>Number(_0x47a283[_0x4e44c1(0x27d)])===Number(_0x68d933));if(!_0x3912a4)return;const _0x429db8=_0x3912a4['matches']?.[_0x595c91];if(!_0x429db8)return;const _0x87b727=Number(_0x5582ad['currentTournament']['points_to_win'])||0x15,_0x2e701b=_0x4fb986('score-input-'+_0x595c91+'-1'),_0x29d96d=_0x4fb986(_0x4e44c1(0x21a)+_0x595c91+'-2');if(!_0x2e701b||!_0x29d96d)return;const _0x4c19f3=(_0x16f14c===0x1?_0x2e701b['value']:_0x29d96d[_0x4e44c1(0x25a)])[_0x4e44c1(0x1e5)]();if(_0x4c19f3===''){_0x429db8[_0x4e44c1(0x26b)]='',_0x429db8[_0x4e44c1(0x1e6)]='';if(_0x16f14c===0x1)_0x29d96d[_0x4e44c1(0x25a)]='';else _0x2e701b[_0x4e44c1(0x25a)]='';_0x4fde5f(_0x405a10),_0x16e9ec();return;}let _0x3eb344=parseInt(_0x4c19f3,0xa);if(!Number[_0x4e44c1(0x1b4)](_0x3eb344)||_0x3eb344<0x0)return;_0x3eb344=_0x1022e9(_0x3eb344,0x0,_0x87b727);const _0x15612e=Math['max'](0x0,_0x87b727-_0x3eb344);_0x16f14c===0x1?(_0x429db8[_0x4e44c1(0x26b)]=_0x3eb344,_0x429db8['score2']=_0x15612e,_0x29d96d[_0x4e44c1(0x25a)]=String(_0x15612e)):(_0x429db8[_0x4e44c1(0x1e6)]=_0x3eb344,_0x429db8[_0x4e44c1(0x26b)]=_0x15612e,_0x2e701b[_0x4e44c1(0x25a)]=String(_0x15612e)),_0x4fde5f(_0x405a10),_0x16e9ec();},_0x109e0d=(_0x2aad11,_0x7ab62b)=>{const _0x14fb08=_0x3edc3c;_0x5582ad[_0x14fb08(0x1ff)]=![],_0x25d7e7();if(!_0x5582ad[_0x14fb08(0x28b)])return;_0x4bf4d2();const _0xe8e8d1=_0x51886d(),_0x27c20f=_0x5582ad[_0x14fb08(0x1d9)]??_0x5582ad['currentTournament'][_0x14fb08(0x1b2)],_0x4fc0a8=_0xe8e8d1['find'](_0x2fec17=>Number(_0x2fec17[_0x14fb08(0x27d)])===Number(_0x27c20f));if(!_0x4fc0a8)return;const _0x5a0b1d=_0x4fc0a8[_0x14fb08(0x233)]?.[_0x2aad11];if(!_0x5a0b1d)return;const _0x2f80ed=Number(_0x5582ad['currentTournament'][_0x14fb08(0x239)])||0x15,_0x1f1a86=_0x4fb986(_0x14fb08(0x21a)+_0x2aad11+'-1'),_0x19595b=_0x4fb986(_0x14fb08(0x21a)+_0x2aad11+'-2');if(!_0x1f1a86||!_0x19595b)return;const _0xd411f7=(_0x7ab62b===0x1?_0x1f1a86['value']:_0x19595b['value'])['trim']();if(_0xd411f7==='')_0x5a0b1d[_0x14fb08(0x26b)]='',_0x5a0b1d['score2']='',_0x1f1a86[_0x14fb08(0x25a)]='',_0x19595b['value']='';else{let _0xab3615=parseInt(_0xd411f7,0xa);if(!Number[_0x14fb08(0x1b4)](_0xab3615)||_0xab3615<0x0)_0xab3615=0x0;_0xab3615=_0x1022e9(_0xab3615,0x0,_0x2f80ed);const _0x4f7522=Math[_0x14fb08(0x1e2)](0x0,_0x2f80ed-_0xab3615);_0x7ab62b===0x1?(_0x5a0b1d[_0x14fb08(0x26b)]=_0xab3615,_0x5a0b1d['score2']=_0x4f7522):(_0x5a0b1d[_0x14fb08(0x1e6)]=_0xab3615,_0x5a0b1d[_0x14fb08(0x26b)]=_0x4f7522),_0x1f1a86[_0x14fb08(0x25a)]=_0x5a0b1d['score1']===''?'':String(_0x5a0b1d[_0x14fb08(0x26b)]),_0x19595b['value']=_0x5a0b1d[_0x14fb08(0x1e6)]===''?'':String(_0x5a0b1d[_0x14fb08(0x1e6)]);}_0x4fde5f(_0xe8e8d1),_0x4a7c93()[_0x14fb08(0x1bf)](()=>{});},_0x11fdb1=()=>{const _0x4bb015=_0x3edc3c;if(!_0x5582ad[_0x4bb015(0x28b)])return;const _0x465d1b=_0x283ff5(),_0x2c5b07=Number(_0x5582ad[_0x4bb015(0x1d9)]??_0x5582ad[_0x4bb015(0x28b)][_0x4bb015(0x1b2)])||0x1,_0x1f426c=_0x4fb986(_0x4bb015(0x22d)),_0x201b30=_0x4fb986(_0x4bb015(0x28c));if(!_0x1f426c||!_0x201b30)return;const _0x1c91dc=_0x2c5b07<=0x1,_0x2112d6=_0x2c5b07>=_0x465d1b;_0x1f426c[_0x4bb015(0x1da)][_0x4bb015(0x277)]('opacity-30',_0x1c91dc),_0x1f426c[_0x4bb015(0x1da)][_0x4bb015(0x277)](_0x4bb015(0x209),_0x1c91dc),_0x201b30[_0x4bb015(0x1da)][_0x4bb015(0x277)]('opacity-30',_0x2112d6),_0x201b30['classList'][_0x4bb015(0x277)]('cursor-not-allowed',_0x2112d6);},_0x4ccf14=()=>{const _0x4311c3=_0x3edc3c;if(!_0x5582ad[_0x4311c3(0x28b)])return;_0x25d7e7();const _0x31d76c=_0x283ff5(),_0x1cbdfd=Number(_0x5582ad['viewingRound']??_0x31d76c)||0x1;if(_0x1cbdfd<=0x1)return;_0x5582ad[_0x4311c3(0x1d9)]=_0x1cbdfd-0x1,_0x47a9de(_0x5582ad[_0x4311c3(0x1d9)]);},_0x50a22f=()=>{const _0x51cfad=_0x3edc3c;if(!_0x5582ad[_0x51cfad(0x28b)])return;_0x25d7e7();const _0xb6cfc2=_0x283ff5(),_0x4471f0=Number(_0x5582ad[_0x51cfad(0x1d9)]??_0xb6cfc2)||0x1;if(_0x4471f0>=_0xb6cfc2)return;_0x5582ad[_0x51cfad(0x1d9)]=_0x4471f0+0x1,_0x47a9de(_0x5582ad['viewingRound']);},_0x28635b=async()=>{const _0x1ec582=_0x3edc3c;_0x25d7e7();if(!_0x5582ad[_0x1ec582(0x28b)])return;_0x5582ad[_0x1ec582(0x28b)][_0x1ec582(0x1b2)]=(Number(_0x5582ad[_0x1ec582(0x28b)][_0x1ec582(0x1b2)])||0x1)+0x1,_0x5582ad[_0x1ec582(0x1d9)]=_0x5582ad[_0x1ec582(0x28b)][_0x1ec582(0x1b2)];const _0x1b2817=_0x4fb986(_0x1ec582(0x20b));if(_0x1b2817)_0x1b2817[_0x1ec582(0x1e8)]=_0x1ec582(0x232)+_0x5582ad[_0x1ec582(0x1d9)];await _0x4a7c93(),await _0x4874c4(),_0x5582ad[_0x1ec582(0x1d9)]=_0x5582ad['currentTournament'][_0x1ec582(0x1b2)],_0x47a9de(_0x5582ad[_0x1ec582(0x1d9)]);},_0x26f02e=async _0xc3214c=>{const _0x4f9e6f=_0x3edc3c;_0x5582ad[_0x4f9e6f(0x28b)]=_0x5582ad[_0x4f9e6f(0x217)][_0x4f9e6f(0x1c5)](_0x126239=>_0x126239[_0x4f9e6f(0x214)]===_0xc3214c)||null;if(!_0x5582ad[_0x4f9e6f(0x28b)])return;_0x5582ad[_0x4f9e6f(0x1d9)]=_0x5582ad['currentTournament'][_0x4f9e6f(0x1b2)];const _0x14846e=_0x4fb986(_0x4f9e6f(0x1b8)),_0x485bec=_0x4fb986(_0x4f9e6f(0x20b));if(_0x14846e)_0x14846e[_0x4f9e6f(0x1e8)]=_0x5582ad[_0x4f9e6f(0x28b)][_0x4f9e6f(0x266)];if(_0x485bec)_0x485bec[_0x4f9e6f(0x1e8)]=_0x4f9e6f(0x232)+_0x5582ad[_0x4f9e6f(0x28b)][_0x4f9e6f(0x1b2)];await _0x4874c4(),_0x2a8601('rounds'),_0x4bf4d2(),_0x11fdb1();},_0x138f2f=()=>{const _0x23586b=_0x3edc3c,_0x558a4d=_0x4fb986(_0x23586b(0x27f));if(!_0x558a4d)return;_0x558a4d['classList'][_0x23586b(0x277)](_0x23586b(0x213));};document[_0x3edc3c(0x21d)](_0x3edc3c(0x26c),_0x4dafe8=>{const _0x3a3135=_0x3edc3c,_0x294c41=_0x4fb986('dropdown-menu');if(!_0x294c41)return;!_0x4dafe8[_0x3a3135(0x281)][_0x3a3135(0x1f9)](_0x3a3135(0x240))&&!_0x4dafe8['target']['closest'](_0x3a3135(0x255))&&_0x294c41[_0x3a3135(0x1da)][_0x3a3135(0x26a)](_0x3a3135(0x213));});const _0x4a5bb4=()=>{const _0x1d74e6=_0x3edc3c;_0x4fb986(_0x1d74e6(0x27f))?.['classList'][_0x1d74e6(0x26a)](_0x1d74e6(0x213)),_0x4fb986('delete-confirm')?.[_0x1d74e6(0x1da)]['remove']('hidden');},_0x10f1d2=()=>{const _0x26966c=_0x3edc3c;_0x4fb986('delete-confirm')?.[_0x26966c(0x1da)][_0x26966c(0x26a)](_0x26966c(0x213));},_0x114742=async()=>{const _0x1c606a=_0x3edc3c;if(!_0x5582ad[_0x1c606a(0x28b)]||!window[_0x1c606a(0x227)])return;const _0x27978e=await window[_0x1c606a(0x227)]['delete'](_0x5582ad[_0x1c606a(0x28b)]);_0x27978e?.[_0x1c606a(0x27c)]?(_0x5582ad[_0x1c606a(0x28b)]=null,_0x2a8601(_0x1c606a(0x204))):_0x574313(_0x1c606a(0x27a)),_0x10f1d2();},_0x59fa5b=()=>{const _0x2a1f36=_0x3edc3c;_0x25d7e7();if(!_0x5582ad[_0x2a1f36(0x28b)])return;_0x5582ad['lastRoundsView']=_0x5582ad['viewingRound']??_0x5582ad[_0x2a1f36(0x28b)]['current_round'],_0x4fb986(_0x2a1f36(0x27f))?.[_0x2a1f36(0x1da)][_0x2a1f36(0x26a)](_0x2a1f36(0x213));const _0x57359a=_0x5582ad[_0x2a1f36(0x217)][_0x2a1f36(0x1c5)](_0x467234=>_0x467234[_0x2a1f36(0x214)]===_0x5582ad[_0x2a1f36(0x28b)][_0x2a1f36(0x214)]);if(_0x57359a)_0x5582ad[_0x2a1f36(0x28b)]=_0x57359a;const _0x985a6=_0x518452(),_0x3b8fe9=_0x51886d(),_0x212548={};_0x985a6[_0x2a1f36(0x270)](_0x1fc835=>{_0x212548[_0x1fc835]={'points':0x0,'wins':0x0,'losses':0x0,'ties':0x0,'matches':0x0};}),_0x3b8fe9[_0x2a1f36(0x270)](_0x443e58=>{const _0x1e4c6e=_0x2a1f36;(_0x443e58[_0x1e4c6e(0x233)]||[])['forEach'](_0x5035b6=>{const _0x124d2e=_0x1e4c6e,_0x5cd522=_0x5035b6[_0x124d2e(0x26b)],_0x1230aa=_0x5035b6[_0x124d2e(0x1e6)],_0x4ee445=_0x5cd522!==''&&_0x5cd522!=null||_0x1230aa!==''&&_0x1230aa!=null;if(!_0x4ee445)return;if(Number(_0x5cd522)===0x0&&Number(_0x1230aa)===0x0)return;const _0x11629f=Number(_0x5cd522)||0x0,_0x2e90d7=Number(_0x1230aa)||0x0;_0x5035b6['team1']?.[_0x124d2e(0x270)](_0xa7ff15=>{if(_0x212548[_0xa7ff15])_0x212548[_0xa7ff15]['points']+=_0x11629f;}),_0x5035b6[_0x124d2e(0x21c)]?.[_0x124d2e(0x270)](_0x2740f8=>{const _0x51ed85=_0x124d2e;if(_0x212548[_0x2740f8])_0x212548[_0x2740f8][_0x51ed85(0x25d)]+=_0x2e90d7;});if(_0x11629f>_0x2e90d7)_0x5035b6[_0x124d2e(0x282)]?.['forEach'](_0x14fba0=>{const _0x3f3913=_0x124d2e;if(_0x212548[_0x14fba0])_0x212548[_0x14fba0][_0x3f3913(0x1e1)]++;}),_0x5035b6['team2']?.['forEach'](_0x3dddac=>{const _0x371e51=_0x124d2e;if(_0x212548[_0x3dddac])_0x212548[_0x3dddac][_0x371e51(0x23f)]++;});else _0x2e90d7>_0x11629f?(_0x5035b6['team2']?.[_0x124d2e(0x270)](_0xe4ff91=>{const _0x346e6b=_0x124d2e;if(_0x212548[_0xe4ff91])_0x212548[_0xe4ff91][_0x346e6b(0x1e1)]++;}),_0x5035b6[_0x124d2e(0x282)]?.['forEach'](_0x41baf9=>{if(_0x212548[_0x41baf9])_0x212548[_0x41baf9]['losses']++;})):(_0x5035b6[_0x124d2e(0x282)]?.['forEach'](_0x50ee53=>{const _0x12297e=_0x124d2e;if(_0x212548[_0x50ee53])_0x212548[_0x50ee53][_0x12297e(0x24b)]++;}),_0x5035b6[_0x124d2e(0x21c)]?.[_0x124d2e(0x270)](_0x40d82f=>{const _0x3dd8c4=_0x124d2e;if(_0x212548[_0x40d82f])_0x212548[_0x40d82f][_0x3dd8c4(0x24b)]++;}));_0x5035b6[_0x124d2e(0x282)]?.[_0x124d2e(0x270)](_0x2f96db=>{if(_0x212548[_0x2f96db])_0x212548[_0x2f96db]['matches']++;}),_0x5035b6[_0x124d2e(0x21c)]?.[_0x124d2e(0x270)](_0x1c3e37=>{const _0x283911=_0x124d2e;if(_0x212548[_0x1c3e37])_0x212548[_0x1c3e37][_0x283911(0x233)]++;});});});const _0x31462a=Object[_0x2a1f36(0x20f)](_0x212548)[_0x2a1f36(0x224)](([_0x247f1b,_0x1b1015])=>{const _0x12c995=_0x2a1f36,_0x2cc856=_0x1b1015[_0x12c995(0x233)]>0x0?_0x1b1015['wins']/_0x1b1015['matches']*0x64:0x0;return{'name':_0x247f1b,..._0x1b1015,'winRate':_0x2cc856};})[_0x2a1f36(0x1cf)]((_0x5a6f59,_0x1a3fd2)=>_0x1a3fd2[_0x2a1f36(0x25d)]-_0x5a6f59[_0x2a1f36(0x25d)]||_0x1a3fd2[_0x2a1f36(0x1e1)]-_0x5a6f59[_0x2a1f36(0x1e1)]||_0x1a3fd2[_0x2a1f36(0x21e)]-_0x5a6f59[_0x2a1f36(0x21e)]),_0x4923d4=_0x4fb986('leaderboard-list');_0x4923d4&&(_0x4923d4[_0x2a1f36(0x1c8)]=_0x31462a[_0x2a1f36(0x224)]((_0x27a000,_0x588833)=>_0x2a1f36(0x1fb)+(_0x588833===0x0?_0x2a1f36(0x235):_0x588833===0x1?'border-2\x20border-gray-400':_0x588833===0x2?_0x2a1f36(0x1dd):'border\x20border-emerald-700')+'\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22w-8\x20h-8\x20flex\x20items-center\x20justify-center\x20rounded-full\x20'+(_0x588833===0x0?_0x2a1f36(0x207):_0x588833===0x1?_0x2a1f36(0x215):_0x588833===0x2?_0x2a1f36(0x226):_0x2a1f36(0x1b3))+_0x2a1f36(0x1e4)+(_0x588833+0x1)+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22font-semibold\x22>'+_0x3beba0(_0x27a000[_0x2a1f36(0x1fd)])+_0x2a1f36(0x1b7)+_0x27a000['matches']+_0x2a1f36(0x23c)+_0x27a000[_0x2a1f36(0x1e1)]+_0x2a1f36(0x1cd)+_0x27a000['losses']+'\x20|\x20T:\x20'+_0x27a000[_0x2a1f36(0x24b)]+_0x2a1f36(0x1d2)+_0x27a000[_0x2a1f36(0x21e)][_0x2a1f36(0x256)](0x1)+_0x2a1f36(0x1d5)+_0x27a000[_0x2a1f36(0x25d)]+_0x2a1f36(0x1bb))[_0x2a1f36(0x22a)]('')),_0x2a8601('leaderboard');},_0x409c37=()=>{const _0x5a8208=_0x3edc3c;_0x25d7e7();if(!_0x5582ad[_0x5a8208(0x28b)])return;_0x2a8601('rounds');const _0x342970=_0x283ff5();_0x5582ad['viewingRound']=_0x5582ad[_0x5a8208(0x244)]??_0x5582ad[_0x5a8208(0x1d9)]??_0x5582ad[_0x5a8208(0x28b)][_0x5a8208(0x1b2)],_0x5582ad['viewingRound']=_0x1022e9(Number(_0x5582ad[_0x5a8208(0x1d9)])||0x1,0x1,_0x342970),_0x47a9de(_0x5582ad['viewingRound']),_0x11fdb1();};_0x3edc3c(0x260)in navigator&&window[_0x3edc3c(0x21d)]('load',async()=>{const _0x110e2=_0x3edc3c;try{const _0x3dfe75=await navigator[_0x110e2(0x260)][_0x110e2(0x1db)](_0x110e2(0x211));_0x3dfe75[_0x110e2(0x21d)](_0x110e2(0x271),()=>{const _0x2d67e5=_0x110e2,_0x5c390a=_0x3dfe75['installing'];if(!_0x5c390a)return;_0x5c390a[_0x2d67e5(0x21d)](_0x2d67e5(0x1eb),()=>{const _0x32070a=_0x2d67e5;_0x5c390a['state']===_0x32070a(0x1e3)&&navigator['serviceWorker'][_0x32070a(0x200)]&&window['location'][_0x32070a(0x287)]();});}),_0x3dfe75[_0x110e2(0x223)]();}catch(_0x34ab31){console[_0x110e2(0x1e9)](_0x110e2(0x291),_0x34ab31);}}),window['escapeHtml']=_0x3beba0,window[_0x3edc3c(0x268)]=_0xad5b98,window['navigateTo']=_0x2a8601,window[_0x3edc3c(0x1c7)]=_0x2f2ae1,window['goToCourts']=_0x1a8247,window[_0x3edc3c(0x252)]=_0x19024f,window['goToPoints']=_0x2749fe,window['selectPoints']=_0x33df8a,window[_0x3edc3c(0x289)]=_0x57149f,window[_0x3edc3c(0x262)]=_0x3bc5f9,window[_0x3edc3c(0x22e)]=_0x54528b,window['toggleGenderDraft']=_0x2a685a,window['addPlayer']=_0x168f88,window[_0x3edc3c(0x20d)]=_0x2b220e,window[_0x3edc3c(0x28e)]=_0x2406b5,window[_0x3edc3c(0x23d)]=_0x26f02e,window[_0x3edc3c(0x1de)]=_0x5daf8b,window[_0x3edc3c(0x263)]=_0x109e0d,window[_0x3edc3c(0x1d0)]=_0x4ccf14,window[_0x3edc3c(0x254)]=_0x50a22f,window[_0x3edc3c(0x269)]=_0x28635b,window['toggleMenu']=_0x138f2f,window[_0x3edc3c(0x247)]=_0x4a5bb4,window[_0x3edc3c(0x237)]=_0x10f1d2,window[_0x3edc3c(0x1be)]=_0x114742,window[_0x3edc3c(0x1b5)]=_0x59fa5b,window['backToRounds']=_0x409c37,window[_0x3edc3c(0x1f0)]=_0x2cf3c4,window['updateGenderBalanceWarning']=_0xad5fcd;})()));function _0xf8d0(_0x2d99a6,_0x1bdb1d){_0x2d99a6=_0x2d99a6-0x1b1;const _0x4bb9d2=_0x4bb9();let _0xf8d04c=_0x4bb9d2[_0x2d99a6];return _0xf8d04c;}function _0x4bb9(){const _0x2faa1e=['7713kloLFm','\x20court(s).','slice','bg-emerald-600','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22font-medium\x22>','data','remove','closest','div','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20bg-emerald-800/50\x20rounded-xl\x20p-4\x20','createElement','name','Failed\x20to\x20create\x20tournament','isEditingScore','controller','courts','courts-container','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20justify-center\x20gap-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<input\x20type=\x22number\x22\x20id=\x22score-input-','home','Male','players','bg-yellow-500',',\x201)\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onblur=\x22commitScore(','cursor-not-allowed','parse','round-indicator','charAt','removePlayer','\x20•\x20Female\x20','entries','\x20court','/service-worker.js','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20onclick=\x22removePlayer(','hidden','__backendId','bg-gray-400','AdSense\x20init\x20error:','tournaments','\x20yet.\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','terms','score-input-','stringify','team2','addEventListener','winRate','querySelectorAll','2344UkVAst','.court-btn','\x20players</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>•</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>Round\x20','update','map','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bg-emerald-800/50\x20rounded-2xl\x20p-4\x20border\x20border-emerald-700\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-center\x20text-sm\x20text-emerald-400\x20mb-3\x20font-medium\x22>Court\x20','bg-amber-600','dataSdk','fixed\x20bottom-20\x20left-1/2\x20-translate-x-1/2\x20bg-red-600\x20text-white\x20px-4\x20py-2\x20rounded-lg\x20shadow-lg\x20z-50\x20slide-in','includes','join','getElementById','shift','btn-prev-round','setPlayerGender','964792eArNMI','app_title',',\x201)\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20class=\x22w-16\x20bg-emerald-700\x20border\x20border-emerald-600\x20rounded-lg\x20text-center\x20text-xl\x20font-bold\x20text-white\x20focus:outline-none\x20focus:border-emerald-400\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-2xl\x20text-emerald-500\x20font-bold\x22>vs</div>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<!--\x20Team\x202\x20-->\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex-1\x20text-center\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-sm\x20mb-2\x20space-y-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22font-medium\x22>','Round\x20','matches','\x20Female','border-2\x20border-yellow-500','isArray','cancelDelete','opacity-50','points_to_win','border-emerald-400','focus','\x20|\x20W:\x20','openTournament','originalText','losses','#dropdown-menu',')\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20class=\x22text-xs\x20px-2\x20py-1\x20rounded-full\x20bg-emerald-900/50\x20border\x20border-emerald-700\x20text-emerald-200\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20hover:border-emerald-300\x20hover:bg-emerald-900/80\x20transition-all\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor-pointer\x20focus:outline-none\x20focus:ring-2\x20focus:ring-emerald-400/60\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20title=\x22Tap\x20to\x20switch\x20gender\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','<p\x20class=\x22text-emerald-400\x20text-center\x20py-8\x20text-sm\x22>No\x20tournaments\x20yet</p>','playerGenderDraft','lastRoundsView','floor','get','confirmDelete','min-players-text','dataset','0\x20players\x20added','ties','70Xyglqu','311276zfuZiG','toISOString','5092JlCtRJ','rounds','splice','selectCourts','tournament-title','nextRoundView','[onclick=\x22toggleMenu()\x22]','toFixed','from','newTournament','page-','value','\x20players\x20required','adsbygoogle','points','body','init','serviceWorker','main-title','selectMode','commitScore','btn-start','new-players','title','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20type=\x22button\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onclick=\x22togglePlayerGender(','setEditingScore','nextRound','add','score1','click','\x20players\x20added','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>•</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>','</span>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','forEach','updatefound','new-courts','tournament-list',')\x22\x20class=\x22text-emerald-400\x20hover:text-red-400\x20transition-colors\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20class=\x22w-5\x20h-5\x22\x20fill=\x22none\x22\x20stroke=\x22currentColor\x22\x20viewBox=\x220\x200\x2024\x2024\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20stroke-linecap=\x22round\x22\x20stroke-linejoin=\x22round\x22\x20stroke-width=\x222\x22\x20d=\x22M6\x2018L18\x206M6\x206l12\x2012\x22/>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20','mode','23890EiPVrT','toggle','Minimum\x20','mix','Failed\x20to\x20delete\x20tournament','push','isOk','round','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','dropdown-menu','player-name','target','team1','544419gNXGhd','<span\x20class=\x22animate-pulse\x22>Creating...</span>','elementSdk','gender-balance-warning','reload','Female','goToPlayers','52780zvJjLh','currentTournament','btn-next-round','12QlusPX','startTournament','concat','gender-balance-hint','SW\x20failed','toUpperCase','current_round','bg-emerald-700','isFinite','showLeaderboard','</div>\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20gap-4\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<!--\x20Team\x201\x20-->\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex-1\x20text-center\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-sm\x20mb-2\x20space-y-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22font-medium\x22>','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-sm\x20text-emerald-300\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Match:\x20','round-title','Mix\x20Americano\x20requires\x20balanced\x20gender.\x20Male\x20','create','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-xs\x20text-emerald-400\x22>points</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20','set','content-ad-wrap','deleteTournament','catch','filter','gender-toggle','528CNvhCi','\x27)\x22\x20class=\x22w-full\x20bg-emerald-800/50\x20hover:bg-emerald-700/50\x20border\x20border-emerald-700\x20rounded-xl\x20p-4\x20text-left\x20transition-all\x20slide-in\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<h3\x20class=\x22font-semibold\x20text-lg\x20mb-1\x22>','players-list','find','new-points','resetNewTournament','innerHTML','className','</h3>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20gap-4\x20text-sm\x20text-emerald-300\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span>','\x20(must\x20be\x20equal\x20to\x20start)','Failed\x20to\x20initialize\x20data\x20SDK','\x20|\x20L:\x20','Current:\x20Male\x20','sort','prevRoundView','.points-btn','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-xs\x20text-emerald-400\x20mt-1\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20Win\x20Rate:\x20','disabled','length','%\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-right\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22text-2xl\x20font-bold\x20text-emerald-400\x22>','about',',\x202)\x22\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20class=\x22w-16\x20bg-emerald-700\x20border\x20border-emerald-600\x20rounded-lg\x20text-center\x20text-xl\x20font-bold\x20text-white\x20focus:outline-none\x20focus:border-emerald-400\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20','string','viewingRound','classList','register','normal','border-2\x20border-amber-600','updateScoreLive','player-count','Maximum\x20tournaments\x20reached','wins','max','installed','\x20text-sm\x20font-bold\x20mr-3\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','trim','score2','Start\x20Tournament','textContent','error','gender','statechange','\x20/\x20Female\x20','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22bg-emerald-800/50\x20rounded-2xl\x20p-6\x20border\x20border-emerald-700\x20text-center\x20text-emerald-300\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20No\x20data\x20for\x20Round\x20','.page','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20justify-between\x20bg-emerald-800/50\x20rounded-xl\x20px-4\x20py-3\x20slide-in\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22flex\x20items-center\x20gap-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22font-medium\x22>','togglePlayerGender','gender-toggle-text'];_0x4bb9=function(){return _0x2faa1e;};return _0x4bb9();}
+/* =========================
+   Padelio / Padel Americano
+   Refactor: cleaner state, safer JSON, debounced saves, stable round viewing
+   ========================= */
+
+(() => {
+  'use strict';
+
+  /* ---------- DOM helpers ---------- */
+  const $ = (id) => document.getElementById(id);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  /* ---------- small utils ---------- */
+  let adsInitialized = false;
+
+  function updateAdVisibility(page) {
+    const adWrap = document.getElementById('content-ad-wrap');
+    const contentPages = ['home', 'about', 'privacy', 'terms'];
+
+    if (!adWrap) return;
+
+    const shouldShowAd = contentPages.includes(page);
+
+    if (!shouldShowAd) {
+      adWrap.classList.add('hidden');
+      return;
+    }
+
+    adWrap.classList.remove('hidden');
+
+    if (!adsInitialized && window.adsbygoogle) {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        adsInitialized = true;
+      } catch (err) {
+        console.error('AdSense init error:', err);
+      }
+    }
+  }
+  
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  const safeJsonParse = (val, fallback) => {
+    if (val == null) return fallback;
+    if (typeof val !== 'string') return val; // already object/array
+    try {
+      const out = JSON.parse(val);
+      return out == null ? fallback : out;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const escapeHtml = (text) => {
+    const div = document.createElement('div');
+    div.textContent = String(text ?? '');
+    return div.innerHTML;
+  };
+
+  const toast = (message) => {
+    const el = document.createElement('div');
+    el.className =
+      'fixed bottom-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 slide-in';
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  };
+
+  const debounce = (fn, wait) => {
+    let t = null;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), wait);
+    };
+  };
+
+  const normalizePlayers = (arr) =>
+    (Array.isArray(arr) ? arr : []).map((p) => {
+      if (typeof p === 'string') return { name: p, gender: null };
+      return { name: String(p?.name || ''), gender: p?.gender || null };
+    }).filter(p => p.name.trim().length > 0);
+
+  const countGender = (players) => {
+    const norm = normalizePlayers(players);
+    let m = 0, f = 0;
+    norm.forEach(p => {
+      if (p.gender === 'M') m++;
+      if (p.gender === 'F') f++;
+    });
+    return { m, f, total: norm.length };
+  };
+
+  const shuffle = (arr) => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  const pairKey = (a, b) => {
+    const x = String(a || '');
+    const y = String(b || '');
+    return x < y ? `${x}__${y}` : `${y}__${x}`;
+  };
+
+  const getPlayersFull = () => {
+    const raw = safeJsonParse(state.currentTournament?.players, []);
+    return normalizePlayers(raw); // [{name, gender}]
+  };
+
+  const buildMixHistory = () => {
+    const rounds = getRounds();
+    const partnerCount = new Map();  // key: pairKey(M,F) => times partnered
+    const opposeCount = new Map();   // key: pairKey(A,B) => times opposed (any gender)
+
+    rounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        const t1 = m.team1 || [];
+        const t2 = m.team2 || [];
+
+        // partners
+        if (t1.length === 2) {
+          const k = pairKey(t1[0], t1[1]);
+          partnerCount.set(k, (partnerCount.get(k) || 0) + 1);
+        }
+        if (t2.length === 2) {
+          const k = pairKey(t2[0], t2[1]);
+          partnerCount.set(k, (partnerCount.get(k) || 0) + 1);
+        }
+
+        // opponents: everyone in t1 vs everyone in t2
+        t1.forEach((a) => {
+          t2.forEach((b) => {
+            const k = pairKey(a, b);
+            opposeCount.set(k, (opposeCount.get(k) || 0) + 1);
+          });
+        });
+      });
+    });
+
+    return { partnerCount, opposeCount };
+  };
+
+  function selectMode (mode) {
+    state.newTournament.mode = (mode === 'mix') ? 'mix' : 'normal';
+    state.playerGenderDraft = 'M';
+    updateGenderUI();
+    navigateTo('new-title');
+  };
+
+  function setPlayerGender (g) {
+    state.playerGenderDraft = (g === 'F') ? 'F' : 'M';
+    updateGenderUI();
+  };
+
+  function toggleGenderDraft () {
+    state.playerGenderDraft = (state.playerGenderDraft === 'M') ? 'F' : 'M';
+    updateGenderUI();
+  };
+
+  function updateGenderUI () {
+    const isMix = state.newTournament.mode === 'mix';
+
+    const btn = $('gender-toggle');
+    const txt = $('gender-toggle-text');
+    const hint = $('gender-balance-hint');
+
+    if (btn) btn.classList.toggle('hidden', !isMix);
+
+    if (txt) {
+      txt.textContent = (state.playerGenderDraft === 'F') ? 'Female' : 'Male';
+    }
+
+    if (hint) {
+      hint.classList.toggle('hidden', !isMix);
+      if (isMix) {
+        const { m, f } = countGender(state.newTournament.players);
+        hint.textContent = `Current: Male ${m} • Female ${f} (must be equal to start)`;
+      }
+    }
+  };
+
+  /* ---------- App state ---------- */
+  const state = {
+    isEditingScore: false,
+    lastRoundsView: null,
+    viewingRound: null,
+
+    tournaments: [],
+    currentTournament: null,
+
+    playerGenderDraft: 'M',
+
+    newTournament: {
+      mode: 'normal', // 'normal' | 'mix'
+      title: '',
+      courts: 0,
+      points: 0,
+      players: []
+    }
+  };
+
+  const defaultConfig = { app_title: 'Padelio' };
+
+  /* ---------- Round helpers ---------- */
+  const syncCurrentTournament = () => {
+    if (!state.currentTournament) return;
+    const fresh = state.tournaments.find(
+      (t) => t.__backendId === state.currentTournament.__backendId
+    );
+    if (fresh) state.currentTournament = fresh;
+  };
+
+  const getRounds = () =>
+    safeJsonParse(state.currentTournament?.rounds, []);
+
+  const setRounds = (roundsArr) => {
+    if (!state.currentTournament) return;
+    state.currentTournament.rounds = JSON.stringify(roundsArr);
+  };
+
+  const getPlayers = () => {
+    const raw = safeJsonParse(state.currentTournament?.players, []);
+    const norm = normalizePlayers(raw);
+    return norm.map(p => p.name);
+  };
+
+  const getMaxRoundNumber = () => {
+    if (!state.currentTournament) return 1;
+    const rounds = getRounds();
+    const maxFromRounds = rounds.reduce(
+      (m, r) => Math.max(m, Number(r.round) || 1),
+      1
+    );
+    const cr = Number(state.currentTournament.current_round) || 1;
+    return Math.max(cr, maxFromRounds, 1);
+  };
+
+  const ensureViewingRoundValid = () => {
+    if (!state.currentTournament) return;
+    const maxRound = getMaxRoundNumber();
+    if (state.viewingRound == null) state.viewingRound = state.currentTournament.current_round;
+    state.viewingRound = clamp(Number(state.viewingRound) || 1, 1, maxRound);
+  };
+
+  /* ---------- Persist ---------- */
+  const saveCurrentTournament = async () => {
+    if (!state.currentTournament || !window.dataSdk) return;
+
+    const result = await window.dataSdk.update(state.currentTournament);
+
+    // keep reference fresh if SDK returns updated object
+    if (result && result.isOk && result.data) {
+      state.currentTournament = result.data;
+    }
+    return result;
+  };
+
+  const debouncedSaveTournament = debounce(() => {
+    // fire & forget (no await) to keep typing smooth
+    saveCurrentTournament().catch(() => {});
+  }, 250);
+
+  /* ---------- Data SDK handler ---------- */
+  const dataHandler = {
+    onDataChanged(data) {
+      state.tournaments = Array.isArray(data) ? data : [];
+
+      // sync currentTournament to latest object
+      syncCurrentTournament();
+
+      renderTournamentList();
+
+      // If rounds page visible, re-render the *viewingRound* safely
+      const roundsPageVisible = !$('page-rounds')?.classList.contains('hidden');
+      if (roundsPageVisible && state.currentTournament) {
+        ensureViewingRoundValid();
+        if (!state.isEditingScore) {
+          renderSpecificRound(state.viewingRound);
+        }
+      }
+    }
+  };
+
+  /* ---------- Element SDK init ---------- */
+  if (window.elementSdk) {
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (config) => {
+        const title = (config?.app_title || defaultConfig.app_title);
+        const el = $('main-title');
+        if (el) el.textContent = title;
+      },
+      mapToCapabilities: () => ({
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      }),
+      mapToEditPanelValues: (config) =>
+        new Map([['app_title', config?.app_title || defaultConfig.app_title]])
+    });
+  }
+
+  /* ---------- Data SDK init ---------- */
+  const initApp = async () => {
+    if (!window.dataSdk) return;
+    const result = await window.dataSdk.init(dataHandler);
+    if (!result?.isOk) console.error('Failed to initialize data SDK');
+  };
+  initApp();
+  updateAdVisibility('home');
+
+  const navigateTo = (page) => {
+    $$('.page').forEach((p) => p.classList.add('hidden'));
+
+    const target = $('page-' + page);
+    if (!target) return;
+
+    target.classList.remove('hidden');
+    target.classList.add('slide-in');
+
+    if (page === 'home') resetNewTournament();
+
+    updateAdVisibility(page);
+  };
+
+  /* ---------- New tournament flow ---------- */
+  const resetNewTournament = () => {
+    state.newTournament = { mode: 'normal', title: '', courts: 0, points: 0, players: [] };
+    state.playerGenderDraft = 'M';
+
+    const t = $('tournament-title');
+    if (t) t.value = '';
+
+    $$('.court-btn').forEach((b) => b.classList.remove('border-emerald-400', 'bg-emerald-600'));
+    $$('.points-btn').forEach((b) => b.classList.remove('border-emerald-400', 'bg-emerald-600'));
+
+    const list = $('players-list');
+    if (list) list.innerHTML = '';
+
+    const count = $('player-count');
+    if (count) count.textContent = '0 players added';
+
+    updateMinPlayersText();
+    updateGenderUI();
+    updateButtonStates();
+  };
+
+  const updateButtonStates = () => {
+    const btnToPoints = $('btn-to-points');
+    const btnToPlayers = $('btn-to-players');
+    const btnStart = $('btn-start');
+
+    const setDisabled = (btn, disabled) => {
+      if (!btn) return;
+      btn.disabled = !!disabled;
+      btn.classList.toggle('opacity-50', !!disabled);
+      btn.classList.toggle('cursor-not-allowed', !!disabled);
+    };
+
+    setDisabled(btnToPoints, !(state.newTournament.courts > 0));
+    setDisabled(btnToPlayers, !(state.newTournament.points > 0));
+
+    const courts = Number(state.newTournament.courts) || 0;
+    const minPlayers = Math.max(4, courts * 4);
+    const normPlayers = normalizePlayers(state.newTournament.players);
+
+    let canStart = normPlayers.length >= minPlayers;
+
+    if (state.newTournament.mode === 'mix') {
+      const { m, f, total } = countGender(normPlayers);
+      canStart = canStart && total % 2 === 0 && m === f; // balanced
+    }
+
+    setDisabled(btnStart, !canStart);
+  };
+
+  const goToCourts = () => {
+    const input = $('tournament-title');
+    const title = input?.value?.trim() || '';
+    if (!title) {
+      input?.focus?.();
+      return;
+    }
+    state.newTournament.title = title;
+    navigateTo('new-courts');
+  };
+
+  const selectCourts = (num) => {
+    state.newTournament.courts = Number(num) || 0;
+    $$('.court-btn').forEach((b) => {
+      b.classList.remove('border-emerald-400', 'bg-emerald-600');
+      if (Number(b.dataset.courts) === state.newTournament.courts) {
+        b.classList.add('border-emerald-400', 'bg-emerald-600');
+      }
+    });
+    updateMinPlayersText();
+    updateButtonStates();
+  };
+
+  const goToPoints = () => {
+    if (state.newTournament.courts > 0) navigateTo('new-points');
+  };
+
+  const selectPoints = (num) => {
+    state.newTournament.points = Number(num) || 0;
+    $$('.points-btn').forEach((b) => {
+      b.classList.remove('border-emerald-400', 'bg-emerald-600');
+      if (Number(b.dataset.points) === state.newTournament.points) {
+        b.classList.add('border-emerald-400', 'bg-emerald-600');
+      }
+    });
+    updateButtonStates();
+  };
+
+  const updateGenderBalanceWarning = () => {
+    const warn = $('gender-balance-warning');
+    if (!warn) return;
+
+    if (state.newTournament.mode !== 'mix') {
+      warn.classList.add('hidden');
+      return;
+    }
+
+    const players = normalizePlayers(state.newTournament.players);
+    const total = players.length;
+
+    const male = players.filter(p => p.gender === 'M').length;
+    const female = players.filter(p => p.gender === 'F').length;
+
+    if (total === 0) {
+      warn.classList.add('hidden');
+      return;
+    }
+
+    const expected = Math.floor(total / 2);
+
+    if (male !== female) {
+      warn.textContent = `⚠ Balance needed: should be ${expected} Male and ${expected} Female`;
+      warn.classList.remove('hidden');
+    } else {
+      warn.classList.add('hidden');
+    }
+  };
+
+  const goToPlayers = () => {
+    if (state.newTournament.points > 0) {
+      navigateTo('new-players');
+      updateGenderUI(); // ✅ supaya toggle muncul kalau mix
+    }
+  };
+
+  const renderPlayersList = () => {
+    const list = $('players-list');
+    if (!list) return;
+
+    const players = normalizePlayers(state.newTournament.players);
+
+    list.innerHTML = players
+      .map((p, i) => `
+        <div class="flex items-center justify-between bg-emerald-800/50 rounded-xl px-4 py-3 slide-in">
+          <div class="flex items-center gap-2">
+            <span class="font-medium">${escapeHtml(p.name)}</span>
+
+            ${state.newTournament.mode === 'mix'
+              ? `
+                <button
+                  type="button"
+                  onclick="togglePlayerGender(${i})"
+                  class="text-xs px-2 py-1 rounded-full bg-emerald-900/50 border border-emerald-700 text-emerald-200
+         hover:border-emerald-300 hover:bg-emerald-900/80 transition-all
+         cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
+                  title="Tap to switch gender"
+                >
+                  ${p.gender === 'F' ? 'Female' : 'Male'}
+                  <span class="ml-1 opacity-70">↺</span>
+                </button>
+              `
+              : ''
+            }
+          </div>
+
+          <button onclick="removePlayer(${i})" class="text-emerald-400 hover:text-red-400 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      `)
+      .join('');
+
+    const count = $('player-count');
+    if (count) count.textContent = `${players.length} players added`;
+  };
+
+  const addPlayer = () => {
+    const input = $('player-name');
+    let name = input?.value?.trim() || '';
+    if (!name) return;
+
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+
+    const isMix = state.newTournament.mode === 'mix';
+    const gender = isMix ? state.playerGenderDraft : null;
+
+    state.newTournament.players = normalizePlayers(state.newTournament.players);
+    state.newTournament.players.push({ name, gender });
+
+    input.value = '';
+    input.focus();
+
+    renderPlayersList();
+    updateGenderBalanceWarning();
+    updateGenderUI();
+    updateButtonStates();
+  };
+
+  const removePlayer = (index) => {
+    const norm = normalizePlayers(state.newTournament.players);
+    norm.splice(index, 1);
+    state.newTournament.players = norm;
+    renderPlayersList();
+    updateGenderBalanceWarning();
+    updateGenderUI();
+    updateButtonStates();
+  };
+
+  const togglePlayerGender = (index) => {
+    if (state.newTournament.mode !== 'mix') return;
+
+    const norm = normalizePlayers(state.newTournament.players);
+    const p = norm[index];
+    if (!p) return;
+
+    p.gender = (p.gender === 'F') ? 'M' : 'F';
+    state.newTournament.players = norm;
+
+    renderPlayersList();
+    updateGenderBalanceWarning();
+    updateGenderUI();
+    updateButtonStates();
+  };
+
+  const startTournament = async () => {
+    const btn = $('btn-start');
+
+    try {
+      if (state.newTournament.players.length < 4) return;
+
+      const totalPlayers = normalizePlayers(state.newTournament.players).length;
+      const totalCourts = state.newTournament.courts;
+      const minPlayers = totalCourts * 4;
+
+      if (totalPlayers < minPlayers) {
+        toast(`Minimum ${minPlayers} players required for ${totalCourts} court(s).`);
+        return;
+      }
+
+      if (state.newTournament.mode === 'mix') {
+        const { m, f, total } = countGender(state.newTournament.players);
+        if (total % 2 !== 0 || m !== f) {
+          toast(`Mix Americano requires balanced gender. Male ${m} / Female ${f}.`);
+          return;
+        }
+      }
+
+      if (!window.dataSdk) return;
+
+      if (state.tournaments.length >= 999) {
+        toast('Maximum tournaments reached');
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.dataset.originalText = btn.dataset.originalText || btn.textContent || 'Start Tournament';
+        btn.innerHTML = '<span class="animate-pulse">Creating...</span>';
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      const tournament = {
+        id: Date.now().toString(),
+        title: state.newTournament.title,
+        mode: state.newTournament.mode,
+        courts: state.newTournament.courts,
+        points_to_win: state.newTournament.points,
+        players: JSON.stringify(normalizePlayers(state.newTournament.players)),
+        rounds: JSON.stringify([]),
+        current_round: 1,
+        created_at: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(tournament);
+
+      if (!result?.isOk) {
+        toast('Failed to create tournament');
+        return;
+      }
+
+      // ✅ sukses: balik home + reset flow
+      resetNewTournament();
+      navigateTo('home');
+
+    } catch (e) {
+      toast('Failed to create tournament');
+    } finally {
+      // ✅ tombol selalu balik normal walau sudah pindah page
+      const b = $('btn-start');
+      if (b) {
+        b.disabled = false;
+        b.textContent = b.dataset.originalText || 'Start Tournament';
+        b.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+    }
+  };
+
+  const updateMinPlayersText = () => {
+    const el = $('min-players-text');
+    if (!el) return;
+
+    const courts = state.newTournament.courts || 1;
+    const minPlayers = courts * 4;
+
+    el.textContent = `Minimum ${minPlayers} players required`;
+  };
+
+  /* ---------- Tournament list ---------- */
+  function renderTournamentList () {
+    const list = $('tournament-list');
+    if (!list) return;
+
+    if (state.tournaments.length === 0) {
+      list.innerHTML = '<p class="text-emerald-400 text-center py-8 text-sm">No tournaments yet</p>';
+      return;
+    }
+
+    list.innerHTML = state.tournaments
+      .map((t) => {
+        const players = safeJsonParse(t.players, []);
+        return `
+          <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-700 rounded-xl p-4 text-left transition-all slide-in">
+            <h3 class="font-semibold text-lg mb-1">${escapeHtml(t.title)}</h3>
+            <div class="flex items-center gap-4 text-sm text-emerald-300">
+              <span>${t.courts} court${t.courts > 1 ? 's' : ''}</span>
+              <span>•</span>
+              <span>${players.length} players</span>
+              <span>•</span>
+              <span>Round ${t.current_round}</span>
+            </div>
+          </button>
+        `;
+      })
+      .join('');
+  };
+
+  /* ---------- Rounds generation/render ---------- */
+  const renderCourts = (roundData) => {
+    const container = $('courts-container');
+    if (!container) return;
+
+    container.innerHTML = roundData.matches
+      .map(
+        (match, idx) => `
+        <div class="bg-emerald-800/50 rounded-2xl p-4 border border-emerald-700">
+          <div class="text-center text-sm text-emerald-400 mb-3 font-medium">Court ${match.court}</div>
+
+          <div class="flex items-center gap-4">
+            <!-- Team 1 -->
+            <div class="flex-1 text-center">
+              <div class="text-sm mb-2 space-y-1">
+                <div class="font-medium">${escapeHtml(match.team1[0])}</div>
+                <div class="font-medium">${escapeHtml(match.team1[1])}</div>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <input type="number" id="score-input-${idx}-1" value="${match.score1 ?? ''}" min="0"
+                  onfocus="setEditingScore(true)"
+                  oninput="updateScoreLive(${idx}, 1)"
+                  onblur="commitScore(${idx}, 1)"
+                  class="w-16 bg-emerald-700 border border-emerald-600 rounded-lg text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-400">
+              </div>
+            </div>
+
+            <div class="text-2xl text-emerald-500 font-bold">vs</div>
+
+            <!-- Team 2 -->
+            <div class="flex-1 text-center">
+              <div class="text-sm mb-2 space-y-1">
+                <div class="font-medium">${escapeHtml(match.team2[0])}</div>
+                <div class="font-medium">${escapeHtml(match.team2[1])}</div>
+              </div>
+              <div class="flex items-center justify-center gap-2">
+                <input type="number" id="score-input-${idx}-2" value="${match.score2 ?? ''}" min="0"
+                  onfocus="setEditingScore(true)"
+                  oninput="updateScoreLive(${idx}, 2)"
+                  onblur="commitScore(${idx}, 2)"
+                  class="w-16 bg-emerald-700 border border-emerald-600 rounded-lg text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-400">
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+      )
+      .join('');
+  };
+
+  const generateRound = async () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    const mode = state.currentTournament.mode || 'normal';
+    const courts = Number(state.currentTournament.courts) || 1;
+    const rounds = getRounds();
+    const roundNo = Number(state.currentTournament.current_round) || 1;
+
+    let roundData = rounds.find((r) => Number(r.round) === roundNo);
+    if (roundData) {
+      renderCourts(roundData);
+      return;
+    }
+
+    // ---------- NORMAL MODE (old behavior) ----------
+    if (mode !== 'mix') {
+      const players = getPlayers(); // names only
+      const shuffled = shuffle(players);
+
+      const matches = [];
+      for (let i = 0; i < courts; i++) {
+        const startIdx = i * 4;
+        if (startIdx + 3 < shuffled.length) {
+          matches.push({
+            court: i + 1,
+            team1: [shuffled[startIdx], shuffled[startIdx + 1]],
+            team2: [shuffled[startIdx + 2], shuffled[startIdx + 3]],
+            score1: '',
+            score2: ''
+          });
+        }
+      }
+
+      roundData = { round: roundNo, matches };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
+    // ---------- MIX MODE (rotation + fairness) ----------
+    const playersFull = getPlayersFull();
+    const malesAll = playersFull.filter(p => p.gender === 'M').map(p => p.name);
+    const femalesAll = playersFull.filter(p => p.gender === 'F').map(p => p.name);
+
+    // how many courts can we actually fill in mix (needs 2M+2F per court)
+    const maxCourtsByGender = Math.min(
+      courts,
+      Math.floor(malesAll.length / 2),
+      Math.floor(femalesAll.length / 2)
+    );
+
+    if (maxCourtsByGender <= 0) {
+      roundData = { round: roundNo, matches: [] };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
+    const neededM = maxCourtsByGender * 2;
+    const neededF = maxCourtsByGender * 2;
+
+    // bench rotation: alternate who sits out by using round number offset
+    const shift = (arr, k) => {
+      const n = arr.length;
+      if (n === 0) return [];
+      const s = ((k % n) + n) % n;
+      return arr.slice(s).concat(arr.slice(0, s));
+    };
+
+    const males = shift(malesAll, roundNo - 1);
+    const females = shift(femalesAll, roundNo - 1);
+
+    const activeM = males.slice(0, neededM);
+    const activeF = females.slice(0, neededF);
+
+    // fairness: try to minimize repeated partners and opponents
+    const { partnerCount, opposeCount } = buildMixHistory();
+
+    // Build MF pairs with scoring: prefer pairs with fewer past partnerings
+    const pairs = [];
+    const fPool = [...activeF];
+
+    // simple greedy: for each male, pick a female that has min partnerCount with him
+    activeM.forEach((m) => {
+      let bestIdx = -1;
+      let bestScore = Infinity;
+
+      for (let i = 0; i < fPool.length; i++) {
+        const f = fPool[i];
+        const s = (partnerCount.get(pairKey(m, f)) || 0);
+        if (s < bestScore) {
+          bestScore = s;
+          bestIdx = i;
+        }
+        if (bestScore === 0) break; // can't get better than 0
+      }
+
+      if (bestIdx >= 0) {
+        const f = fPool.splice(bestIdx, 1)[0];
+        pairs.push({ m, f });
+      }
+    });
+
+    // ensure we have enough pairs for matches
+    // (each court needs 2 pairs)
+    const neededPairs = maxCourtsByGender * 2;
+    const usablePairs = pairs.slice(0, neededPairs);
+
+    // now pair-vs-pair, try to avoid repeated opponents
+    // Greedy: for each pair, pick opponent pair that minimizes cross oppose counts
+    const pairScoreOpp = (pA, pB) => {
+      // pA = {m,f}
+      // total oppose history between 4 cross persons
+      const a1 = pA.m, a2 = pA.f, b1 = pB.m, b2 = pB.f;
+      return (
+        (opposeCount.get(pairKey(a1, b1)) || 0) +
+        (opposeCount.get(pairKey(a1, b2)) || 0) +
+        (opposeCount.get(pairKey(a2, b1)) || 0) +
+        (opposeCount.get(pairKey(a2, b2)) || 0)
+      );
+    };
+
+    const pool = [...usablePairs];
+    const matches = [];
+
+    for (let c = 0; c < maxCourtsByGender; c++) {
+      if (pool.length < 2) break;
+
+      const p1 = pool.shift();
+
+      let bestJ = 0;
+      let best = Infinity;
+      for (let j = 0; j < pool.length; j++) {
+        const s = pairScoreOpp(p1, pool[j]);
+        if (s < best) {
+          best = s;
+          bestJ = j;
+        }
+        if (best === 0) break;
+      }
+
+      const p2 = pool.splice(bestJ, 1)[0];
+
+      matches.push({
+        court: c + 1,
+        team1: [p1.m, p1.f],
+        team2: [p2.m, p2.f],
+        score1: '',
+        score2: ''
+      });
+    }
+
+    roundData = { round: roundNo, matches };
+    rounds.push(roundData);
+    setRounds(rounds);
+    await saveCurrentTournament();
+    renderCourts(roundData);
+  };
+
+  const renderSpecificRound = (roundNumber) => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    const rounds = getRounds();
+    const rn = Number(roundNumber) || 1;
+    const roundData = rounds.find((r) => Number(r.round) === rn);
+
+    const ind = $('round-indicator');
+    if (ind) ind.textContent = `Round ${rn}`;
+
+    if (!roundData) {
+      const c = $('courts-container');
+      if (c) {
+        c.innerHTML = `
+          <div class="bg-emerald-800/50 rounded-2xl p-6 border border-emerald-700 text-center text-emerald-300">
+            No data for Round ${rn} yet.
+          </div>
+        `;
+      }
+      updateRoundArrowState();
+      return;
+    }
+
+    renderCourts(roundData);
+    updateRoundArrowState();
+  };
+
+  /* ---------- Score editing ---------- */
+  const setEditingScore = (v) => {
+    state.isEditingScore = !!v;
+  };
+
+  const updateScoreLive = (matchIdx, team) => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    ensureViewingRoundValid();
+
+    const rounds = getRounds();
+    const activeRound = state.viewingRound ?? state.currentTournament.current_round;
+    const roundData = rounds.find((r) => Number(r.round) === Number(activeRound));
+    if (!roundData) return;
+
+    const match = roundData.matches?.[matchIdx];
+    if (!match) return;
+
+    const maxPoints = Number(state.currentTournament.points_to_win) || 21;
+
+    const input1 = $(`score-input-${matchIdx}-1`);
+    const input2 = $(`score-input-${matchIdx}-2`);
+    if (!input1 || !input2) return;
+
+    const raw = (team === 1 ? input1.value : input2.value).trim();
+
+    // empty => clear both, debounce save
+    if (raw === '') {
+      match.score1 = '';
+      match.score2 = '';
+      if (team === 1) input2.value = '';
+      else input1.value = '';
+
+      setRounds(rounds);
+      debouncedSaveTournament();
+      return;
+    }
+
+    let s = parseInt(raw, 10);
+    if (!Number.isFinite(s) || s < 0) return;
+    s = clamp(s, 0, maxPoints);
+
+    const opp = Math.max(0, maxPoints - s);
+
+    // don't rewrite the input being typed (cursor-safe)
+    if (team === 1) {
+      match.score1 = s;
+      match.score2 = opp;
+      input2.value = String(opp);
+    } else {
+      match.score2 = s;
+      match.score1 = opp;
+      input1.value = String(opp);
+    }
+
+    setRounds(rounds);
+    debouncedSaveTournament();
+  };
+
+  const commitScore = (matchIdx, team) => {
+    state.isEditingScore = false;
+
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    ensureViewingRoundValid();
+
+    const rounds = getRounds();
+    const activeRound = state.viewingRound ?? state.currentTournament.current_round;
+    const roundData = rounds.find((r) => Number(r.round) === Number(activeRound));
+    if (!roundData) return;
+
+    const match = roundData.matches?.[matchIdx];
+    if (!match) return;
+
+    const maxPoints = Number(state.currentTournament.points_to_win) || 21;
+
+    const input1 = $(`score-input-${matchIdx}-1`);
+    const input2 = $(`score-input-${matchIdx}-2`);
+    if (!input1 || !input2) return;
+
+    const raw = (team === 1 ? input1.value : input2.value).trim();
+
+    if (raw === '') {
+      match.score1 = '';
+      match.score2 = '';
+      input1.value = '';
+      input2.value = '';
+    } else {
+      let s = parseInt(raw, 10);
+      if (!Number.isFinite(s) || s < 0) s = 0;
+      s = clamp(s, 0, maxPoints);
+
+      const opp = Math.max(0, maxPoints - s);
+
+      if (team === 1) {
+        match.score1 = s;
+        match.score2 = opp;
+      } else {
+        match.score2 = s;
+        match.score1 = opp;
+      }
+
+      input1.value = match.score1 === '' ? '' : String(match.score1);
+      input2.value = match.score2 === '' ? '' : String(match.score2);
+    }
+
+    setRounds(rounds);
+    // final save once
+    saveCurrentTournament().catch(() => {});
+  };
+
+  /* ---------- Round navigation ---------- */
+  const updateRoundArrowState = () => {
+    if (!state.currentTournament) return;
+
+    const maxRound = getMaxRoundNumber();
+    const activeRound = Number(state.viewingRound ?? state.currentTournament.current_round) || 1;
+
+    const prevBtn = $('btn-prev-round');
+    const nextBtn = $('btn-next-round');
+    if (!prevBtn || !nextBtn) return;
+
+    const prevDisabled = activeRound <= 1;
+    const nextDisabled = activeRound >= maxRound;
+
+    prevBtn.classList.toggle('opacity-30', prevDisabled);
+    prevBtn.classList.toggle('cursor-not-allowed', prevDisabled);
+
+    nextBtn.classList.toggle('opacity-30', nextDisabled);
+    nextBtn.classList.toggle('cursor-not-allowed', nextDisabled);
+  };
+
+  const prevRoundView = () => {
+    if (!state.currentTournament) return;
+    syncCurrentTournament();
+
+    const maxRound = getMaxRoundNumber();
+    const activeRound = Number(state.viewingRound ?? maxRound) || 1;
+    if (activeRound <= 1) return;
+
+    state.viewingRound = activeRound - 1;
+    renderSpecificRound(state.viewingRound);
+  };
+
+  const nextRoundView = () => {
+    if (!state.currentTournament) return;
+    syncCurrentTournament();
+
+    const maxRound = getMaxRoundNumber();
+    const activeRound = Number(state.viewingRound ?? maxRound) || 1;
+    if (activeRound >= maxRound) return;
+
+    state.viewingRound = activeRound + 1;
+    renderSpecificRound(state.viewingRound);
+  };
+
+  const nextRound = async () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    state.currentTournament.current_round = (Number(state.currentTournament.current_round) || 1) + 1;
+    state.viewingRound = state.currentTournament.current_round;
+
+    const ind = $('round-indicator');
+    if (ind) ind.textContent = `Round ${state.viewingRound}`;
+
+    await saveCurrentTournament();
+    await generateRound();
+
+    state.viewingRound = state.currentTournament.current_round;
+    renderSpecificRound(state.viewingRound);
+  };
+
+  /* ---------- Open tournament ---------- */
+  const openTournament = async (id) => {
+    state.currentTournament = state.tournaments.find((t) => t.__backendId === id) || null;
+    if (!state.currentTournament) return;
+
+    state.viewingRound = state.currentTournament.current_round;
+
+    const title = $('round-title');
+    const ind = $('round-indicator');
+    if (title) title.textContent = state.currentTournament.title;
+    if (ind) ind.textContent = `Round ${state.currentTournament.current_round}`;
+
+    await generateRound();
+    navigateTo('rounds');
+    ensureViewingRoundValid();
+    updateRoundArrowState();
+  };
+
+  /* ---------- Menu ---------- */
+  const toggleMenu = () => {
+    const menu = $('dropdown-menu');
+    if (!menu) return;
+    menu.classList.toggle('hidden');
+  };
+
+  document.addEventListener('click', (e) => {
+    const menu = $('dropdown-menu');
+    if (!menu) return;
+    if (!e.target.closest('#dropdown-menu') && !e.target.closest('[onclick="toggleMenu()"]')) {
+      menu.classList.add('hidden');
+    }
+  });
+
+  const confirmDelete = () => {
+    $('dropdown-menu')?.classList.add('hidden');
+    $('delete-confirm')?.classList.remove('hidden');
+  };
+
+  const cancelDelete = () => {
+    $('delete-confirm')?.classList.add('hidden');
+  };
+
+  const deleteTournament = async () => {
+    if (!state.currentTournament || !window.dataSdk) return;
+
+    const result = await window.dataSdk.delete(state.currentTournament);
+    if (result?.isOk) {
+      state.currentTournament = null;
+      navigateTo('home');
+    } else {
+      toast('Failed to delete tournament');
+    }
+    cancelDelete();
+  };
+
+  /* ---------- Leaderboard ---------- */
+  const showLeaderboard = () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    state.lastRoundsView = (state.viewingRound ?? state.currentTournament.current_round);
+    $('dropdown-menu')?.classList.add('hidden');
+
+    // ensure latest stored object
+    const fresh = state.tournaments.find((t) => t.__backendId === state.currentTournament.__backendId);
+    if (fresh) state.currentTournament = fresh;
+
+    const players = getPlayers();
+    const rounds = getRounds();
+
+    const scores = {};
+    players.forEach((p) => {
+      scores[p] = { points: 0, wins: 0, losses: 0, ties: 0, matches: 0 };
+    });
+
+    rounds.forEach((round) => {
+      (round.matches || []).forEach((match) => {
+        const s1 = match.score1;
+        const s2 = match.score2;
+
+        // Only count if there is a real score input (exclude empty/blank)
+        const hasScore =
+          (s1 !== '' && s1 != null) || (s2 !== '' && s2 != null);
+
+        if (!hasScore) return;
+
+        // Keep old behavior: ignore 0-0
+        if (Number(s1) === 0 && Number(s2) === 0) return;
+
+        const score1 = Number(s1) || 0;
+        const score2 = Number(s2) || 0;
+
+        match.team1?.forEach((p) => { if (scores[p]) scores[p].points += score1; });
+        match.team2?.forEach((p) => { if (scores[p]) scores[p].points += score2; });
+
+        if (score1 > score2) {
+          match.team1?.forEach((p) => { if (scores[p]) scores[p].wins++; });
+          match.team2?.forEach((p) => { if (scores[p]) scores[p].losses++; });
+        } else if (score2 > score1) {
+          match.team2?.forEach((p) => { if (scores[p]) scores[p].wins++; });
+          match.team1?.forEach((p) => { if (scores[p]) scores[p].losses++; });
+        } else {
+          match.team1?.forEach((p) => { if (scores[p]) scores[p].ties++; });
+          match.team2?.forEach((p) => { if (scores[p]) scores[p].ties++; });
+        }
+
+        match.team1?.forEach((p) => { if (scores[p]) scores[p].matches++; });
+        match.team2?.forEach((p) => { if (scores[p]) scores[p].matches++; });
+      });
+    });
+
+    const sorted = Object.entries(scores)
+      .map(([name, data]) => {
+        const winRate = data.matches > 0 ? (data.wins / data.matches) * 100 : 0;
+        return { name, ...data, winRate };
+      })
+      .sort((a, b) => b.points - a.points || b.wins - a.wins || b.winRate - a.winRate);
+
+    const list = $('leaderboard-list');
+    if (list) {
+      list.innerHTML = sorted
+        .map((p, i) => `
+          <div class="flex items-center bg-emerald-800/50 rounded-xl p-4 ${
+            i === 0 ? 'border-2 border-yellow-500'
+            : i === 1 ? 'border-2 border-gray-400'
+            : i === 2 ? 'border-2 border-amber-600'
+            : 'border border-emerald-700'
+          }">
+            <div class="w-8 h-8 flex items-center justify-center rounded-full ${
+              i === 0 ? 'bg-yellow-500'
+              : i === 1 ? 'bg-gray-400'
+              : i === 2 ? 'bg-amber-600'
+              : 'bg-emerald-700'
+            } text-sm font-bold mr-3">
+              ${i + 1}
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold">${escapeHtml(p.name)}</div>
+              <div class="text-sm text-emerald-300">
+                Match: ${p.matches} | W: ${p.wins} | L: ${p.losses} | T: ${p.ties}
+              </div>
+              <div class="text-xs text-emerald-400 mt-1">
+                Win Rate: ${p.winRate.toFixed(1)}%
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl font-bold text-emerald-400">${p.points}</div>
+              <div class="text-xs text-emerald-400">points</div>
+            </div>
+          </div>
+        `)
+        .join('');
+    }
+
+    navigateTo('leaderboard');
+  };
+
+  const backToRounds = () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    navigateTo('rounds');
+
+    const maxRound = getMaxRoundNumber();
+    state.viewingRound = state.lastRoundsView ?? state.viewingRound ?? state.currentTournament.current_round;
+    state.viewingRound = clamp(Number(state.viewingRound) || 1, 1, maxRound);
+
+    renderSpecificRound(state.viewingRound);
+    updateRoundArrowState();
+  };
+
+  /* ---------- Service Worker: reload once on update ---------- */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/service-worker.js');
+
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          });
+        });
+
+        reg.update();
+      } catch (err) {
+        console.error('SW failed', err);
+      }
+    });
+  }
+
+  /* ---------- expose globals (for inline handlers) ---------- */
+  window.escapeHtml = escapeHtml;
+
+  window.setEditingScore = setEditingScore;
+
+  window.navigateTo = navigateTo;
+
+  window.resetNewTournament = resetNewTournament;
+  window.goToCourts = goToCourts;
+  window.selectCourts = selectCourts;
+  window.goToPoints = goToPoints;
+  window.selectPoints = selectPoints;
+  window.goToPlayers = goToPlayers;
+
+  window.selectMode = selectMode;
+  window.setPlayerGender = setPlayerGender;
+  window.toggleGenderDraft = toggleGenderDraft;
+
+  window.addPlayer = addPlayer;
+  window.removePlayer = removePlayer;
+  window.startTournament = startTournament;
+
+  window.openTournament = openTournament;
+
+  window.updateScoreLive = updateScoreLive;
+  window.commitScore = commitScore;
+
+  window.prevRoundView = prevRoundView;
+  window.nextRoundView = nextRoundView;
+  window.nextRound = nextRound;
+
+  window.toggleMenu = toggleMenu;
+  window.confirmDelete = confirmDelete;
+  window.cancelDelete = cancelDelete;
+  window.deleteTournament = deleteTournament;
+
+  window.showLeaderboard = showLeaderboard;
+  window.backToRounds = backToRounds;
+  window.togglePlayerGender = togglePlayerGender;
+  window.updateGenderBalanceWarning = updateGenderBalanceWarning;
+})();

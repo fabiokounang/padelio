@@ -111,24 +111,34 @@
         </p>
 
         <div class="flex items-center justify-center gap-4 text-xs text-slate-400 flex-wrap">
-          <button
+          <a
+            href="about.html"
             class="underline hover:text-white transition-colors"
-            onclick="navigateTo('about')"
+            data-nav="about"
           >
-            How it works
-          </button>
-          <button
+            About
+          </a>
+          <a
+            href="privacy-policy.html"
             class="underline hover:text-white transition-colors"
-            onclick="navigateTo('privacy')"
+            data-nav="privacy"
           >
             Privacy Policy
-          </button>
-          <button
+          </a>
+          <a
+            href="terms.html"
             class="underline hover:text-white transition-colors"
-            onclick="navigateTo('terms')"
+            data-nav="terms"
           >
             Terms of Service
-          </button>
+          </a>
+          <!-- <a
+            href="#contact"
+            class="underline hover:text-white transition-colors"
+            data-nav="contact"
+          >
+            Contact
+          </a> -->
         </div>
       </div>
 
@@ -142,15 +152,15 @@
         Start New Tournament
       </button>
 
-      <button
-        onclick="navigateTo('about')"
+      <a
+        href="about.html"
         class="w-full bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 text-slate-300 font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 mb-6"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M11 10h1v8h-1"></path>
         </svg>
         Learn how Padelio works
-      </button>
+      </a>
 
       <div class="grid grid-cols-2 gap-3 mb-6">
         <div class="bg-slate-800/30 border border-slate-700 rounded-xl p-4 text-center">
