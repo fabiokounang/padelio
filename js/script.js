@@ -321,7 +321,8 @@
         home: 'index.html',
         about: 'about.html',
         privacy: 'privacy-policy.html',
-        terms: 'terms.html'
+        terms: 'terms.html',
+        contact: 'contact.html'
       }[page];
 
       if (fallbackPath) window.location.href = fallbackPath;
