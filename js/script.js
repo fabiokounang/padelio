@@ -313,11 +313,22 @@
   updateAdVisibility('home');
 
   const navigateTo = (page) => {
-    $$('.page').forEach((p) => p.classList.add('hidden'));
-
     const target = $('page-' + page);
-    if (!target) return;
+    if (!target) {
+      // Fallback for standalone pages (about/privacy/terms) where SPA sections
+      // are not present in the DOM.
+      const fallbackPath = {
+        home: 'index.html',
+        about: 'about.html',
+        privacy: 'privacy-policy.html',
+        terms: 'terms.html'
+      }[page];
 
+      if (fallbackPath) window.location.href = fallbackPath;
+      return;
+    }
+
+    $$('.page').forEach((p) => p.classList.add('hidden'));
     target.classList.remove('hidden');
     target.classList.add('slide-in');
 
