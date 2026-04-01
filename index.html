@@ -131,6 +131,13 @@
             About
           </a>
           <a
+            href="guides.html"
+            class="underline hover:text-white transition-colors"
+            data-nav="guides"
+          >
+            Guides
+          </a>
+          <a
             href="privacy-policy.html"
             class="underline hover:text-white transition-colors"
             data-nav="privacy"
@@ -183,6 +190,21 @@
           <div class="text-lg font-bold text-white">Simple</div>
           <p class="text-slate-400 text-xs mt-1">Made for friendly clubs and social sessions</p>
         </div>
+      </div>
+
+      <div class="mb-6 bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+        <h2 class="text-lg font-bold mb-2">Free organizer guides</h2>
+        <p class="text-slate-300/90 text-sm leading-relaxed mb-3">
+          Read practical guides for Americano format setup, score handling, mix planning,
+          and common mistakes that can reduce session quality.
+        </p>
+        <a
+          href="guides.html"
+          onclick="navigateTo('guides'); return false;"
+          class="inline-flex items-center gap-2 text-sm underline text-slate-200 hover:text-white"
+        >
+          Open all guides
+        </a>
       </div>
 
       <div class="flex-1">
@@ -848,6 +870,13 @@
                 class="text-left text-slate-400 hover:text-white transition-colors"
               >
                 About
+              </a>
+              <a
+                href="guides.html"
+                onclick="navigateTo('guides'); return false;"
+                class="text-left text-slate-400 hover:text-white transition-colors"
+              >
+                Guides
               </a>
               <a
                 href="privacy-policy.html"
