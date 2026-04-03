@@ -4,18 +4,17 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Nunito', 'Outfit', ui-sans-serif, system-ui, sans-serif;
 }
 
-
 .slide-in {
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(14px);
   }
 
   to {
@@ -24,7 +23,6 @@
   }
 }
 
-
 body {
   box-sizing: border-box;
 }
@@ -32,24 +30,34 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: -200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(163,230,53,0.08), transparent 70%);
+  inset: 0;
   pointer-events: none;
   z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(251, 207, 232, 0.18), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 95% 10%, rgba(167, 243, 208, 0.14), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 50% 100%, rgba(196, 181, 253, 0.12), transparent 55%);
 }
 
 .hero-title {
-  background: linear-gradient(90deg, #ffffff, #a3e635);
+  background: linear-gradient(120deg, #fef3c7 0%, #fbcfe8 35%, #a5f3fc 70%, #c4b5fd 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 20px rgba(163, 230, 53, 0.25);
+  background-clip: text;
+  filter: drop-shadow(0 2px 16px rgba(251, 207, 232, 0.25));
 }
 
 .hero-icon {
-  background: radial-gradient(circle, rgba(163,230,53,0.25) 0%, rgba(0,0,0,0) 70%);
-  box-shadow: 0 0 40px rgba(163,230,53,0.2);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(251, 207, 232, 0.35) 0%, transparent 55%),
+    radial-gradient(circle at 70% 80%, rgba(167, 243, 208, 0.22) 0%, transparent 50%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 40px -8px rgba(244, 114, 182, 0.2),
+    0 8px 32px -12px rgba(45, 212, 191, 0.12);
+}
+
+.cozy-input-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(251, 207, 232, 0.25);
 }

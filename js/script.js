@@ -284,7 +284,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -567,7 +567,7 @@
 
     list.innerHTML = players
       .map((p, i) => `
-        <div class="flex items-center justify-between bg-emerald-800/50 rounded-xl px-4 py-3 slide-in">
+        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm">
           <div class="flex items-center gap-2">
             <span class="font-medium">${escapeHtml(p.name)}</span>
 
@@ -747,7 +747,7 @@
       .map((t) => {
         const players = safeJsonParse(t.players, []);
         return `
-          <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-700 rounded-xl p-4 text-left transition-all slide-in">
+          <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-600/50 rounded-3xl p-4 text-left transition-all slide-in shadow-cozy-sm">
             <h3 class="font-semibold text-lg mb-1">${escapeHtml(t.title)}</h3>
             <div class="flex items-center gap-4 text-sm text-emerald-300">
               <span>${t.courts} court${t.courts > 1 ? 's' : ''}</span>
@@ -770,7 +770,7 @@
     container.innerHTML = roundData.matches
       .map(
         (match, idx) => `
-        <div class="bg-emerald-800/50 rounded-2xl p-4 border border-emerald-700">
+        <div class="bg-emerald-800/50 rounded-3xl p-4 border border-emerald-600/45 shadow-cozy-sm">
           <div class="text-center text-sm text-emerald-400 mb-3 font-medium">Court ${match.court}</div>
 
           <div class="flex items-center gap-4">
@@ -785,11 +785,11 @@
                   onfocus="setEditingScore(true)"
                   oninput="updateScoreLive(${idx}, 1)"
                   onblur="commitScore(${idx}, 1)"
-                  class="w-16 bg-emerald-700 border border-emerald-600 rounded-lg text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-400">
+                  class="w-16 bg-emerald-700/90 border border-emerald-500/50 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25">
               </div>
             </div>
 
-            <div class="text-2xl text-emerald-500 font-bold">vs</div>
+            <div class="text-2xl text-emerald-300 font-extrabold">vs</div>
 
             <!-- Team 2 -->
             <div class="flex-1 text-center">
@@ -802,7 +802,7 @@
                   onfocus="setEditingScore(true)"
                   oninput="updateScoreLive(${idx}, 2)"
                   onblur="commitScore(${idx}, 2)"
-                  class="w-16 bg-emerald-700 border border-emerald-600 rounded-lg text-center text-xl font-bold text-white focus:outline-none focus:border-emerald-400">
+                  class="w-16 bg-emerald-700/90 border border-emerald-500/50 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25">
               </div>
             </div>
           </div>
@@ -1003,7 +1003,7 @@
       const c = $('courts-container');
       if (c) {
         c.innerHTML = `
-          <div class="bg-emerald-800/50 rounded-2xl p-6 border border-emerald-700 text-center text-emerald-300">
+          <div class="bg-emerald-800/50 rounded-3xl p-6 border border-emerald-600/45 text-center text-emerald-200 shadow-cozy-sm">
             No data for Round ${rn} yet.
           </div>
         `;
@@ -1313,18 +1313,18 @@
     if (list) {
       list.innerHTML = sorted
         .map((p, i) => `
-          <div class="flex items-center bg-emerald-800/50 rounded-xl p-4 ${
-            i === 0 ? 'border-2 border-yellow-500'
-            : i === 1 ? 'border-2 border-gray-400'
-            : i === 2 ? 'border-2 border-amber-600'
-            : 'border border-emerald-700'
+          <div class="flex items-center bg-emerald-800/50 rounded-3xl p-4 shadow-cozy-sm ${
+            i === 0 ? 'border-2 border-amber-300'
+            : i === 1 ? 'border-2 border-slate-300'
+            : i === 2 ? 'border-2 border-orange-400/90'
+            : 'border border-emerald-600/45'
           }">
             <div class="w-8 h-8 flex items-center justify-center rounded-full ${
-              i === 0 ? 'bg-yellow-500'
-              : i === 1 ? 'bg-gray-400'
-              : i === 2 ? 'bg-amber-600'
-              : 'bg-emerald-700'
-            } text-sm font-bold mr-3">
+              i === 0 ? 'bg-gradient-to-br from-amber-200 to-amber-400 text-slate-900'
+              : i === 1 ? 'bg-slate-300 text-slate-800'
+              : i === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-white'
+              : 'bg-emerald-700 text-white'
+            } text-sm font-extrabold mr-3 shadow-sm">
               ${i + 1}
             </div>
             <div class="flex-1">
