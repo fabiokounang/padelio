@@ -142,6 +142,88 @@
     return { partnerCount, opposeCount };
   };
 
+  /** Cross-team opposition score for two pairs {m,f} (names; gender not required). */
+  const pairCrossOpposeScore = (pA, pB, opposeCount) => {
+    const a1 = pA.m, a2 = pA.f, b1 = pB.m, b2 = pB.f;
+    return (
+      (opposeCount.get(pairKey(a1, b1)) || 0) +
+      (opposeCount.get(pairKey(a1, b2)) || 0) +
+      (opposeCount.get(pairKey(a2, b1)) || 0) +
+      (opposeCount.get(pairKey(a2, b2)) || 0)
+    );
+  };
+
+  /** Consecutive rounds benched, counting only from the latest round backward. */
+  const consecutiveBenchStreak = (name, priorRounds) => {
+    let streak = 0;
+    for (let i = priorRounds.length - 1; i >= 0; i--) {
+      const on = new Set();
+      (priorRounds[i].matches || []).forEach((m) => {
+        for (const x of [...(m.team1 || []), ...(m.team2 || [])]) on.add(x);
+      });
+      if (on.has(name)) break;
+      streak++;
+    }
+    return streak;
+  };
+
+  /**
+   * Who plays this round: fewest games first, then longest current bench streak (no long waits),
+   * then round-robin among remaining ties (deterministic — no random bench lottery).
+   */
+  const pickActivePlayersNormal = (allNames, slots, priorRounds, roundNo) => {
+    const playCount = new Map();
+    priorRounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
+          playCount.set(name, (playCount.get(name) || 0) + 1);
+        }
+      });
+    });
+
+    const n = allNames.length;
+    const alphaOrder = [...allNames].sort((a, b) => a.localeCompare(b));
+    const pos = new Map(alphaOrder.map((name, i) => [name, i]));
+    const rot = ((Number(roundNo) || 1) - 1 + n * 100) % n;
+
+    const keyed = allNames.map((name) => ({
+      name,
+      played: playCount.get(name) || 0,
+      streak: consecutiveBenchStreak(name, priorRounds),
+      tieRot: (pos.get(name) - rot + n) % n
+    }));
+
+    keyed.sort((a, b) => {
+      if (a.played !== b.played) return a.played - b.played;
+      if (a.streak !== b.streak) return b.streak - a.streak;
+      return a.tieRot - b.tieRot;
+    });
+
+    return keyed.slice(0, slots).map((x) => x.name);
+  };
+
+  /** Greedy pairings: prefer partners who have shared a court least often. */
+  const buildNormalPairs = (activeNames, partnerCount) => {
+    const pool = shuffle(activeNames);
+    const pairs = [];
+    while (pool.length >= 2) {
+      const p = pool.shift();
+      let bestJ = 0;
+      let bestScore = Infinity;
+      for (let j = 0; j < pool.length; j++) {
+        const s = partnerCount.get(pairKey(p, pool[j])) || 0;
+        if (s < bestScore) {
+          bestScore = s;
+          bestJ = j;
+        }
+        if (bestScore === 0) break;
+      }
+      const q = pool.splice(bestJ, 1)[0];
+      pairs.push({ m: p, f: q });
+    }
+    return pairs;
+  };
+
   function selectMode (mode) {
     state.newTournament.mode = (mode === 'mix') ? 'mix' : 'normal';
     state.playerGenderDraft = 'M';
@@ -733,19 +815,42 @@
       return;
     }
 
-    // ---------- NORMAL MODE (old behavior) ----------
+    // ---------- NORMAL MODE (fair bench + partner/opponent variety) ----------
     if (mode !== 'mix') {
-      const players = getPlayers(); // names only
-      const shuffled = shuffle(players);
+      const players = getPlayers();
+      const maxCourts = Math.min(courts, Math.floor(players.length / 4));
+      let matches = [];
 
-      const matches = [];
-      for (let i = 0; i < courts; i++) {
-        const startIdx = i * 4;
-        if (startIdx + 3 < shuffled.length) {
+      if (maxCourts > 0) {
+        const slots = maxCourts * 4;
+        const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
+        const { partnerCount, opposeCount } = buildMixHistory();
+        const pairObjs = buildNormalPairs(active, partnerCount);
+        const matchPool = shuffle(pairObjs);
+
+        for (let c = 0; c < maxCourts; c++) {
+          if (matchPool.length < 2) break;
+
+          const p1 = matchPool.shift();
+          const candidates = [];
+          let best = Infinity;
+          for (let j = 0; j < matchPool.length; j++) {
+            const s = pairCrossOpposeScore(p1, matchPool[j], opposeCount);
+            if (s < best) {
+              best = s;
+              candidates.length = 0;
+              candidates.push(j);
+            } else if (s === best) {
+              candidates.push(j);
+            }
+          }
+          const pickJ = candidates[Math.floor(Math.random() * candidates.length)];
+          const p2 = matchPool.splice(pickJ, 1)[0];
+
           matches.push({
-            court: i + 1,
-            team1: [shuffled[startIdx], shuffled[startIdx + 1]],
-            team2: [shuffled[startIdx + 2], shuffled[startIdx + 3]],
+            court: c + 1,
+            team1: [p1.m, p1.f],
+            team2: [p2.m, p2.f],
             score1: '',
             score2: ''
           });
@@ -831,21 +936,8 @@
     const neededPairs = maxCourtsByGender * 2;
     const usablePairs = pairs.slice(0, neededPairs);
 
-    // now pair-vs-pair, try to avoid repeated opponents
-    // Greedy: for each pair, pick opponent pair that minimizes cross oppose counts
-    const pairScoreOpp = (pA, pB) => {
-      // pA = {m,f}
-      // total oppose history between 4 cross persons
-      const a1 = pA.m, a2 = pA.f, b1 = pB.m, b2 = pB.f;
-      return (
-        (opposeCount.get(pairKey(a1, b1)) || 0) +
-        (opposeCount.get(pairKey(a1, b2)) || 0) +
-        (opposeCount.get(pairKey(a2, b1)) || 0) +
-        (opposeCount.get(pairKey(a2, b2)) || 0)
-      );
-    };
-
-    const pool = [...usablePairs];
+    // now pair-vs-pair, try to avoid repeated opponents (random tie-break)
+    const pool = shuffle([...usablePairs]);
     const matches = [];
 
     for (let c = 0; c < maxCourtsByGender; c++) {
@@ -853,17 +945,19 @@
 
       const p1 = pool.shift();
 
-      let bestJ = 0;
+      const candidates = [];
       let best = Infinity;
       for (let j = 0; j < pool.length; j++) {
-        const s = pairScoreOpp(p1, pool[j]);
+        const s = pairCrossOpposeScore(p1, pool[j], opposeCount);
         if (s < best) {
           best = s;
-          bestJ = j;
+          candidates.length = 0;
+          candidates.push(j);
+        } else if (s === best) {
+          candidates.push(j);
         }
-        if (best === 0) break;
       }
-
+      const bestJ = candidates[Math.floor(Math.random() * candidates.length)];
       const p2 = pool.splice(bestJ, 1)[0];
 
       matches.push({
