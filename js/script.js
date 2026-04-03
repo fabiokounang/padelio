@@ -283,7 +283,15 @@
     }
   };
 
+  /** Bump when you ship user-visible fixes or features (shown on home). */
+  const APP_VERSION = '1.2.0';
+
   const defaultConfig = { app_title: 'Padelio' };
+
+  const refreshAppVersionLabel = () => {
+    const el = $('app-version');
+    if (el) el.textContent = `Version ${APP_VERSION}`;
+  };
 
   /* ---------- Round helpers ---------- */
   const syncCurrentTournament = () => {
@@ -393,6 +401,7 @@
   };
   initApp();
   updateAdVisibility('home');
+  refreshAppVersionLabel();
 
   const navigateTo = (page) => {
     const target = $('page-' + page);
@@ -416,7 +425,10 @@
     target.classList.remove('hidden');
     target.classList.add('slide-in');
 
-    if (page === 'home') resetNewTournament();
+    if (page === 'home') {
+      resetNewTournament();
+      refreshAppVersionLabel();
+    }
 
     updateAdVisibility(page);
   };
