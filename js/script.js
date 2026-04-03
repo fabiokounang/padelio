@@ -103,6 +103,11 @@
     const y = String(b || '');
     return x < y ? `${x}__${y}` : `${y}__${x}`;
   };
+  const matchupKey = (p1, p2) => {
+    const t1 = pairKey(p1.m, p1.f);
+    const t2 = pairKey(p2.m, p2.f);
+    return t1 < t2 ? `${t1}||${t2}` : `${t2}||${t1}`;
+  };
 
   const getPlayersFull = () => {
     const raw = safeJsonParse(state.currentTournament?.players, []);
@@ -113,6 +118,7 @@
     const rounds = getRounds();
     const partnerCount = new Map();  // key: pairKey(M,F) => times partnered
     const opposeCount = new Map();   // key: pairKey(A,B) => times opposed (any gender)
+    const matchupCount = new Map();  // key: matchupKey(pair,pair) => times faced as full pairs
 
     rounds.forEach((r) => {
       (r.matches || []).forEach((m) => {
@@ -136,10 +142,15 @@
             opposeCount.set(k, (opposeCount.get(k) || 0) + 1);
           });
         });
+
+        if (t1.length === 2 && t2.length === 2) {
+          const k = matchupKey({ m: t1[0], f: t1[1] }, { m: t2[0], f: t2[1] });
+          matchupCount.set(k, (matchupCount.get(k) || 0) + 1);
+        }
       });
     });
 
-    return { partnerCount, opposeCount };
+    return { partnerCount, opposeCount, matchupCount };
   };
 
   /** Cross-team opposition score for two pairs {m,f} (names; gender not required). */
@@ -193,13 +204,26 @@
       tieRot: (pos.get(name) - rot + n) % n
     }));
 
-    keyed.sort((a, b) => {
+    const byPriority = (a, b) => {
       if (a.played !== b.played) return a.played - b.played;
       if (a.streak !== b.streak) return b.streak - a.streak;
       return a.tieRot - b.tieRot;
-    });
+    };
 
-    return keyed.slice(0, slots).map((x) => x.name);
+    const minPlayed = keyed.reduce((m, x) => Math.min(m, x.played), Infinity);
+    const waiting = keyed.filter((x) => x.played === minPlayed).sort(byPriority);
+    const selected = waiting.slice(0, slots);
+
+    if (selected.length < slots) {
+      const needed = slots - selected.length;
+      const rest = keyed
+        .filter((x) => x.played > minPlayed)
+        .sort(byPriority)
+        .slice(0, needed);
+      selected.push(...rest);
+    }
+
+    return selected.map((x) => x.name);
   };
 
   /** Greedy pairings: prefer partners who have shared a court least often. */
@@ -222,6 +246,60 @@
       pairs.push({ m: p, f: q });
     }
     return pairs;
+  };
+
+  const buildBestNormalMatches = (activeNames, maxCourts, history) => {
+    const { partnerCount, opposeCount, matchupCount } = history;
+    const neededPairs = maxCourts * 2;
+    const attempts = Math.max(40, Math.min(180, activeNames.length * 12));
+    let best = null;
+
+    for (let i = 0; i < attempts; i++) {
+      const pairs = buildNormalPairs(activeNames, partnerCount).slice(0, neededPairs);
+      if (pairs.length < neededPairs) continue;
+
+      const pool = shuffle([...pairs]);
+      const matches = [];
+      let score = 0;
+
+      for (let c = 0; c < maxCourts; c++) {
+        if (pool.length < 2) break;
+        const p1 = pool.shift();
+        let bestJ = -1;
+        let bestPairScore = Infinity;
+
+        for (let j = 0; j < pool.length; j++) {
+          const p2 = pool[j];
+          const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
+          const sMatchup = matchupCount.get(matchupKey(p1, p2)) || 0;
+          const pairScore = sOpp * 10 + sMatchup * 200;
+          if (pairScore < bestPairScore) {
+            bestPairScore = pairScore;
+            bestJ = j;
+          }
+        }
+
+        if (bestJ < 0) break;
+        const p2 = pool.splice(bestJ, 1)[0];
+        matches.push({
+          court: c + 1,
+          team1: [p1.m, p1.f],
+          team2: [p2.m, p2.f],
+          score1: '',
+          score2: ''
+        });
+
+        const partnerPenalty =
+          (partnerCount.get(pairKey(p1.m, p1.f)) || 0) +
+          (partnerCount.get(pairKey(p2.m, p2.f)) || 0);
+        score += partnerPenalty * 30 + bestPairScore;
+      }
+
+      if (matches.length !== maxCourts) continue;
+      if (!best || score < best.score) best = { score, matches };
+    }
+
+    return best?.matches || [];
   };
 
   function selectMode (mode) {
@@ -836,37 +914,8 @@
       if (maxCourts > 0) {
         const slots = maxCourts * 4;
         const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
-        const { partnerCount, opposeCount } = buildMixHistory();
-        const pairObjs = buildNormalPairs(active, partnerCount);
-        const matchPool = shuffle(pairObjs);
-
-        for (let c = 0; c < maxCourts; c++) {
-          if (matchPool.length < 2) break;
-
-          const p1 = matchPool.shift();
-          const candidates = [];
-          let best = Infinity;
-          for (let j = 0; j < matchPool.length; j++) {
-            const s = pairCrossOpposeScore(p1, matchPool[j], opposeCount);
-            if (s < best) {
-              best = s;
-              candidates.length = 0;
-              candidates.push(j);
-            } else if (s === best) {
-              candidates.push(j);
-            }
-          }
-          const pickJ = candidates[Math.floor(Math.random() * candidates.length)];
-          const p2 = matchPool.splice(pickJ, 1)[0];
-
-          matches.push({
-            court: c + 1,
-            team1: [p1.m, p1.f],
-            team2: [p2.m, p2.f],
-            score1: '',
-            score2: ''
-          });
-        }
+        const history = buildMixHistory();
+        matches = buildBestNormalMatches(active, maxCourts, history);
       }
 
       roundData = { round: roundNo, matches };
