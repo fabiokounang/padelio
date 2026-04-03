@@ -220,23 +220,24 @@
       return a.tieRot - b.tieRot;
     };
 
-    const minPlayed = keyed.reduce((m, x) => Math.min(m, x.played), Infinity);
-    const waiting = keyed.filter((x) => x.played === minPlayed).sort(byPriority);
-    const selected = waiting.slice(0, slots);
+    // Hard fairness guard #1: players with 0 games are mandatory first.
+    const neverPlayed = keyed.filter((x) => x.played === 0).sort(byPriority);
+    const selected = neverPlayed.slice(0, slots);
+    const selectedNames = new Set(selected.map((x) => x.name));
 
     if (selected.length < slots) {
       const needed = slots - selected.length;
       const restPool = keyed
-        .filter((x) => x.played > minPlayed)
+        .filter((x) => !selectedNames.has(x.name))
         .sort((a, b) => {
-          // Hard fairness guard: prioritize anyone who sat out last round.
+          // Hard fairness guard #2: then prioritize anyone who sat out last round.
           if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
           return byPriority(a, b);
         });
       selected.push(...restPool.slice(0, needed));
     }
 
-    return selected.map((x) => x.name);
+    return selected.slice(0, slots).map((x) => x.name);
   };
 
   /** Greedy pairings: prefer partners who have shared a court least often. */
