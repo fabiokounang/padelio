@@ -178,10 +178,20 @@
     return streak;
   };
 
-  /**
-   * Who plays this round: fewest games first, then longest current bench streak (no long waits),
-   * then round-robin among remaining ties (deterministic — no random bench lottery).
-   */
+  const getLastRoundPartnerSet = (priorRounds) => {
+    const out = new Set();
+    const last = priorRounds[priorRounds.length - 1];
+    if (!last) return out;
+    (last.matches || []).forEach((m) => {
+      const t1 = m.team1 || [];
+      const t2 = m.team2 || [];
+      if (t1.length === 2) out.add(pairKey(t1[0], t1[1]));
+      if (t2.length === 2) out.add(pairKey(t2[0], t2[1]));
+    });
+    return out;
+  };
+
+  /** Fresh selection logic: never-played first, then benched-last-round first, then low play count. */
   const pickActivePlayersNormal = (allNames, slots, priorRounds, roundNo) => {
     const playCount = new Map();
     const playedLastRound = new Set();
@@ -202,8 +212,7 @@
     }
 
     const n = allNames.length;
-    const alphaOrder = [...allNames].sort((a, b) => a.localeCompare(b));
-    const pos = new Map(alphaOrder.map((name, i) => [name, i]));
+    const pos = new Map(allNames.map((name, i) => [name, i]));
     const rot = ((Number(roundNo) || 1) - 1 + n * 100) % n;
 
     const keyed = allNames.map((name) => ({
@@ -214,13 +223,17 @@
       benchedLastRound: lastRound ? !playedLastRound.has(name) : false
     }));
 
+    // Round 1 is deterministic: first listed players enter first.
+    if (!lastRound) return allNames.slice(0, slots);
+
     const byPriority = (a, b) => {
+      if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
       if (a.played !== b.played) return a.played - b.played;
       if (a.streak !== b.streak) return b.streak - a.streak;
       return a.tieRot - b.tieRot;
     };
 
-    // Hard fairness guard #1: players with 0 games are mandatory first.
+    // Hard fairness rule: anyone with zero games must be selected first.
     const neverPlayed = keyed.filter((x) => x.played === 0).sort(byPriority);
     const selected = neverPlayed.slice(0, slots);
     const selectedNames = new Set(selected.map((x) => x.name));
@@ -229,47 +242,51 @@
       const needed = slots - selected.length;
       const restPool = keyed
         .filter((x) => !selectedNames.has(x.name))
-        .sort((a, b) => {
-          // Hard fairness guard #2: then prioritize anyone who sat out last round.
-          if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
-          return byPriority(a, b);
-        });
+        .sort(byPriority);
       selected.push(...restPool.slice(0, needed));
     }
 
     return selected.slice(0, slots).map((x) => x.name);
   };
 
-  /** Greedy pairings: prefer partners who have shared a court least often. */
-  const buildNormalPairs = (activeNames, partnerCount) => {
+  /**
+   * Build teams with hard anti-repeat guard:
+   * avoid using an exact teammate pair from previous round whenever possible.
+   */
+  const buildNormalPairs = (activeNames, partnerCount, lastRoundPartnerSet) => {
     const pool = shuffle(activeNames);
     const pairs = [];
     while (pool.length >= 2) {
       const p = pool.shift();
-      let bestJ = 0;
+      let bestJ = -1;
       let bestScore = Infinity;
       for (let j = 0; j < pool.length; j++) {
-        const s = partnerCount.get(pairKey(p, pool[j])) || 0;
+        const q = pool[j];
+        const k = pairKey(p, q);
+        const partnerSeen = partnerCount.get(k) || 0;
+        const repeatedFromLastRound = lastRoundPartnerSet.has(k) ? 1 : 0;
+        const s = repeatedFromLastRound * 100000 + partnerSeen * 100;
         if (s < bestScore) {
           bestScore = s;
           bestJ = j;
         }
-        if (bestScore === 0) break;
       }
+      if (bestJ < 0) bestJ = 0;
       const q = pool.splice(bestJ, 1)[0];
       pairs.push({ m: p, f: q });
     }
     return pairs;
   };
 
-  const buildBestNormalMatches = (activeNames, maxCourts, history) => {
+  const buildBestNormalMatches = (activeNames, maxCourts, history, priorRounds) => {
     const { partnerCount, opposeCount, matchupCount } = history;
+    const lastRoundPartnerSet = getLastRoundPartnerSet(priorRounds);
     const neededPairs = maxCourts * 2;
-    const attempts = Math.max(40, Math.min(180, activeNames.length * 12));
+    const attempts = Math.max(80, Math.min(260, activeNames.length * 18));
     let best = null;
 
     for (let i = 0; i < attempts; i++) {
-      const pairs = buildNormalPairs(activeNames, partnerCount).slice(0, neededPairs);
+      const pairs = buildNormalPairs(activeNames, partnerCount, lastRoundPartnerSet).slice(0, neededPairs);
       if (pairs.length < neededPairs) continue;
 
       const pool = shuffle([...pairs]);
@@ -306,7 +323,10 @@
         const partnerPenalty =
           (partnerCount.get(pairKey(p1.m, p1.f)) || 0) +
           (partnerCount.get(pairKey(p2.m, p2.f)) || 0);
-        score += partnerPenalty * 30 + bestPairScore;
+        const repeatLastRoundPenalty =
+          (lastRoundPartnerSet.has(pairKey(p1.m, p1.f)) ? 1 : 0) +
+          (lastRoundPartnerSet.has(pairKey(p2.m, p2.f)) ? 1 : 0);
+        score += repeatLastRoundPenalty * 100000 + partnerPenalty * 50 + bestPairScore;
       }
 
       if (matches.length !== maxCourts) continue;
@@ -929,7 +949,7 @@
         const slots = maxCourts * 4;
         const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
         const history = buildMixHistory();
-        matches = buildBestNormalMatches(active, maxCourts, history);
+        matches = buildBestNormalMatches(active, maxCourts, history, rounds);
       }
 
       roundData = { round: roundNo, matches };
