@@ -73,10 +73,21 @@
     };
   };
 
+  const normalizeNameKey = (s) => String(s ?? '').trim().toLowerCase();
+
+  /** Known display typos → canonical name (case as shown). */
+  const COMMON_NAME_TYPOS = new Map([['pingku', 'Pingky']]);
+
+  const fixCommonNameTypos = (name) => {
+    const t = String(name ?? '').trim();
+    const canon = COMMON_NAME_TYPOS.get(normalizeNameKey(t));
+    return canon != null ? canon : t;
+  };
+
   const normalizePlayers = (arr) =>
     (Array.isArray(arr) ? arr : []).map((p) => {
-      if (typeof p === 'string') return { name: p, gender: null };
-      return { name: String(p?.name || ''), gender: p?.gender || null };
+      if (typeof p === 'string') return { name: fixCommonNameTypos(p), gender: null };
+      return { name: fixCommonNameTypos(String(p?.name || '')), gender: p?.gender || null };
     }).filter(p => p.name.trim().length > 0);
 
   const countGender = (players) => {
@@ -103,6 +114,46 @@
     const y = String(b || '');
     return x < y ? `${x}__${y}` : `${y}__${x}`;
   };
+
+  /** Map match / roster spelling to one canonical roster label (incl. common typos). */
+  const makeRosterNameResolve = (allNames) => {
+    const map = new Map();
+    (allNames || []).forEach((n) => {
+      const display = fixCommonNameTypos(n);
+      const k = normalizeNameKey(display);
+      if (!map.has(k)) map.set(k, display);
+    });
+    return (raw) => {
+      const fixed = fixCommonNameTypos(raw);
+      return map.get(normalizeNameKey(fixed)) ?? fixed;
+    };
+  };
+
+  const getPriorRoundsCompleted = (allRounds, roundNo) =>
+    [...(Array.isArray(allRounds) ? allRounds : [])]
+      .filter((r) => Number(r.round) < Number(roundNo))
+      .sort((a, b) => Number(a.round) - Number(b.round));
+
+  const getPreviousRoundDatum = (allRounds, roundNo) => {
+    const want = Number(roundNo) - 1;
+    if (want < 1) return null;
+    const exact = allRounds.find((r) => Number(r.round) === want);
+    if (exact) return exact;
+    const prior = getPriorRoundsCompleted(allRounds, roundNo);
+    return prior.length ? prior[prior.length - 1] : null;
+  };
+
+  const countRoundPlayerSlots = (roundsArr) =>
+    (Array.isArray(roundsArr) ? roundsArr : []).reduce(
+      (sum, r) =>
+        sum +
+        (r.matches || []).reduce(
+          (s, m) => s + (m.team1?.length || 0) + (m.team2?.length || 0),
+          0
+        ),
+      0
+    );
+
   const matchupKey = (p1, p2) => {
     const t1 = pairKey(p1.m, p1.f);
     const t2 = pairKey(p2.m, p2.f);
@@ -165,48 +216,54 @@
   };
 
   /** Consecutive rounds benched, counting only from the latest round backward. */
-  const consecutiveBenchStreak = (name, priorRounds) => {
+  const consecutiveBenchStreak = (name, priorRounds, resolve) => {
+    const res = resolve || ((n) => n);
+    const canon = res(name);
     let streak = 0;
     for (let i = priorRounds.length - 1; i >= 0; i--) {
       const on = new Set();
       (priorRounds[i].matches || []).forEach((m) => {
-        for (const x of [...(m.team1 || []), ...(m.team2 || [])]) on.add(x);
+        for (const x of [...(m.team1 || []), ...(m.team2 || [])]) on.add(res(x));
       });
-      if (on.has(name)) break;
+      if (on.has(canon)) break;
       streak++;
     }
     return streak;
   };
 
-  const getLastRoundPartnerSet = (priorRounds) => {
+  /** Teammate pairs from the immediately previous round (by round number). */
+  const getLastRoundPartnerSet = (prevRoundDatum, resolve) => {
+    const res = resolve || ((x) => String(x ?? '').trim());
     const out = new Set();
-    const last = priorRounds[priorRounds.length - 1];
-    if (!last) return out;
-    (last.matches || []).forEach((m) => {
+    if (!prevRoundDatum) return out;
+    (prevRoundDatum.matches || []).forEach((m) => {
       const t1 = m.team1 || [];
       const t2 = m.team2 || [];
-      if (t1.length === 2) out.add(pairKey(t1[0], t1[1]));
-      if (t2.length === 2) out.add(pairKey(t2[0], t2[1]));
+      if (t1.length === 2) out.add(pairKey(res(t1[0]), res(t1[1])));
+      if (t2.length === 2) out.add(pairKey(res(t2[0]), res(t2[1])));
     });
     return out;
   };
 
   /** Fresh selection logic: never-played first, then benched-last-round first, then low play count. */
-  const pickActivePlayersNormal = (allNames, slots, priorRounds, roundNo) => {
+  const pickActivePlayersNormal = (allNames, slots, allRounds, roundNo) => {
+    const resolve = makeRosterNameResolve(allNames);
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
     const playCount = new Map();
     const playedLastRound = new Set();
     priorRounds.forEach((r) => {
       (r.matches || []).forEach((m) => {
         for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
-          playCount.set(name, (playCount.get(name) || 0) + 1);
+          const c = resolve(name);
+          playCount.set(c, (playCount.get(c) || 0) + 1);
         }
       });
     });
-    const lastRound = priorRounds[priorRounds.length - 1];
     if (lastRound) {
       (lastRound.matches || []).forEach((m) => {
         for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
-          playedLastRound.add(name);
+          playedLastRound.add(resolve(name));
         }
       });
     }
@@ -218,7 +275,7 @@
     const keyed = allNames.map((name) => ({
       name,
       played: playCount.get(name) || 0,
-      streak: consecutiveBenchStreak(name, priorRounds),
+      streak: consecutiveBenchStreak(name, priorRounds, resolve),
       tieRot: (pos.get(name) - rot + n) % n,
       benchedLastRound: lastRound ? !playedLastRound.has(name) : false
     }));
@@ -278,9 +335,11 @@
     return pairs;
   };
 
-  const buildBestNormalMatches = (activeNames, maxCourts, history, priorRounds) => {
+  const buildBestNormalMatches = (activeNames, maxCourts, history, allRounds, roundNo, rosterNames) => {
     const { partnerCount, opposeCount, matchupCount } = history;
-    const lastRoundPartnerSet = getLastRoundPartnerSet(priorRounds);
+    const resolve = makeRosterNameResolve(rosterNames || activeNames);
+    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
+    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
     const neededPairs = maxCourts * 2;
     const attempts = Math.max(80, Math.min(260, activeNames.length * 18));
     let best = null;
@@ -396,7 +455,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.3.2';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -411,7 +470,26 @@
     const fresh = state.tournaments.find(
       (t) => t.__backendId === state.currentTournament.__backendId
     );
-    if (fresh) state.currentTournament = fresh;
+    if (!fresh) return;
+
+    const curR = safeJsonParse(state.currentTournament.rounds, []);
+    const freshR = safeJsonParse(fresh.rounds, []);
+    const wCur = countRoundPlayerSlots(curR);
+    const wFresh = countRoundPlayerSlots(freshR);
+
+    // Avoid clobbering in-memory round history with a stale list copy (e.g. before onDataChanged).
+    if (wFresh < wCur || freshR.length < curR.length) {
+      state.currentTournament = {
+        ...fresh,
+        rounds: state.currentTournament.rounds,
+        current_round: String(
+          Math.max(Number(state.currentTournament.current_round) || 1, Number(fresh.current_round) || 1)
+        )
+      };
+      return;
+    }
+
+    state.currentTournament = fresh;
   };
 
   const getRounds = () =>
@@ -455,6 +533,10 @@
     // keep reference fresh if SDK returns updated object
     if (result && result.isOk && result.data) {
       state.currentTournament = result.data;
+      const i = state.tournaments.findIndex(
+        (t) => t.__backendId === result.data.__backendId
+      );
+      if (i >= 0) state.tournaments[i] = result.data;
     }
     return result;
   };
@@ -889,8 +971,8 @@
             <!-- Team 1 -->
             <div class="flex-1 text-center">
               <div class="text-sm mb-2 space-y-1">
-                <div class="font-medium">${escapeHtml(match.team1[0])}</div>
-                <div class="font-medium">${escapeHtml(match.team1[1])}</div>
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1[0]))}</div>
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1[1]))}</div>
               </div>
               <div class="flex items-center justify-center gap-2">
                 <input type="number" id="score-input-${idx}-1" value="${match.score1 ?? ''}" min="0"
@@ -906,8 +988,8 @@
             <!-- Team 2 -->
             <div class="flex-1 text-center">
               <div class="text-sm mb-2 space-y-1">
-                <div class="font-medium">${escapeHtml(match.team2[0])}</div>
-                <div class="font-medium">${escapeHtml(match.team2[1])}</div>
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2[0]))}</div>
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2[1]))}</div>
               </div>
               <div class="flex items-center justify-center gap-2">
                 <input type="number" id="score-input-${idx}-2" value="${match.score2 ?? ''}" min="0"
@@ -949,7 +1031,7 @@
         const slots = maxCourts * 4;
         const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
         const history = buildMixHistory();
-        matches = buildBestNormalMatches(active, maxCourts, history, rounds);
+        matches = buildBestNormalMatches(active, maxCourts, history, rounds, roundNo, players);
       }
 
       roundData = { round: roundNo, matches };
@@ -1343,6 +1425,7 @@
 
     const players = getPlayers();
     const rounds = getRounds();
+    const rosterResolve = makeRosterNameResolve(players);
 
     const scores = {};
     players.forEach((p) => {
@@ -1366,22 +1449,40 @@
         const score1 = Number(s1) || 0;
         const score2 = Number(s2) || 0;
 
-        match.team1?.forEach((p) => { if (scores[p]) scores[p].points += score1; });
-        match.team2?.forEach((p) => { if (scores[p]) scores[p].points += score2; });
+        const apply = (fn) => {
+          match.team1?.forEach((raw) => {
+            const p = rosterResolve(raw);
+            if (scores[p]) fn(p, 1);
+          });
+          match.team2?.forEach((raw) => {
+            const p = rosterResolve(raw);
+            if (scores[p]) fn(p, 2);
+          });
+        };
+
+        apply((p, side) => {
+          scores[p].points += side === 1 ? score1 : score2;
+        });
 
         if (score1 > score2) {
-          match.team1?.forEach((p) => { if (scores[p]) scores[p].wins++; });
-          match.team2?.forEach((p) => { if (scores[p]) scores[p].losses++; });
+          apply((p, side) => {
+            if (side === 1) scores[p].wins++;
+            else scores[p].losses++;
+          });
         } else if (score2 > score1) {
-          match.team2?.forEach((p) => { if (scores[p]) scores[p].wins++; });
-          match.team1?.forEach((p) => { if (scores[p]) scores[p].losses++; });
+          apply((p, side) => {
+            if (side === 2) scores[p].wins++;
+            else scores[p].losses++;
+          });
         } else {
-          match.team1?.forEach((p) => { if (scores[p]) scores[p].ties++; });
-          match.team2?.forEach((p) => { if (scores[p]) scores[p].ties++; });
+          apply((p) => {
+            scores[p].ties++;
+          });
         }
 
-        match.team1?.forEach((p) => { if (scores[p]) scores[p].matches++; });
-        match.team2?.forEach((p) => { if (scores[p]) scores[p].matches++; });
+        apply((p) => {
+          scores[p].matches++;
+        });
       });
     });
 
@@ -1411,7 +1512,7 @@
               ${i + 1}
             </div>
             <div class="flex-1">
-              <div class="font-semibold">${escapeHtml(p.name)}</div>
+              <div class="font-semibold">${escapeHtml(fixCommonNameTypos(p.name))}</div>
               <div class="text-sm text-emerald-300">
                 Match: ${p.matches} | W: ${p.wins} | L: ${p.losses} | T: ${p.ties}
               </div>
