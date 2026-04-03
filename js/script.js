@@ -184,6 +184,7 @@
    */
   const pickActivePlayersNormal = (allNames, slots, priorRounds, roundNo) => {
     const playCount = new Map();
+    const playedLastRound = new Set();
     priorRounds.forEach((r) => {
       (r.matches || []).forEach((m) => {
         for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
@@ -191,6 +192,14 @@
         }
       });
     });
+    const lastRound = priorRounds[priorRounds.length - 1];
+    if (lastRound) {
+      (lastRound.matches || []).forEach((m) => {
+        for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
+          playedLastRound.add(name);
+        }
+      });
+    }
 
     const n = allNames.length;
     const alphaOrder = [...allNames].sort((a, b) => a.localeCompare(b));
@@ -201,7 +210,8 @@
       name,
       played: playCount.get(name) || 0,
       streak: consecutiveBenchStreak(name, priorRounds),
-      tieRot: (pos.get(name) - rot + n) % n
+      tieRot: (pos.get(name) - rot + n) % n,
+      benchedLastRound: lastRound ? !playedLastRound.has(name) : false
     }));
 
     const byPriority = (a, b) => {
@@ -216,11 +226,14 @@
 
     if (selected.length < slots) {
       const needed = slots - selected.length;
-      const rest = keyed
+      const restPool = keyed
         .filter((x) => x.played > minPlayed)
-        .sort(byPriority)
-        .slice(0, needed);
-      selected.push(...rest);
+        .sort((a, b) => {
+          // Hard fairness guard: prioritize anyone who sat out last round.
+          if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
+          return byPriority(a, b);
+        });
+      selected.push(...restPool.slice(0, needed));
     }
 
     return selected.map((x) => x.name);
