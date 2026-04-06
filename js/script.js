@@ -455,7 +455,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.3.3';
+  const APP_VERSION = '1.3.4';
 
   const defaultConfig = { app_title: 'Padelio' };
 
