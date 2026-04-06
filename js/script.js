@@ -439,6 +439,7 @@
     isEditingScore: false,
     lastRoundsView: null,
     viewingRound: null,
+    deferredInstallPrompt: null,
 
     tournaments: [],
     currentTournament: null,
@@ -1411,6 +1412,76 @@
     cancelDelete();
   };
 
+  const installApp = async () => {
+    $('dropdown-menu')?.classList.add('hidden');
+    const evt = state.deferredInstallPrompt;
+    if (!evt) {
+      toast('Install prompt unavailable. Use browser menu: Install app / Add to Home screen.');
+      return;
+    }
+    try {
+      evt.prompt();
+      await evt.userChoice;
+    } catch (err) {
+      console.error('Install prompt failed', err);
+      toast('Failed to show install prompt.');
+    } finally {
+      state.deferredInstallPrompt = null;
+    }
+  };
+
+  const clearAllAppData = async () => {
+    $('dropdown-menu')?.classList.add('hidden');
+
+    const ok1 = window.confirm(
+      'WARNING: This will delete ALL tournaments and ALL match history on this device. Continue?'
+    );
+    if (!ok1) return;
+    const ok2 = window.confirm(
+      'Final confirm: all matches will be gone and cannot be recovered. Clear cache and data now?'
+    );
+    if (!ok2) return;
+
+    try {
+      // Delete all stored tournaments from backend/local SDK store.
+      if (window.dataSdk) {
+        for (const t of [...state.tournaments]) {
+          try {
+            await window.dataSdk.delete(t);
+          } catch (err) {
+            console.error('Failed deleting tournament', err);
+          }
+        }
+      }
+
+      state.tournaments = [];
+      state.currentTournament = null;
+      resetNewTournament();
+
+      // Best-effort web storage cleanup.
+      try { localStorage.clear(); } catch {}
+      try { sessionStorage.clear(); } catch {}
+
+      // Clear Cache Storage entries.
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+
+      // Remove service workers so fresh assets/cache policies apply.
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+
+      toast('Cache and data cleared. Reloading...');
+      setTimeout(() => window.location.reload(), 500);
+    } catch (err) {
+      console.error('Clear cache/data failed', err);
+      toast('Failed to clear all data.');
+    }
+  };
+
   /* ---------- Leaderboard ---------- */
   const showLeaderboard = () => {
     syncCurrentTournament();
@@ -1547,6 +1618,11 @@
   };
 
   /* ---------- Service Worker: reload once on update ---------- */
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    state.deferredInstallPrompt = e;
+  });
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
@@ -1602,6 +1678,8 @@
   window.nextRound = nextRound;
 
   window.toggleMenu = toggleMenu;
+  window.installApp = installApp;
+  window.clearAllAppData = clearAllAppData;
   window.confirmDelete = confirmDelete;
   window.cancelDelete = cancelDelete;
   window.deleteTournament = deleteTournament;
