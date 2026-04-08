@@ -1415,7 +1415,19 @@
   const installApp = async () => {
     const evt = state.deferredInstallPrompt;
     if (!evt) {
-      toast('Install prompt unavailable. Use browser menu: Install app / Add to Home screen.');
+      const ua = navigator.userAgent || '';
+      const isiOS = /iPhone|iPad|iPod/i.test(ua);
+      if (isiOS) {
+        window.alert(
+          'Safari iPhone does not show an automatic install popup.\n\n' +
+          'To install Padelio:\n' +
+          '1) Tap Share (square + arrow)\n' +
+          '2) Choose "Add to Home Screen"\n' +
+          '3) Tap Add'
+        );
+      } else {
+        window.alert('Install prompt unavailable. Use browser menu: Install app / Add to Home Screen.');
+      }
       return;
     }
     try {
@@ -1440,13 +1452,19 @@
     if (!ok2) return;
 
     try {
+      let deletedCount = 0;
+      let deleteFailed = 0;
+
       // Delete all stored tournaments from backend/local SDK store.
       if (window.dataSdk) {
         for (const t of [...state.tournaments]) {
           try {
-            await window.dataSdk.delete(t);
+            const r = await window.dataSdk.delete(t);
+            if (r?.isOk) deletedCount++;
+            else deleteFailed++;
           } catch (err) {
             console.error('Failed deleting tournament', err);
+            deleteFailed++;
           }
         }
       }
@@ -1471,11 +1489,19 @@
         await Promise.all(regs.map((r) => r.unregister()));
       }
 
-      toast('Cache and data cleared. Reloading...');
+      if (deleteFailed > 0) {
+        window.alert(
+          `Cache cleared, but ${deleteFailed} tournament(s) failed to delete.\n` +
+          'Please refresh and try again.'
+        );
+        return;
+      }
+
+      window.alert(`Done. Cleared cache and deleted ${deletedCount} tournament(s).`);
       setTimeout(() => window.location.reload(), 500);
     } catch (err) {
       console.error('Clear cache/data failed', err);
-      toast('Failed to clear all data.');
+      window.alert('Failed to clear all data on this browser.');
     }
   };
 
