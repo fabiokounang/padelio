@@ -1413,7 +1413,6 @@
   };
 
   const installApp = async () => {
-    $('dropdown-menu')?.classList.add('hidden');
     const evt = state.deferredInstallPrompt;
     if (!evt) {
       toast('Install prompt unavailable. Use browser menu: Install app / Add to Home screen.');
@@ -1431,8 +1430,6 @@
   };
 
   const clearAllAppData = async () => {
-    $('dropdown-menu')?.classList.add('hidden');
-
     const ok1 = window.confirm(
       'WARNING: This will delete ALL tournaments and ALL match history on this device. Continue?'
     );

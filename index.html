@@ -216,6 +216,82 @@
             Contact
           </a>
         </div>
+
+        <div
+          class="w-full max-w-md mx-auto mt-6 mb-2 rounded-3xl border border-white/10 bg-gradient-to-br from-teal-500/[0.12] via-slate-900/50 to-pink-500/[0.1] p-4 sm:p-5 shadow-cozy-sm backdrop-blur-md"
+          role="region"
+          aria-label="Device options"
+        >
+          <div class="flex items-start gap-3 mb-4">
+            <div
+              class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/[0.06] text-teal-200 shadow-inner"
+              aria-hidden="true"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <div class="min-w-0 text-left">
+              <h2 class="text-sm font-extrabold text-white tracking-tight">Use Padelio like an app</h2>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Add to your home screen for quick access at the club. Reset only if you need a clean slate.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onclick="installApp()"
+              class="group flex flex-col gap-2 rounded-2xl border border-teal-400/30 bg-teal-500/[0.12] px-4 py-3.5 text-left transition-all hover:border-teal-300/45 hover:bg-teal-500/[0.18] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50"
+            >
+              <span class="flex items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-500/20 text-teal-100 border border-teal-400/20">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                </span>
+                <span class="font-bold text-sm text-teal-50 leading-tight">Install app</span>
+              </span>
+              <p class="text-[11px] text-teal-100/70 leading-relaxed">
+                Add Padelio to your home screen when your browser shows the install option.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onclick="clearAllAppData()"
+              class="group flex flex-col gap-2 rounded-2xl border border-red-400/25 bg-red-950/35 px-4 py-3.5 text-left transition-all hover:border-red-400/40 hover:bg-red-950/50 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40"
+            >
+              <span class="flex items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-500/15 text-red-200 border border-red-400/20">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </span>
+                <span class="font-bold text-sm text-red-100 leading-tight">Clear cache &amp; data</span>
+              </span>
+              <p class="text-[11px] text-red-200/80 leading-relaxed">
+                Removes <strong class="text-red-100/95 font-semibold">all tournaments and every match</strong> stored on this device. This cannot be undone.
+              </p>
+            </button>
+          </div>
+        </div>
       </div>
 
       <button
@@ -316,14 +392,15 @@
           </div>
 
           <p class="text-slate-300 text-xs mt-4 leading-relaxed">
-            Tip: Install Padelio to your home screen for faster access during club sessions.
+            Tip: On the home screen, use <strong class="text-slate-200 font-semibold">Install app</strong> for one-tap access at the club, or read
             <a
               href="about.html"
               class="text-teal-200 underline decoration-teal-400/50 hover:text-pink-100 transition-colors"
               onclick="navigateTo('about'); return false;"
             >
-              Read the installation guide here
+              the full installation guide
             </a>
+            .
           </p>
         </div>
 
@@ -826,14 +903,6 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg> Leaderboard </button>
-            <button onclick="installApp()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center gap-3">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8m0 8l-3-3m3 3l3-3M5 19h14" />
-              </svg> Install App </button>
-            <button onclick="clearAllAppData()" class="w-full px-4 py-3 text-left hover:bg-red-500/20 transition-colors flex items-center gap-3 text-red-200">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M8 6V4h8v2m-9 0l1 14h6l1-14" />
-              </svg> Clear Cache & Data </button>
             <button onclick="confirmDelete()" class="w-full px-4 py-3 text-left hover:bg-red-500/30 transition-colors flex items-center gap-3 text-red-300">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
