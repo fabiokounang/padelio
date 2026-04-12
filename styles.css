@@ -27,6 +27,15 @@ body {
   box-sizing: border-box;
 }
 
+/* Flex column + overflow-y-auto: needs min-height 0 chain; iOS needs momentum scroll. */
+.leb-main-scroll {
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  overflow-x: hidden;
+  touch-action: pan-y;
+}
+
 body::before {
   content: "";
   position: fixed;

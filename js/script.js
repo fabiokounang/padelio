@@ -440,6 +440,9 @@
     lastRoundsView: null,
     viewingRound: null,
     deferredInstallPrompt: null,
+    /** Read-only spectator mode when opening #p=… share link (no create/edit/delete). */
+    shareViewerMode: false,
+    shareViewerData: null,
 
     tournaments: [],
     currentTournament: null,
@@ -452,11 +455,15 @@
       courts: 0,
       points: 0,
       players: []
-    }
+    },
+
+    /** Leaderboard sub-view: detailed cards vs compact screenshot-friendly list. */
+    hostLeaderboardLayout: 'standard',
+    shareLeaderboardLayout: 'standard'
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.3.6';
+  const APP_VERSION = '1.3.14';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -467,6 +474,7 @@
 
   /* ---------- Round helpers ---------- */
   const syncCurrentTournament = () => {
+    if (state.shareViewerMode) return;
     if (!state.currentTournament) return;
     const fresh = state.tournaments.find(
       (t) => t.__backendId === state.currentTournament.__backendId
@@ -527,6 +535,7 @@
 
   /* ---------- Persist ---------- */
   const saveCurrentTournament = async () => {
+    if (state.shareViewerMode) return;
     if (!state.currentTournament || !window.dataSdk) return;
 
     const result = await window.dataSdk.update(state.currentTournament);
@@ -550,6 +559,7 @@
   /* ---------- Data SDK handler ---------- */
   const dataHandler = {
     onDataChanged(data) {
+      if (state.shareViewerMode) return;
       state.tournaments = Array.isArray(data) ? data : [];
 
       // sync currentTournament to latest object
@@ -620,7 +630,7 @@
     target.classList.remove('hidden');
     target.classList.add('slide-in');
 
-    if (page === 'home') {
+    if (page === 'home' && !state.shareViewerMode) {
       resetNewTournament();
       refreshAppVersionLabel();
     }
@@ -1442,6 +1452,7 @@
   };
 
   const clearAllAppData = async () => {
+    if (state.shareViewerMode) return;
     const ok1 = window.confirm(
       'WARNING: This will delete ALL tournaments and ALL match history on this device. Continue?'
     );
@@ -1505,20 +1516,48 @@
     }
   };
 
-  /* ---------- Leaderboard ---------- */
-  const showLeaderboard = () => {
-    syncCurrentTournament();
-    if (!state.currentTournament) return;
+  /* ---------- Share link (spectator / view-only, data in URL hash) ---------- */
+  const SHARE_PAYLOAD_VERSION = 1;
+  const MAX_SHARE_URL_CHARS = 95000;
 
-    state.lastRoundsView = (state.viewingRound ?? state.currentTournament.current_round);
-    $('dropdown-menu')?.classList.add('hidden');
+  const encodeSharePayload = (obj) => {
+    const json = JSON.stringify(obj);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
 
-    // ensure latest stored object
-    const fresh = state.tournaments.find((t) => t.__backendId === state.currentTournament.__backendId);
-    if (fresh) state.currentTournament = fresh;
+  const decodeSharePayload = (str) => {
+    let b64 = String(str || '').replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64.length % 4;
+    if (pad) b64 += '='.repeat(4 - pad);
+    const json = decodeURIComponent(escape(atob(b64)));
+    return JSON.parse(json);
+  };
 
-    const players = getPlayers();
-    const rounds = getRounds();
+  const buildShareUrlFromTournament = (t) => {
+    const payload = {
+      v: SHARE_PAYLOAD_VERSION,
+      title: t.title || 'Tournament',
+      mode: t.mode || 'normal',
+      courts: t.courts,
+      points_to_win: t.points_to_win,
+      players: t.players,
+      rounds: t.rounds,
+      current_round: t.current_round
+    };
+    const enc = encodeSharePayload(payload);
+    const base = `${location.origin}${location.pathname}`;
+    const url = `${base}#p=${enc}`;
+    if (url.length > MAX_SHARE_URL_CHARS) {
+      const err = new Error('TOO_LARGE');
+      throw err;
+    }
+    return url;
+  };
+
+  const computeLeaderboardSorted = (tournamentLike) => {
+    const players = normalizePlayers(safeJsonParse(tournamentLike?.players, [])).map((p) => p.name);
+    const rounds = safeJsonParse(tournamentLike?.rounds, []);
     const rosterResolve = makeRosterNameResolve(players);
 
     const scores = {};
@@ -1531,13 +1570,11 @@
         const s1 = match.score1;
         const s2 = match.score2;
 
-        // Only count if there is a real score input (exclude empty/blank)
         const hasScore =
           (s1 !== '' && s1 != null) || (s2 !== '' && s2 != null);
 
         if (!hasScore) return;
 
-        // Keep old behavior: ignore 0-0
         if (Number(s1) === 0 && Number(s2) === 0) return;
 
         const score1 = Number(s1) || 0;
@@ -1580,17 +1617,18 @@
       });
     });
 
-    const sorted = Object.entries(scores)
+    return Object.entries(scores)
       .map(([name, data]) => {
         const winRate = data.matches > 0 ? (data.wins / data.matches) * 100 : 0;
         return { name, ...data, winRate };
       })
       .sort((a, b) => b.points - a.points || b.wins - a.wins || b.winRate - a.winRate);
+  };
 
-    const list = $('leaderboard-list');
-    if (list) {
-      list.innerHTML = sorted
-        .map((p, i) => `
+  const renderLeaderboardHtml = (sorted) =>
+    sorted
+      .map(
+        (p, i) => `
           <div class="flex items-center bg-emerald-800/50 rounded-3xl p-4 shadow-cozy-sm ${
             i === 0 ? 'border-2 border-amber-300'
             : i === 1 ? 'border-2 border-slate-300'
@@ -1619,11 +1657,402 @@
               <div class="text-xs text-emerald-400">points</div>
             </div>
           </div>
-        `)
-        .join('');
+        `
+      )
+      .join('');
+
+  /** Compact standings for screenshots: 2-column grid, full stats per row. */
+  const renderLeaderboardScreenshotHtml = (sorted, title) => {
+    const t = title != null && String(title).trim() ? escapeHtml(String(title).trim()) : '';
+    const heading = t
+      ? `<div class="text-center mb-3 pb-3 border-b border-white/10 col-span-2">
+           <div class="text-lg font-extrabold text-white tracking-tight">${t}</div>
+           <div class="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90 mt-1">Leaderboard</div>
+         </div>`
+      : `<div class="text-center mb-3 pb-3 border-b border-white/10 col-span-2">
+           <div class="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90">Standings</div>
+         </div>`;
+
+    const cells = sorted
+      .map((p, i) => {
+        const wr = Math.round(p.winRate);
+        const statLine = `${p.matches}M ${p.wins}-${p.losses}-${p.ties} ${wr}%`;
+        const rankGrad =
+          i === 0
+            ? 'from-amber-200 to-amber-400 text-slate-900'
+            : i === 1
+              ? 'bg-slate-300 text-slate-800'
+              : i === 2
+                ? 'from-orange-300 to-orange-500 text-white'
+                : 'bg-emerald-800 text-white';
+        const rowRing =
+          i === 0
+            ? 'ring-1 ring-amber-300/50'
+            : i === 1
+              ? 'ring-1 ring-slate-400/40'
+              : i === 2
+                ? 'ring-1 ring-orange-400/45'
+                : '';
+        return `
+          <div class="flex items-center gap-1 rounded-xl px-1.5 py-1 sm:px-2 sm:py-1.5 bg-emerald-950/50 border border-emerald-800/40 min-w-0 ${rowRing}">
+            <div class="w-5 h-5 sm:w-6 sm:h-6 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br ${rankGrad} text-[9px] sm:text-[10px] font-extrabold shadow-sm tabular-nums">
+              ${i + 1}
+            </div>
+            <div class="flex-1 min-w-0 overflow-hidden">
+              <div class="font-semibold text-[10px] sm:text-[11px] leading-tight truncate">${escapeHtml(fixCommonNameTypos(p.name))}</div>
+              <div class="text-[7px] sm:text-[8px] text-emerald-300/90 tabular-nums leading-none mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" title="${statLine}">
+                ${statLine}
+              </div>
+            </div>
+            <div class="shrink-0 w-7 sm:w-8 flex flex-col items-end justify-center text-right">
+              <div class="text-sm sm:text-base font-bold text-emerald-300 tabular-nums leading-none">${p.points}</div>
+              <div class="text-[6px] sm:text-[7px] text-emerald-500/80 leading-none">pts</div>
+            </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    return `
+      <div class="rounded-3xl border border-teal-400/25 bg-gradient-to-b from-slate-900/95 to-slate-950 p-2 sm:p-4 shadow-cozy-sm">
+        <div class="grid grid-cols-2 gap-x-1.5 gap-y-1 sm:gap-x-3 sm:gap-y-2">
+          ${heading}
+          ${cells}
+        </div>
+      </div>
+    `;
+  };
+
+  const LB_TAB_ACTIVE =
+    'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50';
+  const LB_TAB_IDLE =
+    'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors';
+
+  const applyHostLeaderboardLayoutUi = () => {
+    const layout = state.hostLeaderboardLayout === 'screenshot' ? 'screenshot' : 'standard';
+    const std = $('leaderboard-panel-standard');
+    const shot = $('leaderboard-panel-screenshot');
+    const b1 = $('host-lb-tab-standard');
+    const b2 = $('host-lb-tab-screenshot');
+    const onShot = layout === 'screenshot';
+    if (std) std.classList.toggle('hidden', onShot);
+    if (shot) shot.classList.toggle('hidden', !onShot);
+    if (b1) b1.className = !onShot ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+    if (b2) b2.className = onShot ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+  };
+
+  const applyShareLeaderboardLayoutUi = () => {
+    const layout = state.shareLeaderboardLayout === 'screenshot' ? 'screenshot' : 'standard';
+    const std = $('share-leaderboard-standard-wrap');
+    const shot = $('share-leaderboard-screenshot-wrap');
+    const b1 = $('share-lb-sub-standard');
+    const b2 = $('share-lb-sub-screenshot');
+    const onShot = layout === 'screenshot';
+    if (std) std.classList.toggle('hidden', onShot);
+    if (shot) shot.classList.toggle('hidden', !onShot);
+    if (b1) b1.className = !onShot ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+    if (b2) b2.className = onShot ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+  };
+
+  const switchHostLeaderboardLayout = (layout) => {
+    state.hostLeaderboardLayout = layout === 'screenshot' ? 'screenshot' : 'standard';
+    applyHostLeaderboardLayoutUi();
+  };
+
+  const switchShareLeaderboardLayout = (layout) => {
+    state.shareLeaderboardLayout = layout === 'screenshot' ? 'screenshot' : 'standard';
+    applyShareLeaderboardLayoutUi();
+  };
+
+  /** Inline onclick looks up globals; assign early + use listeners so tabs always work. */
+  window.switchHostLeaderboardLayout = switchHostLeaderboardLayout;
+  window.switchShareLeaderboardLayout = switchShareLeaderboardLayout;
+
+  /** Text nodes have no .closest — normalize target before delegating. */
+  const clickTargetButton = (e) => {
+    let n = e.target;
+    if (n && n.nodeType === Node.TEXT_NODE) n = n.parentElement;
+    return n && typeof n.closest === 'function' ? n.closest('button') : null;
+  };
+
+  /** Delegation + tabs live outside scroll on host / share to avoid touch stacking bugs. */
+  const wireLeaderboardLayoutTabs = () => {
+    const hostPage = $('page-leaderboard');
+    if (hostPage && !hostPage.dataset.lbTabDelegate) {
+      hostPage.dataset.lbTabDelegate = '1';
+      hostPage.addEventListener('click', (e) => {
+        const id = clickTargetButton(e)?.id;
+        if (id === 'host-lb-tab-standard') {
+          e.preventDefault();
+          switchHostLeaderboardLayout('standard');
+        } else if (id === 'host-lb-tab-screenshot') {
+          e.preventDefault();
+          switchHostLeaderboardLayout('screenshot');
+        }
+      });
     }
+    const shareLb = $('share-panel-leaderboard');
+    if (shareLb && !shareLb.dataset.lbTabDelegate) {
+      shareLb.dataset.lbTabDelegate = '1';
+      shareLb.addEventListener('click', (e) => {
+        const id = clickTargetButton(e)?.id;
+        if (id === 'share-lb-sub-standard') {
+          e.preventDefault();
+          switchShareLeaderboardLayout('standard');
+        } else if (id === 'share-lb-sub-screenshot') {
+          e.preventDefault();
+          switchShareLeaderboardLayout('screenshot');
+        }
+      });
+    }
+    const shareSubBar = $('share-lb-subtabs');
+    if (shareSubBar && !shareSubBar.dataset.lbTabDelegate) {
+      shareSubBar.dataset.lbTabDelegate = '1';
+      shareSubBar.addEventListener('click', (e) => {
+        const id = clickTargetButton(e)?.id;
+        if (id === 'share-lb-sub-standard') {
+          e.preventDefault();
+          switchShareLeaderboardLayout('standard');
+        } else if (id === 'share-lb-sub-screenshot') {
+          e.preventDefault();
+          switchShareLeaderboardLayout('screenshot');
+        }
+      });
+    }
+  };
+  wireLeaderboardLayoutTabs();
+
+  const populateLeaderboardPanels = (sorted, title) => {
+    const hostStd = $('leaderboard-list');
+    const hostShot = $('leaderboard-screenshot-panel');
+    if (hostStd) hostStd.innerHTML = renderLeaderboardHtml(sorted);
+    if (hostShot) hostShot.innerHTML = renderLeaderboardScreenshotHtml(sorted, title);
+
+    const shareStd = $('share-leaderboard-list');
+    const shareShot = $('share-leaderboard-screenshot-panel');
+    if (shareStd) shareStd.innerHTML = renderLeaderboardHtml(sorted);
+    if (shareShot) shareShot.innerHTML = renderLeaderboardScreenshotHtml(sorted, title);
+
+    applyHostLeaderboardLayoutUi();
+    applyShareLeaderboardLayoutUi();
+  };
+
+  const copySpectatorLinkForHost = async () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+    let url;
+    try {
+      url = buildShareUrlFromTournament(state.currentTournament);
+    } catch (e) {
+      if (e && e.message === 'TOO_LARGE') {
+        toast('Tournament is too large for one link. Share a screenshot or split sessions.');
+        return;
+      }
+      toast('Could not build share link.');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('Spectator link copied (read-only). Share again after you change scores for the latest standings.');
+    } catch {
+      window.prompt('Copy this spectator link:', url);
+    }
+  };
+
+  const shareSpectatorLinkForHost = async () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+    let url;
+    try {
+      url = buildShareUrlFromTournament(state.currentTournament);
+    } catch (e) {
+      if (e && e.message === 'TOO_LARGE') {
+        toast('Tournament is too large for one link.');
+        return;
+      }
+      toast('Could not build share link.');
+      return;
+    }
+    const title = state.currentTournament.title || 'Padelio';
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${title} — Padelio`,
+          text: 'View live standings (read-only)',
+          url
+        });
+      } else {
+        await copySpectatorLinkForHost();
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+      await copySpectatorLinkForHost();
+    }
+  };
+
+  /** Inline onclick on leaderboard header; assign early so globals exist even if later init throws. */
+  window.copySpectatorLinkForHost = copySpectatorLinkForHost;
+  window.shareSpectatorLinkForHost = shareSpectatorLinkForHost;
+
+  const renderShareRoundsReadOnly = (rounds) => {
+    const el = $('share-rounds-container');
+    if (!el) return;
+    const list = Array.isArray(rounds) ? rounds : [];
+    if (list.length === 0) {
+      el.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">No rounds yet.</p>';
+      return;
+    }
+    el.innerHTML = list
+      .sort((a, b) => Number(a.round) - Number(b.round))
+      .map((round) => {
+        const matches = (round.matches || [])
+          .map(
+            (match) => `
+          <div class="bg-emerald-900/40 rounded-2xl p-3 border border-emerald-700/40 mb-3">
+            <div class="text-center text-xs text-emerald-400 mb-2 font-medium">Court ${match.court}</div>
+            <div class="flex items-center gap-3 text-sm">
+              <div class="flex-1 text-center space-y-1">
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[0]))}</div>
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[1]))}</div>
+                <div class="text-lg font-bold text-emerald-300 mt-1">${escapeHtml(String(match.score1 ?? '—'))}</div>
+              </div>
+              <div class="text-emerald-500 font-extrabold text-xs">vs</div>
+              <div class="flex-1 text-center space-y-1">
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2?.[0]))}</div>
+                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2?.[1]))}</div>
+                <div class="text-lg font-bold text-emerald-300 mt-1">${escapeHtml(String(match.score2 ?? '—'))}</div>
+              </div>
+            </div>
+          </div>
+        `
+          )
+          .join('');
+        return `
+          <div class="mb-8">
+            <h3 class="text-sm font-extrabold text-white mb-3 sticky top-0 bg-slate-950/90 py-2 border-b border-white/10">Round ${Number(round.round) || '?'}</h3>
+            ${matches}
+          </div>
+        `;
+      })
+      .join('');
+  };
+
+  const switchShareTab = (tab) => {
+    const lb = $('share-panel-leaderboard');
+    const rd = $('share-panel-rounds');
+    const t1 = $('share-tab-lb');
+    const t2 = $('share-tab-rd');
+    const subBar = $('share-lb-subtabs');
+    if (!lb || !rd) return;
+    const onLb = tab === 'leaderboard';
+    lb.classList.toggle('hidden', !onLb);
+    rd.classList.toggle('hidden', onLb);
+    if (subBar) subBar.classList.toggle('hidden', !onLb);
+    const active =
+      'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50';
+    const idle =
+      'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors';
+    if (t1) t1.className = onLb ? active : idle;
+    if (t2) t2.className = !onLb ? active : idle;
+    if (onLb) applyShareLeaderboardLayoutUi();
+  };
+
+  const copyCurrentSpectatorUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      toast('Page link copied — share to Instagram, TikTok, etc.');
+    } catch {
+      window.prompt('Copy this link:', location.href);
+    }
+  };
+
+  const shareCurrentSpectatorUrl = async () => {
+    const url = location.href;
+    const title = state.shareViewerData?.title || 'Padelio';
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${title} — Padelio`,
+          text: 'View tournament standings (read-only)',
+          url
+        });
+      } else {
+        await copyCurrentSpectatorUrl();
+      }
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+      await copyCurrentSpectatorUrl();
+    }
+  };
+
+  const renderShareViewer = () => {
+    const data = state.shareViewerData;
+    if (!data) return;
+
+    const titleEl = $('share-view-title');
+    if (titleEl) titleEl.textContent = data.title || 'Tournament';
+
+    const sorted = computeLeaderboardSorted(data);
+    populateLeaderboardPanels(sorted, data.title || '');
+
+    const rounds = safeJsonParse(data.rounds, []);
+    renderShareRoundsReadOnly(rounds);
+
+    switchShareTab('leaderboard');
+    wireLeaderboardLayoutTabs();
+
+    document.title = `${data.title || 'Padelio'} | Padelio (view)`;
+  };
+
+  const exitShareViewer = () => {
+    state.shareViewerMode = false;
+    state.shareViewerData = null;
+    try {
+      history.replaceState(null, '', `${location.pathname}${location.search}`);
+    } catch {}
+    window.location.reload();
+  };
+
+  const tryOpenShareFromHash = () => {
+    const h = (location.hash || '').trim();
+    if (!h.startsWith('#p=')) return false;
+    const raw = h.slice(3);
+    if (!raw) return false;
+    let data;
+    try {
+      data = decodeSharePayload(raw);
+    } catch (e) {
+      console.error(e);
+      toast('Invalid or broken share link.');
+      return false;
+    }
+    if (Number(data.v) !== SHARE_PAYLOAD_VERSION || data.players == null || data.rounds == null) {
+      toast('Invalid share link format.');
+      return false;
+    }
+    state.shareViewerMode = true;
+    state.shareViewerData = data;
+    return true;
+  };
+
+  /* ---------- Leaderboard ---------- */
+  const showLeaderboard = () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    state.lastRoundsView = (state.viewingRound ?? state.currentTournament.current_round);
+    $('dropdown-menu')?.classList.add('hidden');
+
+    // ensure latest stored object
+    const fresh = state.tournaments.find((t) => t.__backendId === state.currentTournament.__backendId);
+    if (fresh) state.currentTournament = fresh;
+
+    const sorted = computeLeaderboardSorted(state.currentTournament);
+    const title = state.currentTournament.title || '';
+    populateLeaderboardPanels(sorted, title);
 
     navigateTo('leaderboard');
+    wireLeaderboardLayoutTabs();
   };
 
   const backToRounds = () => {
@@ -1711,4 +2140,20 @@
   window.backToRounds = backToRounds;
   window.togglePlayerGender = togglePlayerGender;
   window.updateGenderBalanceWarning = updateGenderBalanceWarning;
+
+  window.switchShareTab = switchShareTab;
+  window.exitShareViewer = exitShareViewer;
+  window.copyCurrentSpectatorUrl = copyCurrentSpectatorUrl;
+  window.shareCurrentSpectatorUrl = shareCurrentSpectatorUrl;
+
+  if (tryOpenShareFromHash()) {
+    $$('.page').forEach((p) => p.classList.add('hidden'));
+    const sh = $('page-share-view');
+    if (sh) {
+      sh.classList.remove('hidden');
+      sh.classList.add('slide-in');
+    }
+    renderShareViewer();
+    updateAdVisibility('share-view');
+  }
 })();
