@@ -56,13 +56,74 @@
     return div.innerHTML;
   };
 
+  const TOAST_DURATION_MS = 3200;
   const toast = (message) => {
-    const el = document.createElement('div');
-    el.className =
-      'fixed bottom-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 slide-in';
-    el.textContent = message;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
+    const prev = document.getElementById('app-toast');
+    if (prev) prev.remove();
+
+    const wrap = document.createElement('div');
+    wrap.id = 'app-toast';
+    wrap.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50';
+
+    const card = document.createElement('div');
+    card.className =
+      'relative min-w-[260px] max-w-[88vw] px-4 py-3 pr-10 rounded-2xl border border-emerald-300/35 bg-emerald-500/20 backdrop-blur-md text-emerald-50 shadow-[0_14px_38px_-14px_rgba(16,185,129,0.65)]';
+    card.style.opacity = '0';
+    card.style.transition = 'opacity 180ms ease';
+
+    const text = document.createElement('div');
+    text.className = 'font-semibold text-sm leading-snug';
+    text.textContent = String(message || '');
+
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close notification');
+    closeBtn.className =
+      'absolute top-1.5 right-1.5 w-7 h-7 rounded-full text-emerald-100/90 hover:text-white hover:bg-emerald-400/25 transition-colors text-base leading-none';
+    closeBtn.textContent = '×';
+
+    const timer = document.createElement('div');
+    timer.className =
+      'absolute left-2 right-2 bottom-1 h-0.5 rounded-full bg-emerald-200/80 origin-left';
+    timer.style.width = '100%';
+    timer.style.transition = `width ${TOAST_DURATION_MS}ms linear`;
+
+    card.appendChild(text);
+    card.appendChild(closeBtn);
+    card.appendChild(timer);
+    wrap.appendChild(card);
+    document.body.appendChild(wrap);
+
+    let closed = false;
+    const removeToast = () => {
+      if (closed) return;
+      closed = true;
+      clearTimeout(removeTimer);
+      wrap.remove();
+    };
+
+    closeBtn.addEventListener('click', removeToast, { once: true });
+    const removeTimer = setTimeout(removeToast, TOAST_DURATION_MS);
+
+    requestAnimationFrame(() => {
+      card.style.opacity = '1';
+      timer.style.width = '0%';
+    });
+
+  };
+  const TOAST_AFTER_RELOAD_KEY = 'padelio_toast_after_reload';
+  const queueToastAfterReload = (message) => {
+    try {
+      sessionStorage.setItem(TOAST_AFTER_RELOAD_KEY, String(message || '').trim());
+    } catch {}
+  };
+  const flushQueuedToast = () => {
+    try {
+      const msg = sessionStorage.getItem(TOAST_AFTER_RELOAD_KEY);
+      if (!msg) return;
+      sessionStorage.removeItem(TOAST_AFTER_RELOAD_KEY);
+      setTimeout(() => toast(msg), 160);
+    } catch {}
   };
 
   const debounce = (fn, wait) => {
@@ -609,6 +670,7 @@
   initApp();
   updateAdVisibility('home');
   refreshAppVersionLabel();
+  flushQueuedToast();
 
   const navigateTo = (page) => {
     const target = $('page-' + page);
@@ -1534,14 +1596,37 @@
     }
   };
 
-  const clearAllAppData = async () => {
+  const clearAppCacheOnly = async () => {
+    if (state.shareViewerMode) return;
+    const ok = window.confirm(
+      'Clear app cache only? Tournament data will stay safe. App will reload after cache is cleared.'
+    );
+    if (!ok) return;
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      queueToastAfterReload('Cache cleared. Running latest update.');
+      setTimeout(() => window.location.reload(), 200);
+    } catch (err) {
+      console.error('Clear cache failed', err);
+      window.alert('Failed to clear app cache on this browser.');
+    }
+  };
+
+  const clearAllTournamentData = async () => {
     if (state.shareViewerMode) return;
     const ok1 = window.confirm(
       'WARNING: This will delete ALL tournaments and ALL match history on this device. Continue?'
     );
     if (!ok1) return;
     const ok2 = window.confirm(
-      'Final confirm: all matches will be gone and cannot be recovered. Clear cache and data now?'
+      'Final confirm: this will clear ALL data and cache on this device. Continue?'
     );
     if (!ok2) return;
 
@@ -1549,7 +1634,6 @@
       let deletedCount = 0;
       let deleteFailed = 0;
 
-      // Delete all stored tournaments from backend/local SDK store.
       if (window.dataSdk) {
         for (const t of [...state.tournaments]) {
           try {
@@ -1567,17 +1651,15 @@
       state.currentTournament = null;
       resetNewTournament();
 
-      // Best-effort web storage cleanup.
+      // Clear web storage keys.
       try { localStorage.clear(); } catch {}
       try { sessionStorage.clear(); } catch {}
 
-      // Clear Cache Storage entries.
+      // Clear cache entries and service workers.
       if ('caches' in window) {
         const keys = await caches.keys();
         await Promise.all(keys.map((k) => caches.delete(k)));
       }
-
-      // Remove service workers so fresh assets/cache policies apply.
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map((r) => r.unregister()));
@@ -1585,17 +1667,18 @@
 
       if (deleteFailed > 0) {
         window.alert(
-          `Cache cleared, but ${deleteFailed} tournament(s) failed to delete.\n` +
-          'Please refresh and try again.'
+          `Data clear finished with ${deleteFailed} failed delete(s).\nPlease refresh and try again.`
         );
         return;
       }
 
-      window.alert(`Done. Cleared cache and deleted ${deletedCount} tournament(s).`);
-      setTimeout(() => window.location.reload(), 500);
+      queueToastAfterReload(`Cleared ${deletedCount} tournament(s), cache, and app data.`);
+      renderTournamentList();
+      navigateTo('home');
+      setTimeout(() => window.location.reload(), 300);
     } catch (err) {
-      console.error('Clear cache/data failed', err);
-      window.alert('Failed to clear all data on this browser.');
+      console.error('Clear data failed', err);
+      window.alert('Failed to clear tournament data on this browser.');
     }
   };
 
@@ -2214,7 +2297,8 @@
 
   window.toggleMenu = toggleMenu;
   window.installApp = installApp;
-  window.clearAllAppData = clearAllAppData;
+  window.clearAppCacheOnly = clearAppCacheOnly;
+  window.clearAllTournamentData = clearAllTournamentData;
   window.confirmDelete = confirmDelete;
   window.cancelDelete = cancelDelete;
   window.deleteTournament = deleteTournament;
