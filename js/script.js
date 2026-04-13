@@ -396,7 +396,9 @@
   };
 
   function selectMode (mode) {
-    state.newTournament.mode = (mode === 'mix') ? 'mix' : 'normal';
+    if (mode === 'mix') state.newTournament.mode = 'mix';
+    else if (mode === 'mexicano') state.newTournament.mode = 'mexicano';
+    else state.newTournament.mode = 'normal';
     state.playerGenderDraft = 'M';
     updateGenderUI();
     navigateTo('new-title');
@@ -450,7 +452,7 @@
     playerGenderDraft: 'M',
 
     newTournament: {
-      mode: 'normal', // 'normal' | 'mix'
+      mode: 'normal', // 'normal' | 'mix' | 'mexicano'
       title: '',
       courts: 0,
       points: 0,
@@ -463,7 +465,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.3.14';
+  const APP_VERSION = '1.4.0';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -757,10 +759,17 @@
     }
   };
 
+  const syncMexicanoPlayersHint = () => {
+    const el = $('mexicano-players-hint');
+    if (!el) return;
+    el.classList.toggle('hidden', state.newTournament.mode !== 'mexicano');
+  };
+
   const goToPlayers = () => {
     if (state.newTournament.points > 0) {
       navigateTo('new-players');
       updateGenderUI(); // ✅ supaya toggle muncul kalau mix
+      syncMexicanoPlayersHint();
     }
   };
 
@@ -805,6 +814,7 @@
 
     const count = $('player-count');
     if (count) count.textContent = `${players.length} players added`;
+    syncMexicanoPlayersHint();
   };
 
   const addPlayer = () => {
@@ -951,10 +961,15 @@
     list.innerHTML = state.tournaments
       .map((t) => {
         const players = safeJsonParse(t.players, []);
+        const md = t.mode || 'normal';
+        const modeLabel =
+          md === 'mexicano' ? 'Mexicano' : md === 'mix' ? 'Mix' : 'Americano';
         return `
           <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-600/50 rounded-3xl p-4 text-left transition-all slide-in shadow-cozy-sm">
             <h3 class="font-semibold text-lg mb-1">${escapeHtml(t.title)}</h3>
-            <div class="flex items-center gap-4 text-sm text-emerald-300">
+            <div class="flex items-center gap-4 text-sm text-emerald-300 flex-wrap">
+              <span>${modeLabel}</span>
+              <span>•</span>
               <span>${t.courts} court${t.courts > 1 ? 's' : ''}</span>
               <span>•</span>
               <span>${players.length} players</span>
@@ -1017,6 +1032,53 @@
       .join('');
   };
 
+  /**
+   * Mexicano: round 1 pairs follow roster order (A+B vs C+D per block of 4).
+   * Later rounds: active players ordered by standings, same block pairing (1st+2nd vs 3rd+4th in each block).
+   */
+  function buildMexicanoMatches (players, courts, rounds, roundNo, tournament) {
+    const maxCourts = Math.min(courts, Math.floor(players.length / 4));
+    if (maxCourts <= 0) return [];
+    const slots = maxCourts * 4;
+    const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
+
+    const rn = Number(roundNo) || 1;
+    const tSub = {
+      ...tournament,
+      rounds: JSON.stringify(
+        safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
+      )
+    };
+
+    let ordered = [];
+    if (rn === 1) {
+      const act = new Set(active);
+      ordered = players.filter((n) => act.has(n));
+    } else {
+      const board = computeLeaderboardSorted(tSub);
+      const act = new Set(active);
+      ordered = board.map((row) => row.name).filter((n) => act.has(n));
+      active.forEach((n) => {
+        if (!ordered.includes(n)) ordered.push(n);
+      });
+    }
+
+    const matches = [];
+    for (let c = 0; c < maxCourts; c++) {
+      const base = c * 4;
+      const quad = ordered.slice(base, base + 4);
+      if (quad.length < 4) break;
+      matches.push({
+        court: c + 1,
+        team1: [quad[0], quad[1]],
+        team2: [quad[2], quad[3]],
+        score1: '',
+        score2: ''
+      });
+    }
+    return matches;
+  }
+
   const generateRound = async () => {
     syncCurrentTournament();
     if (!state.currentTournament) return;
@@ -1032,8 +1094,136 @@
       return;
     }
 
+    // ---------- MIX MODE (rotation + fairness) ----------
+    if (mode === 'mix') {
+      const playersFull = getPlayersFull();
+      const malesAll = playersFull.filter(p => p.gender === 'M').map(p => p.name);
+      const femalesAll = playersFull.filter(p => p.gender === 'F').map(p => p.name);
+
+      // how many courts can we actually fill in mix (needs 2M+2F per court)
+      const maxCourtsByGender = Math.min(
+        courts,
+        Math.floor(malesAll.length / 2),
+        Math.floor(femalesAll.length / 2)
+      );
+
+      if (maxCourtsByGender <= 0) {
+        roundData = { round: roundNo, matches: [] };
+        rounds.push(roundData);
+        setRounds(rounds);
+        await saveCurrentTournament();
+        renderCourts(roundData);
+        return;
+      }
+
+      const neededM = maxCourtsByGender * 2;
+      const neededF = maxCourtsByGender * 2;
+
+      // bench rotation: alternate who sits out by using round number offset
+      const shift = (arr, k) => {
+        const n = arr.length;
+        if (n === 0) return [];
+        const s = ((k % n) + n) % n;
+        return arr.slice(s).concat(arr.slice(0, s));
+      };
+
+      const males = shift(malesAll, roundNo - 1);
+      const females = shift(femalesAll, roundNo - 1);
+
+      const activeM = males.slice(0, neededM);
+      const activeF = females.slice(0, neededF);
+
+      // fairness: try to minimize repeated partners and opponents
+      const { partnerCount, opposeCount } = buildMixHistory();
+
+      // Build MF pairs with scoring: prefer pairs with fewer past partnerings
+      const pairs = [];
+      const fPool = [...activeF];
+
+      // simple greedy: for each male, pick a female that has min partnerCount with him
+      activeM.forEach((m) => {
+        let bestIdx = -1;
+        let bestScore = Infinity;
+
+        for (let i = 0; i < fPool.length; i++) {
+          const f = fPool[i];
+          const s = (partnerCount.get(pairKey(m, f)) || 0);
+          if (s < bestScore) {
+            bestScore = s;
+            bestIdx = i;
+          }
+          if (bestScore === 0) break; // can't get better than 0
+        }
+
+        if (bestIdx >= 0) {
+          const f = fPool.splice(bestIdx, 1)[0];
+          pairs.push({ m, f });
+        }
+      });
+
+      // ensure we have enough pairs for matches
+      // (each court needs 2 pairs)
+      const neededPairs = maxCourtsByGender * 2;
+      const usablePairs = pairs.slice(0, neededPairs);
+
+      // now pair-vs-pair, try to avoid repeated opponents (random tie-break)
+      const pool = shuffle([...usablePairs]);
+      const matches = [];
+
+      for (let c = 0; c < maxCourtsByGender; c++) {
+        if (pool.length < 2) break;
+
+        const p1 = pool.shift();
+
+        const candidates = [];
+        let best = Infinity;
+        for (let j = 0; j < pool.length; j++) {
+          const s = pairCrossOpposeScore(p1, pool[j], opposeCount);
+          if (s < best) {
+            best = s;
+            candidates.length = 0;
+            candidates.push(j);
+          } else if (s === best) {
+            candidates.push(j);
+          }
+        }
+        const bestJ = candidates[Math.floor(Math.random() * candidates.length)];
+        const p2 = pool.splice(bestJ, 1)[0];
+
+        matches.push({
+          court: c + 1,
+          team1: [p1.m, p1.f],
+          team2: [p2.m, p2.f],
+          score1: '',
+          score2: ''
+        });
+      }
+
+      roundData = { round: roundNo, matches };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
+    if (mode === 'mexicano') {
+      const players = getPlayers();
+      const maxCourts = Math.min(courts, Math.floor(players.length / 4));
+      let matches = [];
+      if (maxCourts > 0) {
+        matches = buildMexicanoMatches(players, courts, rounds, roundNo, state.currentTournament);
+      }
+      roundData = { round: roundNo, matches };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
     // ---------- NORMAL MODE (fair bench + partner/opponent variety) ----------
-    if (mode !== 'mix') {
+    {
       const players = getPlayers();
       const maxCourts = Math.min(courts, Math.floor(players.length / 4));
       let matches = [];
@@ -1050,118 +1240,7 @@
       setRounds(rounds);
       await saveCurrentTournament();
       renderCourts(roundData);
-      return;
     }
-
-    // ---------- MIX MODE (rotation + fairness) ----------
-    const playersFull = getPlayersFull();
-    const malesAll = playersFull.filter(p => p.gender === 'M').map(p => p.name);
-    const femalesAll = playersFull.filter(p => p.gender === 'F').map(p => p.name);
-
-    // how many courts can we actually fill in mix (needs 2M+2F per court)
-    const maxCourtsByGender = Math.min(
-      courts,
-      Math.floor(malesAll.length / 2),
-      Math.floor(femalesAll.length / 2)
-    );
-
-    if (maxCourtsByGender <= 0) {
-      roundData = { round: roundNo, matches: [] };
-      rounds.push(roundData);
-      setRounds(rounds);
-      await saveCurrentTournament();
-      renderCourts(roundData);
-      return;
-    }
-
-    const neededM = maxCourtsByGender * 2;
-    const neededF = maxCourtsByGender * 2;
-
-    // bench rotation: alternate who sits out by using round number offset
-    const shift = (arr, k) => {
-      const n = arr.length;
-      if (n === 0) return [];
-      const s = ((k % n) + n) % n;
-      return arr.slice(s).concat(arr.slice(0, s));
-    };
-
-    const males = shift(malesAll, roundNo - 1);
-    const females = shift(femalesAll, roundNo - 1);
-
-    const activeM = males.slice(0, neededM);
-    const activeF = females.slice(0, neededF);
-
-    // fairness: try to minimize repeated partners and opponents
-    const { partnerCount, opposeCount } = buildMixHistory();
-
-    // Build MF pairs with scoring: prefer pairs with fewer past partnerings
-    const pairs = [];
-    const fPool = [...activeF];
-
-    // simple greedy: for each male, pick a female that has min partnerCount with him
-    activeM.forEach((m) => {
-      let bestIdx = -1;
-      let bestScore = Infinity;
-
-      for (let i = 0; i < fPool.length; i++) {
-        const f = fPool[i];
-        const s = (partnerCount.get(pairKey(m, f)) || 0);
-        if (s < bestScore) {
-          bestScore = s;
-          bestIdx = i;
-        }
-        if (bestScore === 0) break; // can't get better than 0
-      }
-
-      if (bestIdx >= 0) {
-        const f = fPool.splice(bestIdx, 1)[0];
-        pairs.push({ m, f });
-      }
-    });
-
-    // ensure we have enough pairs for matches
-    // (each court needs 2 pairs)
-    const neededPairs = maxCourtsByGender * 2;
-    const usablePairs = pairs.slice(0, neededPairs);
-
-    // now pair-vs-pair, try to avoid repeated opponents (random tie-break)
-    const pool = shuffle([...usablePairs]);
-    const matches = [];
-
-    for (let c = 0; c < maxCourtsByGender; c++) {
-      if (pool.length < 2) break;
-
-      const p1 = pool.shift();
-
-      const candidates = [];
-      let best = Infinity;
-      for (let j = 0; j < pool.length; j++) {
-        const s = pairCrossOpposeScore(p1, pool[j], opposeCount);
-        if (s < best) {
-          best = s;
-          candidates.length = 0;
-          candidates.push(j);
-        } else if (s === best) {
-          candidates.push(j);
-        }
-      }
-      const bestJ = candidates[Math.floor(Math.random() * candidates.length)];
-      const p2 = pool.splice(bestJ, 1)[0];
-
-      matches.push({
-        court: c + 1,
-        team1: [p1.m, p1.f],
-        team2: [p2.m, p2.f],
-        score1: '',
-        score2: ''
-      });
-    }
-
-    roundData = { round: roundNo, matches };
-    rounds.push(roundData);
-    setRounds(rounds);
-    await saveCurrentTournament();
-    renderCourts(roundData);
   };
 
   const renderSpecificRound = (roundNumber) => {
@@ -1376,7 +1455,11 @@
 
     const title = $('round-title');
     const ind = $('round-indicator');
-    if (title) title.textContent = state.currentTournament.title;
+    const tm = state.currentTournament.title || '';
+    const md = state.currentTournament.mode || 'normal';
+    const modeSuffix =
+      md === 'mexicano' ? ' · Mexicano' : md === 'mix' ? ' · Mix' : '';
+    if (title) title.textContent = tm + modeSuffix;
     if (ind) ind.textContent = `Round ${state.currentTournament.current_round}`;
 
     await generateRound();

@@ -710,7 +710,7 @@
       </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Tournament Mode</h2>
-        <p class="text-slate-300 text-sm mb-6">Choose your Americano format</p>
+        <p class="text-slate-300 text-sm mb-6">Americano, Mix, or Mexicano</p>
 
         <div class="space-y-3">
           <button onclick="selectMode('normal')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
@@ -721,6 +721,11 @@
           <button onclick="selectMode('mix')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Mix Americano
             <div class="text-slate-300/90 text-xs mt-1 font-medium">Male & Female must be balanced</div>
+          </button>
+
+          <button onclick="selectMode('mexicano')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+            Mexicano
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">Standings set the next round’s pairings</div>
           </button>
         </div>
       </div>
@@ -787,6 +792,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> Back 
         </button>
       <h2 class="text-2xl font-extrabold mb-2">Add Players</h2>
+      <p id="mexicano-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/25 bg-teal-500/10 rounded-2xl px-3 py-2">
+        <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, next four = court 2, …). Later rounds pair by current standings: 1st+2nd vs 3rd+4th in each group of four active players.
+      </p>
       <p id="min-players-text" class="text-slate-300 text-sm mb-2">
         Minimum 4 players required
       </p>
