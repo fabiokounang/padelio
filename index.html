@@ -792,46 +792,52 @@
       </div>
     </div>
 
-    <!-- New Tournament - Players -->
-    <div id="page-new-players" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> Back 
+    <!-- New Tournament - Players (fullscreen layer so list scrolls; bar stays on screen — site footer is not .page) -->
+    <div id="page-new-players" class="page hidden fixed inset-0 z-50 flex flex-col bg-slate-950 overflow-hidden">
+      <div class="shrink-0 px-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
+        <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> Back
         </button>
-      <h2 class="text-2xl font-extrabold mb-2">Add Players</h2>
-      <p id="mexicano-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/25 bg-teal-500/10 rounded-2xl px-3 py-2">
-        <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, next four = court 2, …). Later rounds pair by current standings: 1st+2nd vs 3rd+4th in each group of four active players.
-      </p>
-      <p id="min-players-text" class="text-slate-300 text-sm mb-2">
-        Minimum 4 players required
-      </p>
-      <p class="text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
-      
-      <p id="gender-balance-warning" class="text-xs text-red-400 hidden mb-2"></p>
-      
-      <div class="flex gap-3 mb-4 items-stretch">
-        <input
-          type="text"
-          id="player-name"
-          placeholder="Player name"
-          class="flex-[4] bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
-          onkeypress="if(event.key==='Enter')addPlayer()"
-        />
+        <h2 class="text-2xl font-extrabold mb-2">Add Players</h2>
+        <p id="mexicano-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/25 bg-teal-500/10 rounded-2xl px-3 py-2">
+          <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, next four = court 2, …). Later rounds pair by current standings: 1st+2nd vs 3rd+4th in each group of four active players.
+        </p>
+        <p id="min-players-text" class="text-slate-300 text-sm mb-2">
+          Minimum 4 players required
+        </p>
+        <p class="text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
 
-        <button
-          type="button"
-          onclick="addPlayer()"
-          class="flex-[1] min-w-[56px] h-[56px] flex items-center justify-center bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl transition-all shadow-cozy-sm"
-          aria-label="Add player"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+        <p id="gender-balance-warning" class="text-xs text-red-400 hidden mb-2"></p>
+
+        <div class="flex gap-3 mb-4 items-stretch">
+          <input
+            type="text"
+            id="player-name"
+            placeholder="Player name"
+            class="flex-[4] bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
+            onkeypress="if(event.key==='Enter')addPlayer()"
+          />
+
+          <button
+            type="button"
+            onclick="addPlayer()"
+            class="flex-[1] min-w-[56px] h-[56px] flex items-center justify-center bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl transition-all shadow-cozy-sm"
+            aria-label="Add player"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
       </div>
-      <div id="players-list" class="space-y-2 overflow-auto mb-4"></div>
-      <div class="text-sm text-slate-300 mb-3" id="player-count"> 0 players added </div>
-      <button onclick="startTournament()" id="btn-start" class="w-full border border-white/10 bg-gradient-to-r from-amber-100/90 via-pink-100/90 to-teal-100/90 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 text-slate-900 font-bold py-4 px-6 rounded-3xl shadow-cozy transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Start Tournament </button>
+      <div id="players-list" class="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-2 px-6 pb-2 touch-pan-y"></div>
+      <div class="shrink-0 border-t border-white/10 bg-slate-950/95 backdrop-blur-md px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <p id="player-count" class="text-sm text-slate-200 font-semibold tabular-nums">0 players added</p>
+        </div>
+        <button onclick="startTournament()" id="btn-start" class="w-full border border-white/10 bg-gradient-to-r from-amber-100/90 via-pink-100/90 to-teal-100/90 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 text-slate-900 font-bold py-4 px-6 rounded-3xl shadow-cozy transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Start Tournament </button>
+      </div>
     </div>
 
     <!-- Tournament Rounds -->
@@ -978,7 +984,27 @@
           Screenshot View
         </button>
       </div>
-      <div class="flex-1 leb-main-scroll p-4 min-h-0">
+      <div id="share-lb-sort-row" class="shrink-0 px-4 pb-2 pt-0 border-b border-white/10 bg-slate-950/50 flex gap-2">
+        <button
+          type="button"
+          id="share-lb-sort-points"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+        >
+          Total points
+        </button>
+        <button
+          type="button"
+          id="share-lb-sort-winrate"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+        >
+          Win rate
+        </button>
+      </div>
+      <div
+        id="share-leaderboard-scroll"
+        tabindex="-1"
+        class="flex-1 leb-main-scroll p-4 min-h-0 outline-none focus:outline-none"
+      >
         <div id="share-panel-leaderboard" class="space-y-2">
           <div id="share-leaderboard-standard-wrap" class="space-y-2">
             <div id="share-leaderboard-list" class="space-y-2"></div>
@@ -1040,8 +1066,28 @@
             Screenshot
           </button>
         </div>
+        <div class="flex gap-2 mt-2">
+          <button
+            type="button"
+            id="host-lb-sort-points"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+          >
+            Total points
+          </button>
+          <button
+            type="button"
+            id="host-lb-sort-winrate"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+          >
+            Win rate
+          </button>
+        </div>
       </div>
-      <div class="flex-1 leb-main-scroll p-4 overscroll-contain">
+      <div
+        id="host-leaderboard-scroll"
+        tabindex="-1"
+        class="flex-1 min-h-0 leb-main-scroll p-4 outline-none focus:outline-none"
+      >
         <div id="leaderboard-panel-standard" class="space-y-2">
           <div id="leaderboard-list" class="space-y-2"></div>
         </div>
@@ -1154,7 +1200,7 @@
 
   <!-- Keeps Tailwind JIT aware of classes used only inside js/script.js templates -->
   <div class="sr-only" aria-hidden="true">
-    <span class="shadow-cozy shadow-cozy-sm border-emerald-600/40 border-emerald-600/45 border-emerald-600/50 bg-emerald-700/90 border-emerald-500/50 focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25 text-emerald-300 font-extrabold from-amber-200 to-amber-400 text-slate-900 bg-slate-300 text-slate-800 from-orange-300 to-orange-500 border-amber-300 border-slate-300 border-orange-400/90 shadow-sm gap-1 px-1.5 text-[6px] text-[7px] text-[8px] text-[9px] text-[10px] text-[11px] w-5 w-6 w-7 w-8 whitespace-nowrap overflow-hidden text-ellipsis leb-main-scroll"></span>
+    <span class="shadow-cozy shadow-cozy-sm border-emerald-600/40 border-emerald-600/45 border-emerald-600/50 bg-emerald-700/90 border-emerald-500/50 focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25 text-emerald-300 font-extrabold from-amber-200 to-amber-400 text-slate-900 bg-slate-300 text-slate-800 from-orange-300 to-orange-500 border-amber-300 border-slate-300 border-orange-400/90 shadow-sm gap-1 px-1.5 text-[6px] text-[7px] text-[8px] text-[9px] text-[10px] text-[11px] w-5 w-6 w-7 w-8 whitespace-nowrap overflow-hidden text-ellipsis leb-main-scroll z-[100] touch-pan-y"></span>
   </div>
   <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   <script src="js/script.js"></script>     

@@ -27,13 +27,15 @@ body {
   box-sizing: border-box;
 }
 
-/* Flex column + overflow-y-auto: needs min-height 0 chain; iOS needs momentum scroll. */
+/* Flex column + overflow-y-auto: needs min-height 0 chain; iOS needs momentum scroll.
+   Do not set touch-action: pan-y here — on Chromium/Edge (laptop trackpad) it can block
+   normal wheel scrolling unless the scrollbar is dragged; default touch-action avoids that. */
 .leb-main-scroll {
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   overflow-y: auto;
   overflow-x: hidden;
-  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 body::before {

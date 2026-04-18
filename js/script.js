@@ -63,7 +63,7 @@
 
     const wrap = document.createElement('div');
     wrap.id = 'app-toast';
-    wrap.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50';
+    wrap.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]';
 
     const card = document.createElement('div');
     card.className =
@@ -150,6 +150,20 @@
       if (typeof p === 'string') return { name: fixCommonNameTypos(p), gender: null };
       return { name: fixCommonNameTypos(String(p?.name || '')), gender: p?.gender || null };
     }).filter(p => p.name.trim().length > 0);
+
+  /** Same key for roster + add flow: trim, typo map, then case-insensitive compare. */
+  const playerNameDuplicateKey = (name) =>
+    normalizeNameKey(fixCommonNameTypos(String(name ?? '').trim()));
+
+  const hasDuplicatePlayerNames = (arr) => {
+    const seen = new Set();
+    for (const p of normalizePlayers(arr)) {
+      const k = playerNameDuplicateKey(p.name);
+      if (seen.has(k)) return true;
+      seen.add(k);
+    }
+    return false;
+  };
 
   const countGender = (players) => {
     const norm = normalizePlayers(players);
@@ -368,6 +382,81 @@
   };
 
   /**
+   * Mexicano bench fairness: everyone who sat out last round MUST play this round (when n > slots).
+   * Remaining slots: lowest total games, then longest bench streak, then rotation tie-break.
+   */
+  const pickActivePlayersMexicano = (allNames, slots, allRounds, roundNo) => {
+    const resolve = makeRosterNameResolve(allNames);
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
+
+    const playCount = new Map();
+    allNames.forEach((n) => playCount.set(n, 0));
+    priorRounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
+          const c = resolve(name);
+          if (playCount.has(c)) playCount.set(c, (playCount.get(c) || 0) + 1);
+        }
+      });
+    });
+
+    if (!lastRound || slots <= 0) {
+      return allNames.slice(0, Math.min(slots, allNames.length));
+    }
+
+    const onCourtLast = new Set();
+    (lastRound.matches || []).forEach((m) => {
+      for (const raw of [...(m.team1 || []), ...(m.team2 || [])]) {
+        onCourtLast.add(resolve(raw));
+      }
+    });
+
+    const mustPlay = allNames.filter((n) => !onCourtLast.has(resolve(n)));
+
+    if (mustPlay.length > slots) {
+      return pickActivePlayersNormal(allNames, slots, allRounds, roundNo);
+    }
+
+    const taken = new Set();
+    const selected = [];
+    mustPlay.forEach((n) => {
+      if (!taken.has(n)) {
+        taken.add(n);
+        selected.push(n);
+      }
+    });
+
+    const n = allNames.length;
+    const pos = new Map(allNames.map((name, i) => [name, i]));
+    const rot = ((Number(roundNo) || 1) - 1 + n * 100) % n;
+
+    const pool = allNames.filter((name) => !taken.has(name));
+    const keyed = pool.map((name) => ({
+      name,
+      played: playCount.get(name) || 0,
+      streak: consecutiveBenchStreak(name, priorRounds, resolve),
+      tieRot: (pos.get(name) - rot + n) % n
+    }));
+
+    keyed.sort((a, b) => {
+      if (a.played !== b.played) return a.played - b.played;
+      if (a.streak !== b.streak) return b.streak - a.streak;
+      return a.tieRot - b.tieRot;
+    });
+
+    const need = slots - selected.length;
+    keyed.slice(0, need).forEach((x) => {
+      if (!taken.has(x.name)) {
+        taken.add(x.name);
+        selected.push(x.name);
+      }
+    });
+
+    return selected.slice(0, slots);
+  };
+
+  /**
    * Build teams with hard anti-repeat guard:
    * avoid using an exact teammate pair from previous round whenever possible.
    */
@@ -522,11 +611,14 @@
 
     /** Leaderboard sub-view: detailed cards vs compact screenshot-friendly list. */
     hostLeaderboardLayout: 'standard',
-    shareLeaderboardLayout: 'standard'
+    shareLeaderboardLayout: 'standard',
+    /** Ranking: total points (Americano default) vs win rate % for display order. */
+    hostLeaderboardSort: 'points',
+    shareLeaderboardSort: 'points'
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.4.8';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -671,6 +763,15 @@
   updateAdVisibility('home');
   refreshAppVersionLabel();
   flushQueuedToast();
+
+  /** After long home list scroll, opening a tournament should start at the top of the rounds view. */
+  const scrollAppToTop = () => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    const app = $('app');
+    if (app) app.scrollTop = 0;
+  };
 
   const navigateTo = (page) => {
     const target = $('page-' + page);
@@ -881,15 +982,23 @@
 
   const addPlayer = () => {
     const input = $('player-name');
-    let name = input?.value?.trim() || '';
-    if (!name) return;
+    const raw = input?.value?.trim() || '';
+    if (!raw) return;
 
-    name = name.charAt(0).toUpperCase() + name.slice(1);
+    state.newTournament.players = normalizePlayers(state.newTournament.players);
+    const resolved = fixCommonNameTypos(raw);
+    if (state.newTournament.players.some(
+      (p) => playerNameDuplicateKey(p.name) === playerNameDuplicateKey(resolved)
+    )) {
+      toast('That name is already in the list.');
+      return;
+    }
+
+    const name = resolved.charAt(0).toUpperCase() + resolved.slice(1);
 
     const isMix = state.newTournament.mode === 'mix';
     const gender = isMix ? state.playerGenderDraft : null;
 
-    state.newTournament.players = normalizePlayers(state.newTournament.players);
     state.newTournament.players.push({ name, gender });
 
     input.value = '';
@@ -932,6 +1041,11 @@
 
     try {
       if (state.newTournament.players.length < 4) return;
+
+      if (hasDuplicatePlayerNames(state.newTournament.players)) {
+        toast('Duplicate player names. Remove duplicates before starting.');
+        return;
+      }
 
       const totalPlayers = normalizePlayers(state.newTournament.players).length;
       const totalCourts = state.newTournament.courts;
@@ -1102,7 +1216,7 @@
     const maxCourts = Math.min(courts, Math.floor(players.length / 4));
     if (maxCourts <= 0) return [];
     const slots = maxCourts * 4;
-    const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
+    const active = pickActivePlayersMexicano(players, slots, rounds, roundNo);
 
     const rn = Number(roundNo) || 1;
     const tSub = {
@@ -1117,7 +1231,7 @@
       const act = new Set(active);
       ordered = players.filter((n) => act.has(n));
     } else {
-      const board = computeLeaderboardSorted(tSub);
+      const board = computeLeaderboardSorted(tSub, 'points');
       const act = new Set(active);
       ordered = board.map((row) => row.name).filter((n) => act.has(n));
       active.forEach((n) => {
@@ -1526,6 +1640,9 @@
 
     await generateRound();
     navigateTo('rounds');
+    requestAnimationFrame(() => {
+      scrollAppToTop();
+    });
     ensureViewingRoundValid();
     updateRoundArrowState();
   };
@@ -1721,7 +1838,27 @@
     return url;
   };
 
-  const computeLeaderboardSorted = (tournamentLike) => {
+  const sortLeaderboardRows = (rows, sortMode) => {
+    const byWinRate = sortMode === 'winRate';
+    return [...rows].sort((a, b) => {
+      if (byWinRate) {
+        if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.matches !== a.matches) return b.matches - a.matches;
+        return String(a.name).localeCompare(String(b.name));
+      }
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      return String(a.name).localeCompare(String(b.name));
+    });
+  };
+
+  /**
+   * @param {'points'|'winRate'} [sortMode] Points = Americano-style total; winRate = rank by W/M % (ties: wins, points, games).
+   */
+  const computeLeaderboardSorted = (tournamentLike, sortMode = 'points') => {
     const players = normalizePlayers(safeJsonParse(tournamentLike?.players, [])).map((p) => p.name);
     const rounds = safeJsonParse(tournamentLike?.rounds, []);
     const rosterResolve = makeRosterNameResolve(players);
@@ -1783,16 +1920,16 @@
       });
     });
 
-    return Object.entries(scores)
-      .map(([name, data]) => {
-        const winRate = data.matches > 0 ? (data.wins / data.matches) * 100 : 0;
-        return { name, ...data, winRate };
-      })
-      .sort((a, b) => b.points - a.points || b.wins - a.wins || b.winRate - a.winRate);
+    const rows = Object.entries(scores).map(([name, data]) => {
+      const winRate = data.matches > 0 ? (data.wins / data.matches) * 100 : 0;
+      return { name, ...data, winRate };
+    });
+    return sortLeaderboardRows(rows, sortMode);
   };
 
-  const renderLeaderboardHtml = (sorted) =>
-    sorted
+  const renderLeaderboardHtml = (sorted, sortMode = 'points') => {
+    const byWinRate = sortMode === 'winRate';
+    return sorted
       .map(
         (p, i) => `
           <div class="flex items-center bg-emerald-800/50 rounded-3xl p-4 shadow-cozy-sm ${
@@ -1809,40 +1946,51 @@
             } text-sm font-extrabold mr-3 shadow-sm">
               ${i + 1}
             </div>
-            <div class="flex-1">
+            <div class="flex-1 min-w-0">
               <div class="font-semibold">${escapeHtml(fixCommonNameTypos(p.name))}</div>
               <div class="text-sm text-emerald-300">
                 Match: ${p.matches} | W: ${p.wins} | L: ${p.losses} | T: ${p.ties}
               </div>
-              <div class="text-xs text-emerald-400 mt-1">
-                Win Rate: ${p.winRate.toFixed(1)}%
-              </div>
+              ${
+                byWinRate
+                  ? `<div class="text-xs text-emerald-400 mt-1">Total points: ${p.points}</div>`
+                  : `<div class="text-xs text-emerald-400 mt-1">Win rate: ${p.winRate.toFixed(1)}%</div>`
+              }
             </div>
-            <div class="text-right">
-              <div class="text-2xl font-bold text-emerald-400">${p.points}</div>
-              <div class="text-xs text-emerald-400">points</div>
+            <div class="text-right shrink-0">
+              ${
+                byWinRate
+                  ? `<div class="text-2xl font-bold text-teal-300">${p.winRate.toFixed(1)}%</div>
+                     <div class="text-xs text-teal-400/90">win rate</div>`
+                  : `<div class="text-2xl font-bold text-emerald-400">${p.points}</div>
+                     <div class="text-xs text-emerald-400">points</div>`
+              }
             </div>
           </div>
         `
       )
       .join('');
+  };
 
   /** Compact standings for screenshots: 2-column grid, full stats per row. */
-  const renderLeaderboardScreenshotHtml = (sorted, title) => {
+  const renderLeaderboardScreenshotHtml = (sorted, title, sortMode = 'points') => {
+    const byWinRate = sortMode === 'winRate';
     const t = title != null && String(title).trim() ? escapeHtml(String(title).trim()) : '';
+    const sub = byWinRate ? 'Rank · win rate' : 'Rank · total points';
     const heading = t
       ? `<div class="text-center mb-3 pb-3 border-b border-white/10 col-span-2">
            <div class="text-lg font-extrabold text-white tracking-tight">${t}</div>
            <div class="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90 mt-1">Leaderboard</div>
+           <div class="text-[10px] text-slate-400 mt-0.5">${sub}</div>
          </div>`
       : `<div class="text-center mb-3 pb-3 border-b border-white/10 col-span-2">
            <div class="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90">Standings</div>
+           <div class="text-[10px] text-slate-400 mt-0.5">${sub}</div>
          </div>`;
 
     const cells = sorted
       .map((p, i) => {
-        const wr = Math.round(p.winRate);
-        const statLine = `${p.matches}M ${p.wins}-${p.losses}-${p.ties} ${wr}%`;
+        const statLine = `${p.matches}M ${p.wins}-${p.losses}-${p.ties} · ${p.points} pts · ${p.winRate.toFixed(0)}% WR`;
         const rankGrad =
           i === 0
             ? 'from-amber-200 to-amber-400 text-slate-900'
@@ -1859,6 +2007,12 @@
               : i === 2
                 ? 'ring-1 ring-orange-400/45'
                 : '';
+        const primaryNum = byWinRate ? p.winRate.toFixed(0) : String(p.points);
+        const primaryCls = byWinRate
+          ? 'text-sm sm:text-base font-bold text-teal-200 tabular-nums leading-none'
+          : 'text-sm sm:text-base font-bold text-emerald-300 tabular-nums leading-none';
+        const subLblCls = byWinRate ? 'text-[6px] sm:text-[7px] text-teal-500/85 leading-none' : 'text-[6px] sm:text-[7px] text-emerald-500/80 leading-none';
+        const subLbl = byWinRate ? '%' : 'pts';
         return `
           <div class="flex items-center gap-1 rounded-xl px-1.5 py-1 sm:px-2 sm:py-1.5 bg-emerald-950/50 border border-emerald-800/40 min-w-0 ${rowRing}">
             <div class="w-5 h-5 sm:w-6 sm:h-6 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br ${rankGrad} text-[9px] sm:text-[10px] font-extrabold shadow-sm tabular-nums">
@@ -1871,8 +2025,8 @@
               </div>
             </div>
             <div class="shrink-0 w-7 sm:w-8 flex flex-col items-end justify-center text-right">
-              <div class="text-sm sm:text-base font-bold text-emerald-300 tabular-nums leading-none">${p.points}</div>
-              <div class="text-[6px] sm:text-[7px] text-emerald-500/80 leading-none">pts</div>
+              <div class="${primaryCls}">${primaryNum}</div>
+              <div class="${subLblCls} leading-none">${subLbl}</div>
             </div>
           </div>
         `;
@@ -1920,6 +2074,44 @@
     if (b2) b2.className = onShot ? LB_TAB_ACTIVE : LB_TAB_IDLE;
   };
 
+  const applyHostLeaderboardSortUi = () => {
+    const mode = state.hostLeaderboardSort === 'winRate' ? 'winRate' : 'points';
+    const b1 = $('host-lb-sort-points');
+    const b2 = $('host-lb-sort-winrate');
+    if (b1) b1.className = mode === 'points' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+    if (b2) b2.className = mode === 'winRate' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+  };
+
+  const applyShareLeaderboardSortUi = () => {
+    const mode = state.shareLeaderboardSort === 'winRate' ? 'winRate' : 'points';
+    const b1 = $('share-lb-sort-points');
+    const b2 = $('share-lb-sort-winrate');
+    if (b1) b1.className = mode === 'points' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+    if (b2) b2.className = mode === 'winRate' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+  };
+
+  const populateLeaderboardPanels = (tournamentLike, title) => {
+    const hSort = state.hostLeaderboardSort === 'winRate' ? 'winRate' : 'points';
+    const sSort = state.shareLeaderboardSort === 'winRate' ? 'winRate' : 'points';
+    const hostSorted = computeLeaderboardSorted(tournamentLike, hSort);
+    const shareSorted = computeLeaderboardSorted(tournamentLike, sSort);
+
+    const hostStd = $('leaderboard-list');
+    const hostShot = $('leaderboard-screenshot-panel');
+    if (hostStd) hostStd.innerHTML = renderLeaderboardHtml(hostSorted, hSort);
+    if (hostShot) hostShot.innerHTML = renderLeaderboardScreenshotHtml(hostSorted, title, hSort);
+
+    const shareStd = $('share-leaderboard-list');
+    const shareShot = $('share-leaderboard-screenshot-panel');
+    if (shareStd) shareStd.innerHTML = renderLeaderboardHtml(shareSorted, sSort);
+    if (shareShot) shareShot.innerHTML = renderLeaderboardScreenshotHtml(shareSorted, title, sSort);
+
+    applyHostLeaderboardLayoutUi();
+    applyShareLeaderboardLayoutUi();
+    applyHostLeaderboardSortUi();
+    applyShareLeaderboardSortUi();
+  };
+
   const switchHostLeaderboardLayout = (layout) => {
     state.hostLeaderboardLayout = layout === 'screenshot' ? 'screenshot' : 'standard';
     applyHostLeaderboardLayoutUi();
@@ -1930,15 +2122,62 @@
     applyShareLeaderboardLayoutUi();
   };
 
+  const switchHostLeaderboardSort = (sort) => {
+    state.hostLeaderboardSort = sort === 'winRate' ? 'winRate' : 'points';
+    applyHostLeaderboardSortUi();
+    if (state.currentTournament) {
+      populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+    }
+  };
+
+  const switchShareLeaderboardSort = (sort) => {
+    state.shareLeaderboardSort = sort === 'winRate' ? 'winRate' : 'points';
+    applyShareLeaderboardSortUi();
+    if (state.shareViewerData) {
+      populateLeaderboardPanels(state.shareViewerData, state.shareViewerData.title || '');
+    }
+  };
+
   /** Inline onclick looks up globals; assign early + use listeners so tabs always work. */
   window.switchHostLeaderboardLayout = switchHostLeaderboardLayout;
   window.switchShareLeaderboardLayout = switchShareLeaderboardLayout;
+  window.switchHostLeaderboardSort = switchHostLeaderboardSort;
+  window.switchShareLeaderboardSort = switchShareLeaderboardSort;
 
   /** Text nodes have no .closest — normalize target before delegating. */
   const clickTargetButton = (e) => {
     let n = e.target;
     if (n && n.nodeType === Node.TEXT_NODE) n = n.parentElement;
     return n && typeof n.closest === 'function' ? n.closest('button') : null;
+  };
+
+  /**
+   * Sort buttons: use document capture so clicks always reach us (some overlays / bubbling
+   * edge cases prevented host-only delegation from firing reliably).
+   */
+  const wireLeaderboardSortClicks = () => {
+    if (document.documentElement.dataset.padLbSortWired === '1') return;
+    document.documentElement.dataset.padLbSortWired = '1';
+    document.addEventListener(
+      'click',
+      (e) => {
+        const id = clickTargetButton(e)?.id;
+        if (id === 'host-lb-sort-points') {
+          e.preventDefault();
+          switchHostLeaderboardSort('points');
+        } else if (id === 'host-lb-sort-winrate') {
+          e.preventDefault();
+          switchHostLeaderboardSort('winRate');
+        } else if (id === 'share-lb-sort-points') {
+          e.preventDefault();
+          switchShareLeaderboardSort('points');
+        } else if (id === 'share-lb-sort-winrate') {
+          e.preventDefault();
+          switchShareLeaderboardSort('winRate');
+        }
+      },
+      true
+    );
   };
 
   /** Delegation + tabs live outside scroll on host / share to avoid touch stacking bugs. */
@@ -1987,21 +2226,7 @@
     }
   };
   wireLeaderboardLayoutTabs();
-
-  const populateLeaderboardPanels = (sorted, title) => {
-    const hostStd = $('leaderboard-list');
-    const hostShot = $('leaderboard-screenshot-panel');
-    if (hostStd) hostStd.innerHTML = renderLeaderboardHtml(sorted);
-    if (hostShot) hostShot.innerHTML = renderLeaderboardScreenshotHtml(sorted, title);
-
-    const shareStd = $('share-leaderboard-list');
-    const shareShot = $('share-leaderboard-screenshot-panel');
-    if (shareStd) shareStd.innerHTML = renderLeaderboardHtml(sorted);
-    if (shareShot) shareShot.innerHTML = renderLeaderboardScreenshotHtml(sorted, title);
-
-    applyHostLeaderboardLayoutUi();
-    applyShareLeaderboardLayoutUi();
-  };
+  wireLeaderboardSortClicks();
 
   const copySpectatorLinkForHost = async () => {
     syncCurrentTournament();
@@ -2114,13 +2339,20 @@
     lb.classList.toggle('hidden', !onLb);
     rd.classList.toggle('hidden', onLb);
     if (subBar) subBar.classList.toggle('hidden', !onLb);
+    const sortRow = $('share-lb-sort-row');
+    if (sortRow) sortRow.classList.toggle('hidden', !onLb);
     const active =
       'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50';
     const idle =
       'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors';
     if (t1) t1.className = onLb ? active : idle;
     if (t2) t2.className = !onLb ? active : idle;
-    if (onLb) applyShareLeaderboardLayoutUi();
+    if (onLb) {
+      applyShareLeaderboardLayoutUi();
+      requestAnimationFrame(() => {
+        $('share-leaderboard-scroll')?.focus({ preventScroll: true });
+      });
+    }
   };
 
   const copyCurrentSpectatorUrl = async () => {
@@ -2158,8 +2390,7 @@
     const titleEl = $('share-view-title');
     if (titleEl) titleEl.textContent = data.title || 'Tournament';
 
-    const sorted = computeLeaderboardSorted(data);
-    populateLeaderboardPanels(sorted, data.title || '');
+    populateLeaderboardPanels(data, data.title || '');
 
     const rounds = safeJsonParse(data.rounds, []);
     renderShareRoundsReadOnly(rounds);
@@ -2213,12 +2444,14 @@
     const fresh = state.tournaments.find((t) => t.__backendId === state.currentTournament.__backendId);
     if (fresh) state.currentTournament = fresh;
 
-    const sorted = computeLeaderboardSorted(state.currentTournament);
     const title = state.currentTournament.title || '';
-    populateLeaderboardPanels(sorted, title);
+    populateLeaderboardPanels(state.currentTournament, title);
 
     navigateTo('leaderboard');
     wireLeaderboardLayoutTabs();
+    requestAnimationFrame(() => {
+      $('host-leaderboard-scroll')?.focus({ preventScroll: true });
+    });
   };
 
   const backToRounds = () => {
