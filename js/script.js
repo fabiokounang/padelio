@@ -618,7 +618,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.4.8';
+  const APP_VERSION = '1.4.9';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -1940,7 +1940,7 @@
           }">
             <div class="w-8 h-8 flex items-center justify-center rounded-full ${
               i === 0 ? 'bg-gradient-to-br from-amber-200 to-amber-400 text-slate-900'
-              : i === 1 ? 'bg-slate-300 text-slate-800'
+              : i === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-sm ring-1 ring-white/30'
               : i === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-white'
               : 'bg-emerald-700 text-white'
             } text-sm font-extrabold mr-3 shadow-sm">
@@ -1995,7 +1995,7 @@
           i === 0
             ? 'from-amber-200 to-amber-400 text-slate-900'
             : i === 1
-              ? 'bg-slate-300 text-slate-800'
+              ? 'from-slate-200 to-slate-400 text-slate-900 ring-1 ring-white/25'
               : i === 2
                 ? 'from-orange-300 to-orange-500 text-white'
                 : 'bg-emerald-800 text-white';
