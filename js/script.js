@@ -618,7 +618,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.4.11';
+  const APP_VERSION = '1.4.12';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -1806,9 +1806,16 @@
   const MAX_SHARE_URL_CHARS = 95000;
   /** Legacy plain base64url(JSON). New links use gzip (#p=z…); JSON still has v:1. */
   const SHARE_HASH_GZIP_PREFIX = 'z';
+  /** LZ-String compressToEncodedURIComponent (#p=l…); same JSON as gzip path, lossless. */
+  const SHARE_HASH_LZ_PREFIX = 'l';
 
   const canUseGzipSharePayload = () =>
     typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined';
+
+  const canUseLzString = () =>
+    typeof window.LZString !== 'undefined' &&
+    typeof window.LZString.compressToEncodedURIComponent === 'function' &&
+    typeof window.LZString.decompressFromEncodedURIComponent === 'function';
 
   const uint8ToBase64Url = (u8) => {
     const chunk = 0x8000;
@@ -2014,6 +2021,17 @@
     return JSON.parse(new TextDecoder().decode(outBuf));
   };
 
+  const encodeSharePayloadLz = (obj) => {
+    const json = JSON.stringify(obj);
+    return SHARE_HASH_LZ_PREFIX + window.LZString.compressToEncodedURIComponent(json);
+  };
+
+  const decodeSharePayloadLz = (uriBody) => {
+    const json = window.LZString.decompressFromEncodedURIComponent(uriBody);
+    if (json == null || json === '') throw new Error('lz decompress failed');
+    return JSON.parse(json);
+  };
+
   const buildShareUrlFromTournament = async (t) => {
     const canonical = {
       v: SHARE_PAYLOAD_VERSION,
@@ -2030,6 +2048,17 @@
     const plain = encodeSharePayload(canonical);
     let best = plain;
 
+    const candidates = [];
+
+    if (canUseLzString()) {
+      try {
+        candidates.push(encodeSharePayloadLz(canonical));
+        candidates.push(encodeSharePayloadLz(compact));
+      } catch {
+        /* ignore */
+      }
+    }
+
     if (canUseGzipSharePayload()) {
       const tryGz = async (obj) => {
         try {
@@ -2040,9 +2069,12 @@
       };
       const gzCanon = await tryGz(canonical);
       const gzCompact = await tryGz(compact);
-      for (const cand of [gzCanon, gzCompact]) {
-        if (cand && cand.length < best.length) best = cand;
-      }
+      if (gzCanon) candidates.push(gzCanon);
+      if (gzCompact) candidates.push(gzCompact);
+    }
+
+    for (const cand of candidates) {
+      if (cand && cand.length < best.length) best = cand;
     }
 
     const base = `${location.origin}${location.pathname}`;
@@ -2634,7 +2666,13 @@
     let data;
     try {
       let parsed;
-      if (raw[0] === SHARE_HASH_GZIP_PREFIX) {
+      if (raw[0] === SHARE_HASH_LZ_PREFIX) {
+        if (!canUseLzString()) {
+          toast('This share link needs LZ-String (reload the page or update the app).');
+          return false;
+        }
+        parsed = decodeSharePayloadLz(raw.slice(1));
+      } else if (raw[0] === SHARE_HASH_GZIP_PREFIX) {
         if (!canUseGzipSharePayload()) {
           toast('This share link needs a newer browser (gzip).');
           return false;

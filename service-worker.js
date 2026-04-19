@@ -1,11 +1,12 @@
 // service-worker.js
-const VERSION = "v2026-02-26-01-001"; // <-- ganti tiap deploy
+const VERSION = "v2026-04-18-01-001"; // <-- ganti tiap deploy
 const CACHE_NAME = `padel-cache-${VERSION}`;
 
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
   "/manifest.json",
+  "/js/lz-string.min.js",
   "/styles.css", // kalau file ini ada
   // tambahin icon kalau ada:
   // "/icons/icon-192.png",
