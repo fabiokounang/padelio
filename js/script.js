@@ -618,7 +618,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.4.9';
+  const APP_VERSION = '1.4.11';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -1801,12 +1801,202 @@
 
   /* ---------- Share link (spectator / view-only, data in URL hash) ---------- */
   const SHARE_PAYLOAD_VERSION = 1;
+  /** Compact on-wire JSON (gzip); expands to canonical v1 for the viewer. */
+  const SHARE_WIRE_COMPACT_VERSION = 2;
   const MAX_SHARE_URL_CHARS = 95000;
+  /** Legacy plain base64url(JSON). New links use gzip (#p=z…); JSON still has v:1. */
+  const SHARE_HASH_GZIP_PREFIX = 'z';
 
+  const canUseGzipSharePayload = () =>
+    typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined';
+
+  const uint8ToBase64Url = (u8) => {
+    const chunk = 0x8000;
+    let binary = '';
+    for (let i = 0; i < u8.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, u8.subarray(i, i + chunk));
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+
+  const base64UrlToUint8 = (str) => {
+    let b64 = String(str || '').replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64.length % 4;
+    if (pad) b64 += '='.repeat(4 - pad);
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  };
+
+  const encodeShareMode = (mode) => {
+    const m = mode || 'normal';
+    if (m === 'mexicano') return 'e';
+    if (m === 'mix') return 'i';
+    return 'n';
+  };
+
+  const decodeShareMode = (c) => {
+    if (c === 'e') return 'mexicano';
+    if (c === 'i') return 'mix';
+    return 'normal';
+  };
+
+  const packShareScore = (s) => {
+    if (s === '' || s == null) return '';
+    const n = Number(s);
+    return Number.isFinite(n) ? n : s;
+  };
+
+  const unpackShareScore = (s) => {
+    if (s === '' || s == null) return '';
+    if (typeof s === 'number') return s;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : s;
+  };
+
+  /**
+   * Compact share payload: short keys + player indices in matches (names once in P).
+   * Loses nothing vs canonical; expands to same shape the app already expects.
+   */
+  const buildCompactSharePayload = (t) => {
+    const playersArr = [];
+    const nameToIdx = new Map();
+
+    const idxForRaw = (raw) => {
+      const display = fixCommonNameTypos(String(raw ?? ''));
+      const k = normalizeNameKey(display);
+      if (!k) return -1;
+      if (nameToIdx.has(k)) return nameToIdx.get(k);
+      const idx = playersArr.length;
+      playersArr.push({ name: display, gender: null });
+      nameToIdx.set(k, idx);
+      return idx;
+    };
+
+    normalizePlayers(safeJsonParse(t.players, [])).forEach((p) => {
+      const display = fixCommonNameTypos(String(p?.name ?? ''));
+      const k = normalizeNameKey(display);
+      if (!k) return;
+      if (nameToIdx.has(k)) {
+        const i = nameToIdx.get(k);
+        if (p?.gender != null && p.gender !== '' && playersArr[i]) {
+          playersArr[i].gender = p.gender;
+        }
+        return;
+      }
+      nameToIdx.set(k, playersArr.length);
+      playersArr.push({
+        name: display,
+        gender: p?.gender != null && p.gender !== '' ? p.gender : null
+      });
+    });
+
+    const roundsArr = safeJsonParse(t.rounds, []);
+    const R = roundsArr.map((r) => {
+      const matches = (r.matches || []).map((m) => {
+        const t1 = m.team1 || [];
+        const t2 = m.team2 || [];
+        return [
+          m.court,
+          idxForRaw(t1[0]),
+          idxForRaw(t1[1]),
+          idxForRaw(t2[0]),
+          idxForRaw(t2[1]),
+          packShareScore(m.score1),
+          packShareScore(m.score2)
+        ];
+      });
+      return [Number(r.round) || 1, matches];
+    });
+
+    const hasGender = playersArr.some((p) => p.gender);
+    const payload = {
+      v: SHARE_WIRE_COMPACT_VERSION,
+      t: t.title || 'Tournament',
+      m: encodeShareMode(t.mode || 'normal'),
+      c: t.courts,
+      w: t.points_to_win,
+      cr: t.current_round,
+      P: playersArr.map((p) => p.name),
+      R
+    };
+    if (hasGender) payload.G = playersArr.map((p) => p.gender);
+    return payload;
+  };
+
+  const expandSharePayloadV2 = (w) => {
+    const P = w.P;
+    if (!Array.isArray(P)) throw new Error('bad P');
+    const G = w.G;
+    const names = P.map((n) => fixCommonNameTypos(String(n ?? '')));
+    const idxToName = (idx) => {
+      if (typeof idx !== 'number' || idx < 0 || idx >= names.length) return '';
+      return names[idx] || '';
+    };
+
+    const playersExpanded = P.map((name, i) => ({
+      name: fixCommonNameTypos(String(name ?? '')),
+      gender:
+        Array.isArray(G) && i < G.length && G[i] != null && G[i] !== ''
+          ? G[i]
+          : null
+    }));
+
+    const R = w.R;
+    if (!Array.isArray(R)) throw new Error('bad R');
+    const roundsExpanded = R.map((item) => {
+      const rn = Number(item[0]) || 1;
+      const mx = item[1];
+      if (!Array.isArray(mx)) return { round: rn, matches: [] };
+      return {
+        round: rn,
+        matches: mx.map((row) => {
+          const [court, a, b, c, d, s1, s2] = row;
+          return {
+            court,
+            team1: [idxToName(a), idxToName(b)],
+            team2: [idxToName(c), idxToName(d)],
+            score1: unpackShareScore(s1),
+            score2: unpackShareScore(s2)
+          };
+        })
+      };
+    });
+
+    return {
+      v: SHARE_PAYLOAD_VERSION,
+      title: String(w.t ?? 'Tournament'),
+      mode: decodeShareMode(w.m),
+      courts: w.c,
+      points_to_win: w.w,
+      current_round: w.cr,
+      players: JSON.stringify(playersExpanded),
+      rounds: JSON.stringify(roundsExpanded)
+    };
+  };
+
+  const normalizeIncomingSharePayload = (obj) => {
+    if (!obj || typeof obj !== 'object') throw new Error('bad payload');
+    const ver = Number(obj.v);
+    if (ver === SHARE_WIRE_COMPACT_VERSION) return expandSharePayloadV2(obj);
+    if (ver === SHARE_PAYLOAD_VERSION) return obj;
+    throw new Error('bad payload version');
+  };
+
+  /** Uncompressed base64url (UTF-8 JSON); kept for old links and fallback. */
   const encodeSharePayload = (obj) => {
     const json = JSON.stringify(obj);
     const b64 = btoa(unescape(encodeURIComponent(json)));
     return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+
+  const encodeSharePayloadGzip = async (obj) => {
+    const json = JSON.stringify(obj);
+    const input = new TextEncoder().encode(json);
+    const stream = new Blob([input]).stream().pipeThrough(new CompressionStream('gzip'));
+    const buf = await new Response(stream).arrayBuffer();
+    return SHARE_HASH_GZIP_PREFIX + uint8ToBase64Url(new Uint8Array(buf));
   };
 
   const decodeSharePayload = (str) => {
@@ -1817,8 +2007,15 @@
     return JSON.parse(json);
   };
 
-  const buildShareUrlFromTournament = (t) => {
-    const payload = {
+  const decodeSharePayloadGzip = async (b64urlBody) => {
+    const bytes = base64UrlToUint8(b64urlBody);
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const outBuf = await new Response(stream).arrayBuffer();
+    return JSON.parse(new TextDecoder().decode(outBuf));
+  };
+
+  const buildShareUrlFromTournament = async (t) => {
+    const canonical = {
       v: SHARE_PAYLOAD_VERSION,
       title: t.title || 'Tournament',
       mode: t.mode || 'normal',
@@ -1828,9 +2025,28 @@
       rounds: t.rounds,
       current_round: t.current_round
     };
-    const enc = encodeSharePayload(payload);
+    const compact = buildCompactSharePayload(t);
+
+    const plain = encodeSharePayload(canonical);
+    let best = plain;
+
+    if (canUseGzipSharePayload()) {
+      const tryGz = async (obj) => {
+        try {
+          return await encodeSharePayloadGzip(obj);
+        } catch {
+          return null;
+        }
+      };
+      const gzCanon = await tryGz(canonical);
+      const gzCompact = await tryGz(compact);
+      for (const cand of [gzCanon, gzCompact]) {
+        if (cand && cand.length < best.length) best = cand;
+      }
+    }
+
     const base = `${location.origin}${location.pathname}`;
-    const url = `${base}#p=${enc}`;
+    const url = `${base}#p=${best}`;
     if (url.length > MAX_SHARE_URL_CHARS) {
       const err = new Error('TOO_LARGE');
       throw err;
@@ -2233,7 +2449,7 @@
     if (!state.currentTournament) return;
     let url;
     try {
-      url = buildShareUrlFromTournament(state.currentTournament);
+      url = await buildShareUrlFromTournament(state.currentTournament);
     } catch (e) {
       if (e && e.message === 'TOO_LARGE') {
         toast('Tournament is too large for one link. Share a screenshot or split sessions.');
@@ -2255,7 +2471,7 @@
     if (!state.currentTournament) return;
     let url;
     try {
-      url = buildShareUrlFromTournament(state.currentTournament);
+      url = await buildShareUrlFromTournament(state.currentTournament);
     } catch (e) {
       if (e && e.message === 'TOO_LARGE') {
         toast('Tournament is too large for one link.');
@@ -2410,14 +2626,24 @@
     window.location.reload();
   };
 
-  const tryOpenShareFromHash = () => {
+  const tryOpenShareFromHash = async () => {
     const h = (location.hash || '').trim();
     if (!h.startsWith('#p=')) return false;
     const raw = h.slice(3);
     if (!raw) return false;
     let data;
     try {
-      data = decodeSharePayload(raw);
+      let parsed;
+      if (raw[0] === SHARE_HASH_GZIP_PREFIX) {
+        if (!canUseGzipSharePayload()) {
+          toast('This share link needs a newer browser (gzip).');
+          return false;
+        }
+        parsed = await decodeSharePayloadGzip(raw.slice(1));
+      } else {
+        parsed = decodeSharePayload(raw);
+      }
+      data = normalizeIncomingSharePayload(parsed);
     } catch (e) {
       console.error(e);
       toast('Invalid or broken share link.');
@@ -2546,14 +2772,16 @@
   window.copyCurrentSpectatorUrl = copyCurrentSpectatorUrl;
   window.shareCurrentSpectatorUrl = shareCurrentSpectatorUrl;
 
-  if (tryOpenShareFromHash()) {
-    $$('.page').forEach((p) => p.classList.add('hidden'));
-    const sh = $('page-share-view');
-    if (sh) {
-      sh.classList.remove('hidden');
-      sh.classList.add('slide-in');
+  void (async () => {
+    if (await tryOpenShareFromHash()) {
+      $$('.page').forEach((p) => p.classList.add('hidden'));
+      const sh = $('page-share-view');
+      if (sh) {
+        sh.classList.remove('hidden');
+        sh.classList.add('slide-in');
+      }
+      renderShareViewer();
+      updateAdVisibility('share-view');
     }
-    renderShareViewer();
-    updateAdVisibility('share-view');
-  }
+  })();
 })();
