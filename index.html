@@ -175,8 +175,55 @@
           Built for clubs, friendly games, weekend sessions, and community events.
         </p>
 
-        <p id="app-version" class="text-slate-500 text-xs text-center mb-5 font-mono tabular-nums" aria-label="App version">
+        <details
+          class="group max-w-md mx-auto mb-5 rounded-2xl border border-teal-400/30 bg-gradient-to-br from-teal-500/[0.12] via-slate-900/30 to-pink-500/10 text-left shadow-cozy-sm backdrop-blur-sm open:border-teal-400/40"
+          aria-labelledby="whats-new-heading"
+        >
+          <summary
+            class="list-none flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold text-teal-100 hover:bg-white/[0.04] transition-colors [&::-webkit-details-marker]:hidden"
+          >
+            <span class="flex items-center gap-2 min-w-0 text-left" id="whats-new-heading">
+              <span class="text-base shrink-0" aria-hidden="true">✨</span>
+              <span>What’s new in 1.5</span>
+            </span>
+            <svg
+              class="h-5 w-5 shrink-0 text-teal-200/80 transition-transform duration-200 group-open:rotate-180"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="border-t border-white/5 px-4 pb-3.5">
+            <ul class="text-xs text-slate-200/95 space-y-1.5 list-disc list-outside pl-4 leading-relaxed pt-3">
+              <li>
+                <strong>Fixed pairs</strong> — pick this mode when two people always play together on the same team
+                and only opponents change between rounds. Bench rotation and matchups stay fair.
+              </li>
+              <li>
+                <strong>Clearer list &amp; paste tips</strong> — we spell out that order matters (e.g. lines 1–2 = pair A, 3–4 = pair B),
+                so bulk paste and quick adds match the pairs you expect.
+              </li>
+              <li>
+                <strong>Share links</strong> — spectate or pass along fixed-pair tournaments through the same share flow as other modes.
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <p id="app-version" class="text-slate-500 text-xs text-center mb-2 font-mono tabular-nums" aria-label="App version">
           
+        </p>
+        <p class="text-center mb-5 max-w-sm mx-auto">
+          <button
+            type="button"
+            onclick="showUpdateReminderModal()"
+            class="text-teal-400/95 hover:text-teal-200 text-xs font-medium underline underline-offset-2 decoration-teal-500/45 hover:decoration-teal-300"
+          >
+            Tip: clear cache untuk versi terbaru
+          </button>
         </p>
 
         <div class="flex items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-400 flex-wrap mb-1">
@@ -397,6 +444,26 @@
       </p>
 
       <div class="space-y-4">
+        <div class="bg-gradient-to-br from-teal-500/[0.1] via-white/[0.04] to-pink-500/[0.08] border border-teal-400/25 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm" role="region" aria-labelledby="whats-new-about-heading">
+          <h3 id="whats-new-about-heading" class="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-100">
+            <span aria-hidden="true">✨</span> What’s new
+          </h3>
+          <p class="text-slate-400/90 text-xs font-mono mb-3">Version 1.5</p>
+          <ul class="text-slate-300/95 text-sm space-y-2 list-disc list-outside pl-4 leading-relaxed">
+            <li>
+              <strong>Fixed pairs mode</strong> — the same two players stay on one team; opponents rotate across rounds with fair benching
+              and varied matchups, similar in spirit to classic Americano fairness.
+            </li>
+            <li>
+              <strong>Better guidance for names</strong> — the app now explains that list order defines pairs (names 1+2, 3+4, …), including
+              for paste — handy when you’re in a rush courtside.
+            </li>
+            <li>
+              <strong>Share &amp; spectate</strong> — fixed-pair tournaments are included in share links like other formats.
+            </li>
+          </ul>
+        </div>
+
         <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">What Padelio helps you do</h3>
           <p class="text-slate-300/90 text-sm leading-relaxed">
@@ -717,7 +784,7 @@
       </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Tournament Mode</h2>
-        <p class="text-slate-300 text-sm mb-6">Americano, Mix, or Mexicano</p>
+        <p class="text-slate-300 text-sm mb-6">Americano, Mix, Mexicano, or fixed pairs</p>
 
         <div class="space-y-3">
           <button onclick="selectMode('normal')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
@@ -733,6 +800,11 @@
           <button onclick="selectMode('mexicano')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Mexicano
             <div class="text-slate-300/90 text-xs mt-1 font-medium">Standings set the next round’s pairings</div>
+          </button>
+
+          <button onclick="selectMode('fixed')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+            Fixed pairs
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same two players stay together; opponents rotate</div>
           </button>
         </div>
       </div>
@@ -803,6 +875,9 @@
         <p id="mexicano-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/25 bg-teal-500/10 rounded-2xl px-3 py-2">
           <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, next four = court 2, …). Later rounds pair by current standings: 1st+2nd vs 3rd+4th in each group of four active players.
         </p>
+        <p id="fixed-pairs-hint" class="hidden text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-400/25 bg-amber-500/10 rounded-2xl px-3 py-2">
+          <strong>Fixed pairs — urutan = pasangan:</strong> tambahkan (atau tempel) nama <em>berurutan</em>. Dua nama yang berurutan = satu tim: posisi 1+2, lalu 3+4, dan seterusnya. Contoh empat baris: <span class="text-amber-50/95">Fabio, Pingky, Ridel, Filia</span> (satu nama per baris) → <span class="text-amber-50/95">Fabio + Pingky</span> satu pasang, <span class="text-amber-50/95">Ridel + Filia</span> pasang berikutnya. Hapus tim lewat tombol di tiap baris.
+        </p>
         <p id="min-players-text" class="text-slate-300 text-sm mb-2">
           Minimum 4 players required
         </p>
@@ -830,6 +905,31 @@
             </svg>
           </button>
         </div>
+
+        <details id="bulk-players-details" class="mb-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm">
+          <summary class="cursor-pointer select-none text-teal-200/95 font-semibold hover:text-teal-100">
+            Paste many names
+          </summary>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            One name per line, or paste one spreadsheet row (tab-separated). In Mix mode, the current M/F toggle applies to every name added here.
+          </p>
+          <p id="bulk-paste-fixed-hint" class="hidden text-amber-200/90 text-xs mt-2 leading-relaxed border-t border-amber-400/20 pt-2">
+            <strong>Mode fixed pairs:</strong> isi <em>berurutan</em> — contoh: baris 1 <strong>Fabio</strong>, baris 2 <strong>Pingky</strong> = satu tim; baris 3 <strong>Ridel</strong>, baris 4 <strong>Filia</strong> = tim berikutnya. (Bukan: Fabio dengan Ridel kecuali itu sengaja dipasangkan via urutan.)
+          </p>
+          <textarea
+            id="player-names-bulk"
+            rows="5"
+            class="mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-400/20"
+            placeholder="Alex&#10;Sam&#10;Jordan"
+          ></textarea>
+          <button
+            type="button"
+            onclick="addPlayersFromBulkPaste()"
+            class="mt-2 w-full rounded-2xl border border-teal-400/35 bg-teal-500/15 py-2.5 text-sm font-bold text-teal-50 hover:bg-teal-400/25 transition-colors"
+          >
+            Add all from list
+          </button>
+        </details>
       </div>
       <div id="players-list" class="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-2 px-6 pb-2 touch-pan-y"></div>
       <div class="shrink-0 border-t border-white/10 bg-slate-950/95 backdrop-blur-md px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]">
@@ -866,6 +966,10 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg> Copy spectator link </button>
+            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); showSpectatorQrModal();" class="w-full px-4 py-3 text-left hover:bg-violet-500/15 transition-colors flex items-center gap-3 text-violet-200">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg> Show spectator QR </button>
             <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); shareSpectatorLinkForHost();" class="w-full px-4 py-3 text-left hover:bg-pink-500/15 transition-colors flex items-center gap-3 text-pink-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -1041,6 +1145,14 @@
             </button>
             <button
               type="button"
+              onclick="showSpectatorQrModal()"
+              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-violet-400/35 bg-violet-500/15 text-violet-50 hover:bg-violet-400/25 transition-colors"
+              title="Show QR for spectators"
+            >
+              QR
+            </button>
+            <button
+              type="button"
               onclick="shareSpectatorLinkForHost()"
               class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-pink-400/30 bg-pink-500/15 text-pink-50 hover:bg-pink-400/25 transition-colors"
             >
@@ -1196,6 +1308,118 @@
         </div>
       </div>
     </footer>
+  </div>
+
+  <div
+    id="update-cache-reminder-modal"
+    class="hidden fixed inset-0 z-[210] flex items-center justify-center bg-black/75 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="update-cache-reminder-title"
+    onclick="if(event.target===this)hideUpdateReminderModal()"
+  >
+    <div
+      class="max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-amber-400/35 bg-slate-900/95 p-6 shadow-cozy backdrop-blur-md"
+      onclick="event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <h3 id="update-cache-reminder-title" class="text-lg font-extrabold text-amber-50 pr-2 leading-snug">
+          Versi terbaru &amp; cache
+        </h3>
+        <button
+          type="button"
+          onclick="hideUpdateReminderModal()"
+          class="shrink-0 rounded-full border border-white/15 px-2.5 py-1 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+      <p class="text-sm text-slate-200 mb-2 leading-relaxed">
+        <span class="text-amber-200/90 font-semibold">ID</span> — Browser sering menyimpan file lama. Kalau tidak lihat fitur baru atau tampilan aneh, <strong class="text-amber-100/95">kosongkan cache</strong> atau <strong class="text-amber-100/95">muat ulang paksa</strong>.
+      </p>
+      <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+        <span class="text-teal-200/80 font-semibold">EN</span> — Browsers cache old files. If something looks outdated, clear app cache or hard-refresh.
+      </p>
+      <ul class="text-xs text-slate-300/95 space-y-2 mb-5 list-disc list-outside pl-4 leading-relaxed">
+        <li>
+          Hard refresh:
+          <kbd class="px-1.5 py-0.5 rounded-md bg-slate-800 border border-white/10 text-slate-200 font-mono text-[0.65rem]">Ctrl+Shift+R</kbd>
+          (Win/Linux) atau
+          <kbd class="px-1.5 py-0.5 rounded-md bg-slate-800 border border-white/10 text-slate-200 font-mono text-[0.65rem]">Cmd+Shift+R</kbd>
+          (Mac)
+        </li>
+        <li>
+          Atau pakai tombol <strong class="text-amber-200/90">Clear Cache</strong> di halaman ini — <span class="text-emerald-200/90">data turnamen tetap aman</span>.
+        </li>
+      </ul>
+      <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+        <button
+          type="button"
+          data-testid="update-tip-dismiss"
+          onclick="hideUpdateReminderModal()"
+          class="order-2 sm:order-1 w-full sm:w-auto rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+        >
+          Mengerti / Got it
+        </button>
+        <button
+          type="button"
+          onclick="clearAppCacheFromUpdateModal()"
+          class="order-1 sm:order-2 w-full sm:w-auto rounded-2xl border border-amber-400/40 bg-amber-500/20 px-4 py-3 text-sm font-bold text-amber-50 hover:bg-amber-400/30"
+        >
+          Clear cache &amp; reload
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="modal-spectator-qr"
+    class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="spectator-qr-title"
+    onclick="if(event.target===this)closeSpectatorQrModal()"
+  >
+    <div
+      class="max-w-sm w-full rounded-3xl border border-white/15 bg-slate-900 p-6 shadow-cozy"
+      onclick="event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <h3 id="spectator-qr-title" class="text-lg font-extrabold text-white">Spectator QR</h3>
+        <button
+          type="button"
+          onclick="closeSpectatorQrModal()"
+          class="shrink-0 rounded-full border border-white/15 px-2.5 py-1 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+      <p class="text-sm text-slate-300 mb-3 leading-relaxed">
+        Scan to open live standings (read-only). Needs internet to draw the QR image.
+      </p>
+      <div class="flex justify-center rounded-2xl border border-white/10 bg-white p-3">
+        <img
+          id="spectator-qr-img"
+          width="220"
+          height="220"
+          class="hidden max-h-[220px] max-w-[220px]"
+          alt="QR code for spectator link"
+        />
+      </div>
+      <p id="spectator-qr-offline-hint" class="hidden mt-3 text-center text-sm text-amber-200/95 leading-snug">
+        You appear offline — use <strong>Copy link</strong> from the menu instead.
+      </p>
+      <p id="spectator-qr-url-foot" class="mt-3 max-h-24 overflow-y-auto text-[10px] leading-snug text-slate-500 break-all font-mono"></p>
+      <button
+        type="button"
+        onclick="closeSpectatorQrModal(); copySpectatorLinkForHost();"
+        class="mt-4 w-full rounded-2xl border border-teal-400/35 bg-teal-500/15 py-3 text-sm font-bold text-teal-50 hover:bg-teal-400/25 transition-colors"
+      >
+        Copy link instead
+      </button>
+    </div>
   </div>
 
   <!-- Keeps Tailwind JIT aware of classes used only inside js/script.js templates -->

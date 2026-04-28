@@ -1,5 +1,5 @@
 // service-worker.js
-const VERSION = "v2026-04-18-01-001"; // <-- ganti tiap deploy
+const VERSION = "v2026-04-18-06-whats-new-collapsible"; // <-- ganti tiap deploy
 const CACHE_NAME = `padel-cache-${VERSION}`;
 
 const URLS_TO_CACHE = [

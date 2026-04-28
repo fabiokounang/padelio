@@ -31,6 +31,11 @@ const allowConsoleError = (text) => {
 async function main() {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
+  await context.addInitScript(() => {
+    try {
+      sessionStorage.setItem('padelio_update_tip_dismissed_session', '1');
+    } catch {}
+  });
   const page = await context.newPage();
 
   const consoleErrors = [];

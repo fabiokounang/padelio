@@ -306,6 +306,26 @@
     return streak;
   };
 
+  /** Benched streak for a fixed team — the pair sits or plays together. */
+  const consecutiveBenchStreakForPair = (pair, priorRounds, resolve) => {
+    const kWant = pairKey(resolve(pair.m), resolve(pair.f));
+    let streak = 0;
+    for (let i = priorRounds.length - 1; i >= 0; i--) {
+      let on = false;
+      (priorRounds[i].matches || []).forEach((m) => {
+        for (const t of [m.team1, m.team2]) {
+          if (t && t.length === 2) {
+            const k = pairKey(resolve(t[0]), resolve(t[1]));
+            if (k === kWant) on = true;
+          }
+        }
+      });
+      if (on) break;
+      streak++;
+    }
+    return streak;
+  };
+
   /** Teammate pairs from the immediately previous round (by round number). */
   const getLastRoundPartnerSet = (prevRoundDatum, resolve) => {
     const res = resolve || ((x) => String(x ?? '').trim());
@@ -379,6 +399,130 @@
     }
 
     return selected.slice(0, slots).map((x) => x.name);
+  };
+
+  /** Fixed-pair mode: same two players always one team; bench/fairness at team level. */
+  const pickActiveFixedPairs = (allPairs, pairSlots, allRounds, roundNo) => {
+    const flatNames = allPairs.flatMap((p) => [p.m, p.f]);
+    const resolve = makeRosterNameResolve(flatNames);
+    const tKey = (p) => pairKey(resolve(p.m), resolve(p.f));
+
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
+    const playCount = new Map();
+    allPairs.forEach((p) => playCount.set(tKey(p), 0));
+
+    priorRounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        for (const team of [m.team1, m.team2]) {
+          if (team && team.length === 2) {
+            const k = pairKey(resolve(team[0]), resolve(team[1]));
+            if (playCount.has(k)) {
+              playCount.set(k, (playCount.get(k) || 0) + 1);
+            }
+          }
+        }
+      });
+    });
+
+    const playedLastRound = new Set();
+    if (lastRound) {
+      (lastRound.matches || []).forEach((m) => {
+        for (const team of [m.team1, m.team2]) {
+          if (team && team.length === 2) {
+            playedLastRound.add(pairKey(resolve(team[0]), resolve(team[1])));
+          }
+        }
+      });
+    }
+
+    const n = allPairs.length;
+    const keyToIdx = new Map(allPairs.map((p, i) => [tKey(p), i]));
+    const rot = ((Number(roundNo) || 1) - 1 + n * 100) % n;
+
+    if (!lastRound) return allPairs.slice(0, pairSlots);
+
+    const keyed = allPairs.map((p) => {
+      const tk = tKey(p);
+      return {
+        pair: p,
+        key: tk,
+        played: playCount.get(tk) || 0,
+        streak: consecutiveBenchStreakForPair(p, priorRounds, resolve),
+        tieRot: (keyToIdx.get(tk) - rot + n) % n,
+        benchedLastRound: lastRound ? !playedLastRound.has(tk) : false
+      };
+    });
+
+    const byPriority = (a, b) => {
+      if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
+      if (a.played !== b.played) return a.played - b.played;
+      if (a.streak !== b.streak) return b.streak - a.streak;
+      return a.tieRot - b.tieRot;
+    };
+
+    const neverPlayed = keyed.filter((x) => x.played === 0).sort(byPriority);
+    const selected = neverPlayed.slice(0, pairSlots);
+    const selectedKeys = new Set(selected.map((x) => x.key));
+
+    if (selected.length < pairSlots) {
+      const needed = pairSlots - selected.length;
+      const restPool = keyed.filter((x) => !selectedKeys.has(x.key)).sort(byPriority);
+      selected.push(...restPool.slice(0, needed));
+    }
+
+    return selected.slice(0, pairSlots).map((x) => x.pair);
+  };
+
+  /** All ways to pair up K fixed teams into K/2 court matches. */
+  const enumerateFixedPairings = (pairs) => {
+    if (pairs.length % 2 !== 0) return [];
+    if (pairs.length === 0) return [[]];
+    const [first, ...rest] = pairs;
+    const out = [];
+    for (let i = 0; i < rest.length; i++) {
+      const second = rest[i];
+      const others = rest.filter((_, j) => j !== i);
+      for (const sub of enumerateFixedPairings(others)) {
+        out.push([[first, second], ...sub]);
+      }
+    }
+    return out;
+  };
+
+  const buildBestFixedPairMatches = (selectedPairs, history) => {
+    const { opposeCount, matchupCount } = history;
+    const k = selectedPairs.length;
+    if (k < 2 || k % 2 !== 0) return [];
+
+    const matchings = enumerateFixedPairings(selectedPairs);
+    if (!matchings.length) return [];
+
+    let bestScore = Infinity;
+    const bestRows = [];
+    for (const mch of matchings) {
+      let score = 0;
+      for (const [p1, p2] of mch) {
+        const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
+        const sMatch = matchupCount.get(matchupKey(p1, p2)) || 0;
+        score += sOpp * 10 + sMatch * 200;
+      }
+      if (score < bestScore) {
+        bestScore = score;
+        bestRows.length = 0;
+        bestRows.push(mch);
+      } else if (score === bestScore) {
+        bestRows.push(mch);
+      }
+    }
+    const chosen = bestRows[Math.floor(Math.random() * bestRows.length)];
+    return chosen.map(([p1, p2], i) => ({
+      court: i + 1,
+      team1: [p1.m, p1.f],
+      team2: [p2.m, p2.f],
+      score1: '',
+      score2: ''
+    }));
   };
 
   /**
@@ -548,6 +692,7 @@
   function selectMode (mode) {
     if (mode === 'mix') state.newTournament.mode = 'mix';
     else if (mode === 'mexicano') state.newTournament.mode = 'mexicano';
+    else if (mode === 'fixed') state.newTournament.mode = 'fixed';
     else state.newTournament.mode = 'normal';
     state.playerGenderDraft = 'M';
     updateGenderUI();
@@ -602,7 +747,7 @@
     playerGenderDraft: 'M',
 
     newTournament: {
-      mode: 'normal', // 'normal' | 'mix' | 'mexicano'
+      mode: 'normal', // 'normal' | 'mix' | 'mexicano' | 'fixed'
       title: '',
       courts: 0,
       points: 0,
@@ -618,7 +763,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.4.12';
+  const APP_VERSION = '1.5.0';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -851,6 +996,10 @@
       canStart = canStart && total % 2 === 0 && m === f; // balanced
     }
 
+    if (state.newTournament.mode === 'fixed') {
+      canStart = canStart && normPlayers.length % 2 === 0;
+    }
+
     setDisabled(btnStart, !canStart);
   };
 
@@ -928,11 +1077,20 @@
     el.classList.toggle('hidden', state.newTournament.mode !== 'mexicano');
   };
 
+  const syncFixedPairsHint = () => {
+    const el = $('fixed-pairs-hint');
+    const bulk = $('bulk-paste-fixed-hint');
+    const show = state.newTournament.mode === 'fixed';
+    if (el) el.classList.toggle('hidden', !show);
+    if (bulk) bulk.classList.toggle('hidden', !show);
+  };
+
   const goToPlayers = () => {
     if (state.newTournament.points > 0) {
       navigateTo('new-players');
       updateGenderUI(); // ✅ supaya toggle muncul kalau mix
       syncMexicanoPlayersHint();
+      syncFixedPairsHint();
     }
   };
 
@@ -942,8 +1100,45 @@
 
     const players = normalizePlayers(state.newTournament.players);
 
-    list.innerHTML = players
-      .map((p, i) => `
+    if (state.newTournament.mode === 'fixed') {
+      const pairCount = Math.floor(players.length / 2);
+      const rows = [];
+      for (let pi = 0; pi < pairCount; pi++) {
+        const a = players[pi * 2];
+        const b = players[pi * 2 + 1];
+        rows.push(`
+        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[0.65rem] uppercase tracking-wide text-emerald-300/90 font-bold">Pair ${pi + 1}</span>
+            <span class="font-medium truncate"><span class="text-emerald-200/80">${escapeHtml(a.name)}</span> <span class="text-emerald-500/80">+</span> <span class="text-emerald-200/80">${escapeHtml(b.name)}</span></span>
+          </div>
+          <button type="button" onclick="removeFixedPair(${pi})" class="shrink-0 text-emerald-400 hover:text-red-400 transition-colors" title="Remove this pair">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>`);
+      }
+      if (players.length % 2 === 1) {
+        const last = players[players.length - 1];
+        rows.push(`
+        <div class="flex items-center justify-between bg-amber-900/30 rounded-2xl border border-amber-500/40 px-4 py-3 slide-in shadow-cozy-sm">
+          <div class="flex flex-col gap-0.5 min-w-0">
+            <span class="text-[0.65rem] uppercase tracking-wide text-amber-200/90 font-bold">Incomplete pair</span>
+            <span class="font-medium truncate text-amber-100">${escapeHtml(last.name)}</span>
+            <span class="text-xs text-amber-200/80">Add one more player to complete the pair.</span>
+          </div>
+          <button type="button" onclick="removePlayer(${players.length - 1})" class="shrink-0 text-amber-300 hover:text-red-400 transition-colors" title="Remove">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>`);
+      }
+      list.innerHTML = rows.join('');
+    } else {
+      list.innerHTML = players
+        .map((p, i) => `
         <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm">
           <div class="flex items-center gap-2">
             <span class="font-medium">${escapeHtml(p.name)}</span>
@@ -973,11 +1168,13 @@
           </button>
         </div>
       `)
-      .join('');
+        .join('');
+    }
 
     const count = $('player-count');
     if (count) count.textContent = `${players.length} players added`;
     syncMexicanoPlayersHint();
+    syncFixedPairsHint();
   };
 
   const addPlayer = () => {
@@ -1010,9 +1207,86 @@
     updateButtonStates();
   };
 
+  /** One name per line, or one tab-separated row (spreadsheet paste). Mix: uses current M/F draft for all. */
+  const addPlayersFromBulkPaste = () => {
+    const ta = $('player-names-bulk');
+    if (!ta) return;
+    const raw = ta.value || '';
+    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    let names;
+    if (lines.length === 1 && lines[0].includes('\t')) {
+      names = lines[0].split(/\t/).map((s) => s.trim()).filter(Boolean);
+    } else {
+      names = lines;
+    }
+    if (names.length === 0) {
+      toast('Paste at least one name (one per line).');
+      return;
+    }
+
+    if (state.newTournament.mode === 'fixed' && names.length % 2 !== 0) {
+      names = names.slice(0, names.length - 1);
+      toast('Fixed pairs: nama harus berpasangan (urutan 1+2, 3+4, …). Baris terakhir tanpa pasangan diabaikan.');
+    }
+
+    state.newTournament.players = normalizePlayers(state.newTournament.players);
+    const isMix = state.newTournament.mode === 'mix';
+    const genderDraft = isMix ? state.playerGenderDraft : null;
+
+    let added = 0;
+    let skippedDup = 0;
+    for (const rawName of names) {
+      const resolved = fixCommonNameTypos(String(rawName || '').trim());
+      if (!resolved) continue;
+      if (
+        state.newTournament.players.some(
+          (p) => playerNameDuplicateKey(p.name) === playerNameDuplicateKey(resolved)
+        )
+      ) {
+        skippedDup++;
+        continue;
+      }
+      const name = resolved.charAt(0).toUpperCase() + resolved.slice(1);
+      state.newTournament.players.push({ name, gender: genderDraft });
+      added++;
+    }
+
+    ta.value = '';
+    const details = $('bulk-players-details');
+    if (details) details.open = false;
+
+    renderPlayersList();
+    updateGenderBalanceWarning();
+    updateGenderUI();
+    updateButtonStates();
+
+    if (added === 0 && skippedDup > 0) {
+      toast('No new names added (all were duplicates).');
+    } else if (added > 0) {
+      toast(
+        skippedDup
+          ? `Added ${added} player(s). Skipped ${skippedDup} duplicate(s).`
+          : `Added ${added} player(s).`
+      );
+    }
+  };
+
   const removePlayer = (index) => {
     const norm = normalizePlayers(state.newTournament.players);
     norm.splice(index, 1);
+    state.newTournament.players = norm;
+    renderPlayersList();
+    updateGenderBalanceWarning();
+    updateGenderUI();
+    updateButtonStates();
+  };
+
+  const removeFixedPair = (pairIndex) => {
+    const norm = normalizePlayers(state.newTournament.players);
+    const i = pairIndex * 2;
+    if (i + 1 >= norm.length) return;
+    norm.splice(i + 1, 1);
+    norm.splice(i, 1);
     state.newTournament.players = norm;
     renderPlayersList();
     updateGenderBalanceWarning();
@@ -1060,6 +1334,14 @@
         const { m, f, total } = countGender(state.newTournament.players);
         if (total % 2 !== 0 || m !== f) {
           toast(`Mix Americano requires balanced gender. Male ${m} / Female ${f}.`);
+          return;
+        }
+      }
+
+      if (state.newTournament.mode === 'fixed') {
+        const n = normalizePlayers(state.newTournament.players).length;
+        if (n % 2 !== 0) {
+          toast('Fixed pairs: add an even number of names (complete pairs).');
           return;
         }
       }
@@ -1121,7 +1403,11 @@
     const courts = state.newTournament.courts || 1;
     const minPlayers = courts * 4;
 
-    el.textContent = `Minimum ${minPlayers} players required`;
+    if (state.newTournament.mode === 'fixed') {
+      el.textContent = `Minimum ${minPlayers} players (even count; pairs: 1+2, 3+4, …)`;
+    } else {
+      el.textContent = `Minimum ${minPlayers} players required`;
+    }
   };
 
   /* ---------- Tournament list ---------- */
@@ -1139,7 +1425,13 @@
         const players = safeJsonParse(t.players, []);
         const md = t.mode || 'normal';
         const modeLabel =
-          md === 'mexicano' ? 'Mexicano' : md === 'mix' ? 'Mix' : 'Americano';
+          md === 'mexicano'
+            ? 'Mexicano'
+            : md === 'mix'
+              ? 'Mix'
+              : md === 'fixed'
+                ? 'Fixed pairs'
+                : 'Americano';
         return `
           <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-600/50 rounded-3xl p-4 text-left transition-all slide-in shadow-cozy-sm">
             <h3 class="font-semibold text-lg mb-1">${escapeHtml(t.title)}</h3>
@@ -1398,6 +1690,39 @@
       return;
     }
 
+    // ---------- FIXED PAIRS (stable teams; opponents rotate) ----------
+    if (mode === 'fixed') {
+      const playersFull = getPlayersFull();
+      if (playersFull.length % 2 !== 0) {
+        roundData = { round: roundNo, matches: [] };
+        rounds.push(roundData);
+        setRounds(rounds);
+        await saveCurrentTournament();
+        renderCourts(roundData);
+        return;
+      }
+
+      const allPairObjs = [];
+      for (let i = 0; i + 1 < playersFull.length; i += 2) {
+        allPairObjs.push({ m: playersFull[i].name, f: playersFull[i + 1].name });
+      }
+      const numPairs = allPairObjs.length;
+      const maxCourts = Math.min(courts, Math.floor(numPairs / 2));
+      let matches = [];
+      if (maxCourts > 0) {
+        const needPairs = maxCourts * 2;
+        const active = pickActiveFixedPairs(allPairObjs, needPairs, rounds, roundNo);
+        const history = buildMixHistory();
+        matches = buildBestFixedPairMatches(active, history);
+      }
+      roundData = { round: roundNo, matches };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
     // ---------- NORMAL MODE (fair bench + partner/opponent variety) ----------
     {
       const players = getPlayers();
@@ -1634,7 +1959,7 @@
     const tm = state.currentTournament.title || '';
     const md = state.currentTournament.mode || 'normal';
     const modeSuffix =
-      md === 'mexicano' ? ' · Mexicano' : md === 'mix' ? ' · Mix' : '';
+      md === 'mexicano' ? ' · Mexicano' : md === 'mix' ? ' · Mix' : md === 'fixed' ? ' · Fixed pairs' : '';
     if (title) title.textContent = tm + modeSuffix;
     if (ind) ind.textContent = `Round ${state.currentTournament.current_round}`;
 
@@ -1713,12 +2038,15 @@
     }
   };
 
-  const clearAppCacheOnly = async () => {
+  const clearAppCacheOnly = async (opts = {}) => {
     if (state.shareViewerMode) return;
-    const ok = window.confirm(
-      'Clear app cache only? Tournament data will stay safe. App will reload after cache is cleared.'
-    );
-    if (!ok) return;
+    const skipConfirm = opts && opts.skipConfirm;
+    if (!skipConfirm) {
+      const ok = window.confirm(
+        'Clear app cache only? Tournament data will stay safe. App will reload after cache is cleared.'
+      );
+      if (!ok) return;
+    }
     try {
       if ('caches' in window) {
         const keys = await caches.keys();
@@ -1840,12 +2168,14 @@
     const m = mode || 'normal';
     if (m === 'mexicano') return 'e';
     if (m === 'mix') return 'i';
+    if (m === 'fixed') return 'p';
     return 'n';
   };
 
   const decodeShareMode = (c) => {
     if (c === 'e') return 'mexicano';
     if (c === 'i') return 'mix';
+    if (c === 'p') return 'fixed';
     return 'normal';
   };
 
@@ -2476,6 +2806,94 @@
   wireLeaderboardLayoutTabs();
   wireLeaderboardSortClicks();
 
+  let spectatorQrKeyHandler = null;
+
+  const closeSpectatorQrModal = () => {
+    const modal = $('modal-spectator-qr');
+    const img = $('spectator-qr-img');
+    const hint = $('spectator-qr-offline-hint');
+    if (modal) modal.classList.add('hidden');
+    if (img) {
+      img.onload = null;
+      img.onerror = null;
+      img.removeAttribute('src');
+      img.classList.add('hidden');
+    }
+    if (hint) {
+      hint.classList.add('hidden');
+      hint.innerHTML =
+        'You appear offline — use <strong>Copy link</strong> from the menu instead.';
+    }
+    if (spectatorQrKeyHandler) {
+      document.removeEventListener('keydown', spectatorQrKeyHandler);
+      spectatorQrKeyHandler = null;
+    }
+  };
+
+  const showSpectatorQrModal = async () => {
+    const menu = $('dropdown-menu');
+    if (menu) menu.classList.add('hidden');
+
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+
+    let url;
+    try {
+      url = await buildShareUrlFromTournament(state.currentTournament);
+    } catch (e) {
+      if (e && e.message === 'TOO_LARGE') {
+        toast('Tournament is too large for one QR. Use Copy link or a screenshot.');
+        return;
+      }
+      toast('Could not build share link.');
+      return;
+    }
+
+    const modal = $('modal-spectator-qr');
+    const img = $('spectator-qr-img');
+    const hint = $('spectator-qr-offline-hint');
+    const foot = $('spectator-qr-url-foot');
+    if (!modal || !img) return;
+
+    if (foot) {
+      foot.textContent = url;
+    }
+
+    spectatorQrKeyHandler = (e) => {
+      if (e.key === 'Escape') closeSpectatorQrModal();
+    };
+    document.addEventListener('keydown', spectatorQrKeyHandler);
+
+    if (navigator.onLine) {
+      if (hint) hint.classList.add('hidden');
+      img.classList.add('hidden');
+      img.onload = () => {
+        img.classList.remove('hidden');
+      };
+      img.onerror = () => {
+        img.classList.add('hidden');
+        if (hint) {
+          hint.innerHTML = 'Could not load QR image. Use <strong>Copy link</strong> below.';
+          hint.classList.remove('hidden');
+        }
+        toast('QR image failed to load. Try Copy link.');
+      };
+      const enc = encodeURIComponent(url);
+      img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${enc}`;
+    } else {
+      img.removeAttribute('src');
+      img.classList.add('hidden');
+      if (hint) {
+        hint.innerHTML =
+          'You appear offline — use <strong>Copy link</strong> from the menu instead.';
+        hint.classList.remove('hidden');
+      }
+      toast('Offline: QR needs internet. Use Copy link.');
+    }
+
+    modal.classList.remove('hidden');
+  };
+
   const copySpectatorLinkForHost = async () => {
     syncCurrentTournament();
     if (!state.currentTournament) return;
@@ -2532,6 +2950,8 @@
   /** Inline onclick on leaderboard header; assign early so globals exist even if later init throws. */
   window.copySpectatorLinkForHost = copySpectatorLinkForHost;
   window.shareSpectatorLinkForHost = shareSpectatorLinkForHost;
+  window.showSpectatorQrModal = showSpectatorQrModal;
+  window.closeSpectatorQrModal = closeSpectatorQrModal;
 
   const renderShareRoundsReadOnly = (rounds) => {
     const el = $('share-rounds-container');
@@ -2732,6 +3152,51 @@
     updateRoundArrowState();
   };
 
+  const showUpdateReminderModal = () => {
+    const m = $('update-cache-reminder-modal');
+    if (!m) return;
+    m.classList.remove('hidden');
+    try {
+      document.body.style.overflow = 'hidden';
+    } catch {}
+  };
+
+  const hideUpdateReminderModal = () => {
+    const m = $('update-cache-reminder-modal');
+    if (!m) return;
+    m.classList.add('hidden');
+    try {
+      document.body.style.overflow = '';
+      sessionStorage.setItem('padelio_update_tip_dismissed_session', '1');
+    } catch {}
+  };
+
+  const maybeShowUpdateReminderOnLoad = () => {
+    if (state.shareViewerMode) return;
+    try {
+      if (sessionStorage.getItem('padelio_update_tip_dismissed_session') === '1') {
+        return;
+      }
+    } catch {}
+    setTimeout(() => {
+      if (state.shareViewerMode) return;
+      showUpdateReminderModal();
+    }, 700);
+  };
+
+  const clearAppCacheFromUpdateModal = async () => {
+    await clearAppCacheOnly({ skipConfirm: true });
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const m = $('update-cache-reminder-modal');
+    if (m && !m.classList.contains('hidden')) {
+      e.preventDefault();
+      hideUpdateReminderModal();
+    }
+  });
+
   /* ---------- Service Worker: reload once on update ---------- */
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -2780,7 +3245,9 @@
   window.toggleGenderDraft = toggleGenderDraft;
 
   window.addPlayer = addPlayer;
+  window.addPlayersFromBulkPaste = addPlayersFromBulkPaste;
   window.removePlayer = removePlayer;
+  window.removeFixedPair = removeFixedPair;
   window.startTournament = startTournament;
 
   window.openTournament = openTournament;
@@ -2795,6 +3262,9 @@
   window.toggleMenu = toggleMenu;
   window.installApp = installApp;
   window.clearAppCacheOnly = clearAppCacheOnly;
+  window.clearAppCacheFromUpdateModal = clearAppCacheFromUpdateModal;
+  window.showUpdateReminderModal = showUpdateReminderModal;
+  window.hideUpdateReminderModal = hideUpdateReminderModal;
   window.clearAllTournamentData = clearAllTournamentData;
   window.confirmDelete = confirmDelete;
   window.cancelDelete = cancelDelete;
@@ -2820,6 +3290,8 @@
       }
       renderShareViewer();
       updateAdVisibility('share-view');
+    } else {
+      maybeShowUpdateReminderOnLoad();
     }
   })();
 })();
