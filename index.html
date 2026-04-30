@@ -784,12 +784,17 @@
       </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Tournament Mode</h2>
-        <p class="text-slate-300 text-sm mb-6">Americano, Mix, Mexicano, or fixed pairs</p>
+        <p class="text-slate-300 text-sm mb-6">Americano, balanced levels, Mix, Mexicano, Mix Mexicano, or fixed pairs</p>
 
         <div class="space-y-3">
           <button onclick="selectMode('normal')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Normal Americano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">No gender balancing</div>
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">No gender balancing; classic fair rotation</div>
+          </button>
+
+          <button onclick="selectMode('balanced')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+            Balanced Americano
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same rotation as normal, plus power levels 1–5 to keep matches even</div>
           </button>
 
           <button onclick="selectMode('mix')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
@@ -802,9 +807,19 @@
             <div class="text-slate-300/90 text-xs mt-1 font-medium">Standings set the next round’s pairings</div>
           </button>
 
+          <button onclick="selectMode('mixmex')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+            Mix Mexicano
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same as Mexicano, but every team is one male and one female (equal M/F required)</div>
+          </button>
+
           <button onclick="selectMode('fixed')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
-            Fixed pairs
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same two players stay together; opponents rotate</div>
+            Fixed pairs Americano
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same two players always one team; opponent mix like normal Americano</div>
+          </button>
+
+          <button onclick="selectMode('fixedmex')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+            Fixed pairs Mexicano
+            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same teams; benching like Mexicano; from round 2, matchups by team points (1v2, 3v4…)</div>
           </button>
         </div>
       </div>
@@ -875,24 +890,50 @@
         <p id="mexicano-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/25 bg-teal-500/10 rounded-2xl px-3 py-2">
           <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, next four = court 2, …). Later rounds pair by current standings: 1st+2nd vs 3rd+4th in each group of four active players.
         </p>
+        <p id="mixmex-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-500/20 bg-cyan-950/40 rounded-2xl px-3 py-2">
+          <strong>Mix Mexicano:</strong> same bench and standings as Mexicano, but in each court block the top two from the <em>active males</em> and top two from the <em>active females</em> (by list order in round 1, by points after) play as M+F teams: (M1+F1) vs (M2+F2). Males: list in men’s order; females: in women’s order. Equal male/female count required.
+        </p>
         <p id="fixed-pairs-hint" class="hidden text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-400/25 bg-amber-500/10 rounded-2xl px-3 py-2">
           <strong>Fixed pairs — urutan = pasangan:</strong> tambahkan (atau tempel) nama <em>berurutan</em>. Dua nama yang berurutan = satu tim: posisi 1+2, lalu 3+4, dan seterusnya. Contoh empat baris: <span class="text-amber-50/95">Fabio, Pingky, Ridel, Filia</span> (satu nama per baris) → <span class="text-amber-50/95">Fabio + Pingky</span> satu pasang, <span class="text-amber-50/95">Ridel + Filia</span> pasang berikutnya. Hapus tim lewat tombol di tiap baris.
+        </p>
+        <p id="fixedmex-pairs-hint" class="hidden text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-300/20 bg-amber-900/20 rounded-2xl px-3 py-2">
+          <strong>Fixed Mexicano:</strong> same pair order as above. Who sits follows Mexicano rules; from round 2, active teams are sorted by team points (sum of both players), then 1st vs 2nd, 3rd vs 4th in that order, per court block.
         </p>
         <p id="min-players-text" class="text-slate-300 text-sm mb-2">
           Minimum 4 players required
         </p>
         <p class="text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
 
+        <p id="power-level-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/20 bg-teal-500/10 rounded-2xl px-3 py-2">
+          <strong>Balanced Americano only:</strong> set each player’s <strong>power level</strong> (L1 = lowest … L5 = highest). Pairing uses it to balance teams; partners and opponents still rotate each round like normal Americano.
+        </p>
+
         <p id="gender-balance-warning" class="text-xs text-red-400 hidden mb-2"></p>
 
-        <div class="flex gap-3 mb-4 items-stretch">
+        <div class="flex gap-3 mb-4 items-stretch flex-wrap">
           <input
             type="text"
             id="player-name"
             placeholder="Player name"
-            class="flex-[4] bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
+            class="flex-1 min-w-0 sm:flex-[4] bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
             onkeypress="if(event.key==='Enter')addPlayer()"
           />
+          <div id="player-level-wrap" class="hidden shrink-0 flex items-end">
+            <label class="flex flex-col justify-center text-[0.65rem] font-semibold text-slate-400" for="player-level">
+              Lvl
+              <select
+                id="player-level"
+                class="mt-0.5 min-w-[4.5rem] text-sm font-bold rounded-2xl border border-white/15 bg-white/5 text-white py-3 px-2 focus:outline-none focus:border-pink-300/60"
+                title="Default power level for new names (Balanced mode)"
+              >
+                <option value="1">L1</option>
+                <option value="2">L2</option>
+                <option value="3" selected>L3</option>
+                <option value="4">L4</option>
+                <option value="5">L5</option>
+              </select>
+            </label>
+          </div>
 
           <button
             type="button"

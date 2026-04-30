@@ -244,3 +244,127 @@ for (const courts of [1, 2]) {
 }
 
 console.log('Interpretation: spread should stay 0–1 with fair benching. Partner repeat grows slowly with few opponents.');
+
+/* --- Power level (mirrors js/script.js normal pairing term order) --- */
+const DEFAULT_PLAYER_LEVEL = 3;
+const MIN_PLAYER_LEVEL = 1;
+const MAX_PLAYER_LEVEL = 5;
+const POWER_LEVEL_PARTNER_ALPHA = 8;
+const POWER_LEVEL_MATCH_BETA = 4;
+
+const clampPlayerLevel = (v) => {
+  const n = Math.floor(Number(v));
+  if (!Number.isFinite(n)) return DEFAULT_PLAYER_LEVEL;
+  return Math.max(MIN_PLAYER_LEVEL, Math.min(MAX_PLAYER_LEVEL, n));
+};
+
+const getLevelForPairing = (levelByName, name) => {
+  if (!levelByName || !levelByName.size) return DEFAULT_PLAYER_LEVEL;
+  return levelByName.has(name) ? levelByName.get(name) : DEFAULT_PLAYER_LEVEL;
+};
+
+const activeLevelSpread = (activeNames, getL) => {
+  if (!activeNames.length) return 0;
+  let lo = MAX_PLAYER_LEVEL;
+  let hi = MIN_PLAYER_LEVEL;
+  for (const n of activeNames) {
+    const L = getL(n);
+    if (L < lo) lo = L;
+    if (L > hi) hi = L;
+  }
+  return hi - lo;
+};
+
+const buildNormalPairsLeveled = (activeNames, partnerCount, lastRoundPartnerSet, levelByName) => {
+  const getL = (n) => getLevelForPairing(levelByName, n);
+  const spread = levelByName && levelByName.size
+    ? activeLevelSpread(activeNames, getL)
+    : 0;
+  const pool = shuffle([...activeNames]);
+  const pairs = [];
+  while (pool.length >= 2) {
+    const p = pool.shift();
+    let bestJ = 0;
+    let bestScore = Infinity;
+    for (let j = 0; j < pool.length; j++) {
+      const q = pool[j];
+      const k = pairKey(p, q);
+      const partnerSeen = partnerCount.get(k) || 0;
+      const repeatedFromLastRound = lastRoundPartnerSet.has(k) ? 1 : 0;
+      let s = repeatedFromLastRound * 100000 + partnerSeen * 100;
+      if (spread > 0) {
+        const d = Math.abs(getL(p) - getL(q));
+        s += POWER_LEVEL_PARTNER_ALPHA * Math.max(0, spread - d);
+      }
+      if (s < bestScore) {
+        bestScore = s;
+        bestJ = j;
+      }
+    }
+    const q = pool.splice(bestJ, 1)[0];
+    pairs.push({ m: p, f: q });
+  }
+  return pairs;
+};
+
+const matchupKeyV = (p1, p2) => {
+  const t1 = pairKey(p1.m, p1.f);
+  const t2 = pairKey(p2.m, p2.f);
+  return t1 < t2 ? `${t1}||${t2}` : `${t2}||${t1}`;
+};
+
+/** One court, four players, empty history — must form 3+3 vs 3+3 in level sum for 1,1,5,5. */
+const buildOneMatchLeveled = (activeNames, levelByName, partnerCount, opposeCount, matchupCount) => {
+  const last = new Set();
+  const getL = (n) => getLevelForPairing(levelByName, n);
+  const levelSpread = activeLevelSpread(activeNames, getL);
+  const neededPairs = 2;
+  let best = null;
+  const attempts = 200;
+  for (let i = 0; i < attempts; i++) {
+    const pairs = buildNormalPairsLeveled(activeNames, partnerCount, last, levelByName).slice(0, neededPairs);
+    if (pairs.length < 2) continue;
+    const p1 = pairs[0];
+    const p2 = pairs[1];
+    const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
+    const sMatchup = matchupCount.get(matchupKeyV(p1, p2)) || 0;
+    let pairScore = sOpp * 10 + sMatchup * 200;
+    if (levelSpread > 0) {
+      const s1 = getL(p1.m) + getL(p1.f);
+      const s2 = getL(p2.m) + getL(p2.f);
+      pairScore += POWER_LEVEL_MATCH_BETA * Math.abs(s1 - s2);
+    }
+    const partnerPenalty =
+      (partnerCount.get(pairKey(p1.m, p1.f)) || 0) +
+      (partnerCount.get(pairKey(p2.m, p2.f)) || 0);
+    const score = partnerPenalty * 50 + pairScore;
+    if (!best || score < best.score) best = { score, p1, p2 };
+  }
+  return best;
+};
+
+console.log('\n--- Power level: 1,1,5,5 four players (empty history) ---');
+{
+  const active = ['A', 'B', 'C', 'D'];
+  const levelByName = new Map([
+    ['A', 1], ['B', 1], ['C', 5], ['D', 5]
+  ]);
+  const partnerCount = new Map();
+  const opposeCount = new Map();
+  const matchupCount = new Map();
+  for (let t = 0; t < 500; t++) {
+    const b = buildOneMatchLeveled(active, levelByName, partnerCount, opposeCount, matchupCount);
+    if (!b) throw new Error('no match');
+    const s1 = levelByName.get(b.p1.m) + levelByName.get(b.p1.f);
+    const s2 = levelByName.get(b.p2.m) + levelByName.get(b.p2.f);
+    if (s1 !== s2) {
+      throw new Error(
+        `Power level smoke failed: team sums ${s1} vs ${s2} (try ${t}) — expected balanced`
+      );
+    }
+    if (s1 !== 6) {
+      throw new Error(`Expected 6+6, got ${s1}+${s2}`);
+    }
+  }
+  console.log('OK: 500/500 trials produced 6+6 level sums (mixed 1+5 partners).');
+}

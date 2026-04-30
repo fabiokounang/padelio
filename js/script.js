@@ -145,10 +145,26 @@
     return canon != null ? canon : t;
   };
 
+  const MIN_PLAYER_LEVEL = 1;
+  const MAX_PLAYER_LEVEL = 5;
+  const DEFAULT_PLAYER_LEVEL = 3;
+
+  const clampPlayerLevel = (v) => {
+    const n = Math.floor(Number(v));
+    if (!Number.isFinite(n)) return DEFAULT_PLAYER_LEVEL;
+    return Math.max(MIN_PLAYER_LEVEL, Math.min(MAX_PLAYER_LEVEL, n));
+  };
+
   const normalizePlayers = (arr) =>
     (Array.isArray(arr) ? arr : []).map((p) => {
-      if (typeof p === 'string') return { name: fixCommonNameTypos(p), gender: null };
-      return { name: fixCommonNameTypos(String(p?.name || '')), gender: p?.gender || null };
+      if (typeof p === 'string') {
+        return { name: fixCommonNameTypos(p), gender: null, level: DEFAULT_PLAYER_LEVEL };
+      }
+      return {
+        name: fixCommonNameTypos(String(p?.name || '')),
+        gender: p?.gender || null,
+        level: clampPlayerLevel(p?.level)
+      };
     }).filter(p => p.name.trim().length > 0);
 
   /** Same key for roster + add flow: trim, typo map, then case-insensitive compare. */
@@ -237,8 +253,12 @@
 
   const getPlayersFull = () => {
     const raw = safeJsonParse(state.currentTournament?.players, []);
-    return normalizePlayers(raw); // [{name, gender}]
+    return normalizePlayers(raw); // [{name, gender, level}]
   };
+
+  const isFixedPairRosterMode = (m) => m === 'fixed' || m === 'fixedmex';
+
+  const isMixLikeMode = (m) => m === 'mix' || m === 'mixmex';
 
   const buildMixHistory = () => {
     const rounds = getRounds();
@@ -289,6 +309,41 @@
       (opposeCount.get(pairKey(a2, b2)) || 0)
     );
   };
+
+  /**
+   * Normal mode only: levels 1–5. Map canonical roster name -> level.
+   * When all players share one level, spread is 0 and pairing ignores power terms.
+   */
+  const makeLevelByNameMap = (playersFull) => {
+    const m = new Map();
+    (playersFull || []).forEach((p) => {
+      m.set(p.name, clampPlayerLevel(p.level));
+    });
+    return m;
+  };
+
+  const getLevelForPairing = (levelByName, resolve, name) => {
+    if (!levelByName || !levelByName.size) return DEFAULT_PLAYER_LEVEL;
+    const k = resolve(name);
+    return levelByName.has(k) ? levelByName.get(k) : DEFAULT_PLAYER_LEVEL;
+  };
+
+  const activeLevelSpread = (activeNames, getL) => {
+    if (!activeNames.length) return 0;
+    let lo = MAX_PLAYER_LEVEL;
+    let hi = MIN_PLAYER_LEVEL;
+    for (const n of activeNames) {
+      const L = getL(n);
+      if (L < lo) lo = L;
+      if (L > hi) hi = L;
+    }
+    return hi - lo;
+  };
+
+  /** Weaker than partnerCount*100; nudges L+H style partners when levels vary. */
+  const POWER_LEVEL_PARTNER_ALPHA = 8;
+  /** Weaker than matchup*200; nudges even team strength on a court. */
+  const POWER_LEVEL_MATCH_BETA = 4;
 
   /** Consecutive rounds benched, counting only from the latest round backward. */
   const consecutiveBenchStreak = (name, priorRounds, resolve) => {
@@ -474,55 +529,186 @@
     return selected.slice(0, pairSlots).map((x) => x.pair);
   };
 
-  /** All ways to pair up K fixed teams into K/2 court matches. */
-  const enumerateFixedPairings = (pairs) => {
-    if (pairs.length % 2 !== 0) return [];
-    if (pairs.length === 0) return [[]];
-    const [first, ...rest] = pairs;
-    const out = [];
-    for (let i = 0; i < rest.length; i++) {
-      const second = rest[i];
-      const others = rest.filter((_, j) => j !== i);
-      for (const sub of enumerateFixedPairings(others)) {
-        out.push([[first, second], ...sub]);
-      }
+  /**
+   * Mexicano-style benching for indivisible fixed teams (pair = two players on court or neither).
+   * If too many teams "must play", falls back to Americana-style `pickActiveFixedPairs`.
+   */
+  const pickActiveFixedPairsMexicano = (allPairs, pairSlots, allRounds, roundNo) => {
+    const flatNames = allPairs.flatMap((p) => [p.m, p.f]);
+    const resolve = makeRosterNameResolve(flatNames);
+    const tKey = (p) => pairKey(resolve(p.m), resolve(p.f));
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
+
+    const playCount = new Map();
+    allPairs.forEach((p) => playCount.set(tKey(p), 0));
+    priorRounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        for (const team of [m.team1, m.team2]) {
+          if (team && team.length === 2) {
+            const k2 = pairKey(resolve(team[0]), resolve(team[1]));
+            if (playCount.has(k2)) {
+              playCount.set(k2, (playCount.get(k2) || 0) + 1);
+            }
+          }
+        }
+      });
+    });
+
+    if (!lastRound || pairSlots <= 0) {
+      return allPairs.slice(0, Math.min(pairSlots, allPairs.length));
     }
-    return out;
+
+    const onCourtLast = new Set();
+    (lastRound.matches || []).forEach((m) => {
+      for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
+        onCourtLast.add(resolve(name));
+      }
+    });
+
+    const mustPlay = allPairs.filter((p) => !onCourtLast.has(resolve(p.m)));
+    if (mustPlay.length > pairSlots) {
+      return pickActiveFixedPairs(allPairs, pairSlots, allRounds, roundNo);
+    }
+
+    const taken = new Set();
+    const selected = [];
+    mustPlay.forEach((p) => {
+      const k2 = tKey(p);
+      if (!taken.has(k2)) {
+        taken.add(k2);
+        selected.push(p);
+      }
+    });
+
+    const n = allPairs.length;
+    const keyToIdx = new Map(allPairs.map((p, i) => [tKey(p), i]));
+    const rot = ((Number(roundNo) || 1) - 1 + n * 100) % n;
+
+    const pool = allPairs.filter((p) => !taken.has(tKey(p)));
+    const keyed = pool.map((p) => {
+      const tk = tKey(p);
+      return {
+        pair: p,
+        key: tk,
+        played: playCount.get(tk) || 0,
+        streak: consecutiveBenchStreakForPair(p, priorRounds, resolve),
+        tieRot: (keyToIdx.get(tk) - rot + n) % n
+      };
+    });
+    keyed.sort((a, b) => {
+      if (a.played !== b.played) return a.played - b.played;
+      if (a.streak !== b.streak) return b.streak - a.streak;
+      return a.tieRot - b.tieRot;
+    });
+    const need = pairSlots - selected.length;
+    keyed.slice(0, need).forEach((x) => {
+      if (!taken.has(x.key)) {
+        taken.add(x.key);
+        selected.push(x.pair);
+      }
+    });
+
+    return selected.slice(0, pairSlots);
   };
 
+  /**
+   * Same as normal Americano matching: many shuffled attempts, minimize repeat opponents; teams stay fixed.
+   */
   const buildBestFixedPairMatches = (selectedPairs, history) => {
     const { opposeCount, matchupCount } = history;
     const k = selectedPairs.length;
     if (k < 2 || k % 2 !== 0) return [];
-
-    const matchings = enumerateFixedPairings(selectedPairs);
-    if (!matchings.length) return [];
-
-    let bestScore = Infinity;
-    const bestRows = [];
-    for (const mch of matchings) {
-      let score = 0;
-      for (const [p1, p2] of mch) {
-        const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
-        const sMatch = matchupCount.get(matchupKey(p1, p2)) || 0;
-        score += sOpp * 10 + sMatch * 200;
+    const numCourts = k / 2;
+    const attempts = Math.max(80, Math.min(260, k * 18));
+    let best = null;
+    for (let a = 0; a < attempts; a++) {
+      const pool = shuffle([...selectedPairs]);
+      const matches = [];
+      let totalScore = 0;
+      for (let c = 0; c < numCourts; c++) {
+        if (pool.length < 2) break;
+        const p1 = pool.shift();
+        let bestJ = -1;
+        let bestPairScore = Infinity;
+        for (let j = 0; j < pool.length; j++) {
+          const p2 = pool[j];
+          const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
+          const sMatch = matchupCount.get(matchupKey(p1, p2)) || 0;
+          const pairScore = sOpp * 10 + sMatch * 200;
+          if (pairScore < bestPairScore) {
+            bestPairScore = pairScore;
+            bestJ = j;
+          }
+        }
+        if (bestJ < 0) break;
+        const p2 = pool.splice(bestJ, 1)[0];
+        totalScore += bestPairScore;
+        matches.push({
+          court: c + 1,
+          team1: [p1.m, p1.f],
+          team2: [p2.m, p2.f],
+          score1: '',
+          score2: ''
+        });
       }
-      if (score < bestScore) {
-        bestScore = score;
-        bestRows.length = 0;
-        bestRows.push(mch);
-      } else if (score === bestScore) {
-        bestRows.push(mch);
-      }
+      if (matches.length !== numCourts) continue;
+      if (!best || totalScore < best.totalScore) best = { totalScore, matches };
     }
-    const chosen = bestRows[Math.floor(Math.random() * bestRows.length)];
-    return chosen.map(([p1, p2], i) => ({
-      court: i + 1,
-      team1: [p1.m, p1.f],
-      team2: [p2.m, p2.f],
-      score1: '',
-      score2: ''
-    }));
+    return best?.matches || [];
+  };
+
+  /**
+   * Roster order (round 1) or team point sum (round 2+), then 1st vs 2nd, 3rd vs 4th among active teams.
+   */
+  const buildFixedPairsMexicanoMatches = (allPairObjs, courts, allRounds, roundNo, tournament) => {
+    const maxCourts = Math.min(courts, Math.floor(allPairObjs.length / 2));
+    if (maxCourts <= 0) return [];
+    const needPairs = maxCourts * 2;
+    const active = pickActiveFixedPairsMexicano(allPairObjs, needPairs, allRounds, roundNo);
+    const flatNames = allPairObjs.flatMap((p) => [p.m, p.f]);
+    const resolve = makeRosterNameResolve(flatNames);
+    const tKey = (p) => pairKey(resolve(p.m), resolve(p.f));
+    const keyToIdx = new Map();
+    allPairObjs.forEach((p, i) => {
+      keyToIdx.set(tKey(p), i);
+    });
+    const rn = Number(roundNo) || 1;
+    const tSub = {
+      ...tournament,
+      rounds: JSON.stringify(
+        safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
+      )
+    };
+    let ordered;
+    if (rn === 1) {
+      ordered = [...active].sort(
+        (a, b) => (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0)
+      );
+    } else {
+      const board = computeLeaderboardSorted(tSub, 'points');
+      const pt = new Map(board.map((r) => [r.name, r.points]));
+      const teamPts = (p) => (pt.get(resolve(p.m)) || 0) + (pt.get(resolve(p.f)) || 0);
+      ordered = [...active].sort((a, b) => {
+        const d = teamPts(b) - teamPts(a);
+        if (d !== 0) return d;
+        return (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0);
+      });
+    }
+    const matches = [];
+    for (let c = 0; c < maxCourts; c++) {
+      const t0 = ordered[c * 2];
+      const t1 = ordered[c * 2 + 1];
+      if (!t0 || !t1) break;
+      matches.push({
+        court: c + 1,
+        team1: [t0.m, t0.f],
+        team2: [t1.m, t1.f],
+        score1: '',
+        score2: ''
+      });
+    }
+    return matches;
   };
 
   /**
@@ -604,7 +790,12 @@
    * Build teams with hard anti-repeat guard:
    * avoid using an exact teammate pair from previous round whenever possible.
    */
-  const buildNormalPairs = (activeNames, partnerCount, lastRoundPartnerSet) => {
+  const buildNormalPairs = (activeNames, partnerCount, lastRoundPartnerSet, levelByName, rosterNames) => {
+    const resolve = makeRosterNameResolve(rosterNames || activeNames);
+    const getL = (n) => getLevelForPairing(levelByName, resolve, n);
+    const spread = levelByName && levelByName.size
+      ? activeLevelSpread(activeNames, getL)
+      : 0;
     const pool = shuffle(activeNames);
     const pairs = [];
     while (pool.length >= 2) {
@@ -616,7 +807,11 @@
         const k = pairKey(p, q);
         const partnerSeen = partnerCount.get(k) || 0;
         const repeatedFromLastRound = lastRoundPartnerSet.has(k) ? 1 : 0;
-        const s = repeatedFromLastRound * 100000 + partnerSeen * 100;
+        let s = repeatedFromLastRound * 100000 + partnerSeen * 100;
+        if (spread > 0) {
+          const d = Math.abs(getL(p) - getL(q));
+          s += POWER_LEVEL_PARTNER_ALPHA * Math.max(0, spread - d);
+        }
         if (s < bestScore) {
           bestScore = s;
           bestJ = j;
@@ -629,17 +824,23 @@
     return pairs;
   };
 
-  const buildBestNormalMatches = (activeNames, maxCourts, history, allRounds, roundNo, rosterNames) => {
+  const buildBestNormalMatches = (activeNames, maxCourts, history, allRounds, roundNo, rosterNames, levelByName) => {
     const { partnerCount, opposeCount, matchupCount } = history;
     const resolve = makeRosterNameResolve(rosterNames || activeNames);
     const prevRound = getPreviousRoundDatum(allRounds, roundNo);
     const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
+    const getL = (n) => getLevelForPairing(levelByName, resolve, n);
+    const levelSpread = levelByName && levelByName.size
+      ? activeLevelSpread(activeNames, getL)
+      : 0;
     const neededPairs = maxCourts * 2;
     const attempts = Math.max(80, Math.min(260, activeNames.length * 18));
     let best = null;
 
     for (let i = 0; i < attempts; i++) {
-      const pairs = buildNormalPairs(activeNames, partnerCount, lastRoundPartnerSet).slice(0, neededPairs);
+      const pairs = buildNormalPairs(
+        activeNames, partnerCount, lastRoundPartnerSet, levelByName, rosterNames
+      ).slice(0, neededPairs);
       if (pairs.length < neededPairs) continue;
 
       const pool = shuffle([...pairs]);
@@ -656,7 +857,12 @@
           const p2 = pool[j];
           const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
           const sMatchup = matchupCount.get(matchupKey(p1, p2)) || 0;
-          const pairScore = sOpp * 10 + sMatchup * 200;
+          let pairScore = sOpp * 10 + sMatchup * 200;
+          if (levelSpread > 0) {
+            const s1 = getL(p1.m) + getL(p1.f);
+            const s2 = getL(p2.m) + getL(p2.f);
+            pairScore += POWER_LEVEL_MATCH_BETA * Math.abs(s1 - s2);
+          }
           if (pairScore < bestPairScore) {
             bestPairScore = pairScore;
             bestJ = j;
@@ -691,8 +897,11 @@
 
   function selectMode (mode) {
     if (mode === 'mix') state.newTournament.mode = 'mix';
+    else if (mode === 'mixmex') state.newTournament.mode = 'mixmex';
     else if (mode === 'mexicano') state.newTournament.mode = 'mexicano';
     else if (mode === 'fixed') state.newTournament.mode = 'fixed';
+    else if (mode === 'fixedmex') state.newTournament.mode = 'fixedmex';
+    else if (mode === 'balanced') state.newTournament.mode = 'balanced';
     else state.newTournament.mode = 'normal';
     state.playerGenderDraft = 'M';
     updateGenderUI();
@@ -710,7 +919,7 @@
   };
 
   function updateGenderUI () {
-    const isMix = state.newTournament.mode === 'mix';
+    const isMix = isMixLikeMode(state.newTournament.mode);
 
     const btn = $('gender-toggle');
     const txt = $('gender-toggle-text');
@@ -747,7 +956,7 @@
     playerGenderDraft: 'M',
 
     newTournament: {
-      mode: 'normal', // 'normal' | 'mix' | 'mexicano' | 'fixed'
+      mode: 'normal', // 'normal' | 'balanced' | 'mix' | 'mixmex' | 'mexicano' | 'fixed' | 'fixedmex'
       title: '',
       courts: 0,
       points: 0,
@@ -763,7 +972,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.5.0';
+  const APP_VERSION = '1.6.3';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -945,6 +1154,10 @@
       refreshAppVersionLabel();
     }
 
+    if (page === 'new-players') {
+      syncPlayerLevelControls();
+    }
+
     updateAdVisibility(page);
   };
 
@@ -991,12 +1204,12 @@
 
     let canStart = normPlayers.length >= minPlayers;
 
-    if (state.newTournament.mode === 'mix') {
+    if (isMixLikeMode(state.newTournament.mode)) {
       const { m, f, total } = countGender(normPlayers);
       canStart = canStart && total % 2 === 0 && m === f; // balanced
     }
 
-    if (state.newTournament.mode === 'fixed') {
+    if (isFixedPairRosterMode(state.newTournament.mode)) {
       canStart = canStart && normPlayers.length % 2 === 0;
     }
 
@@ -1045,7 +1258,7 @@
     const warn = $('gender-balance-warning');
     if (!warn) return;
 
-    if (state.newTournament.mode !== 'mix') {
+    if (!isMixLikeMode(state.newTournament.mode)) {
       warn.classList.add('hidden');
       return;
     }
@@ -1073,16 +1286,19 @@
 
   const syncMexicanoPlayersHint = () => {
     const el = $('mexicano-players-hint');
-    if (!el) return;
-    el.classList.toggle('hidden', state.newTournament.mode !== 'mexicano');
+    const mx = $('mixmex-players-hint');
+    if (el) el.classList.toggle('hidden', state.newTournament.mode !== 'mexicano');
+    if (mx) mx.classList.toggle('hidden', state.newTournament.mode !== 'mixmex');
   };
 
   const syncFixedPairsHint = () => {
     const el = $('fixed-pairs-hint');
     const bulk = $('bulk-paste-fixed-hint');
-    const show = state.newTournament.mode === 'fixed';
+    const mex = $('fixedmex-pairs-hint');
+    const show = isFixedPairRosterMode(state.newTournament.mode);
     if (el) el.classList.toggle('hidden', !show);
     if (bulk) bulk.classList.toggle('hidden', !show);
+    if (mex) mex.classList.toggle('hidden', state.newTournament.mode !== 'fixedmex');
   };
 
   const goToPlayers = () => {
@@ -1091,7 +1307,35 @@
       updateGenderUI(); // ✅ supaya toggle muncul kalau mix
       syncMexicanoPlayersHint();
       syncFixedPairsHint();
+      syncPlayerLevelControls();
     }
+  };
+
+  const readPlayerLevelDraft = () => clampPlayerLevel($('player-level')?.value);
+
+  const levelSelectFieldHtml = (index, level, show) => {
+    if (!show) return '';
+    const v = clampPlayerLevel(level);
+    const opts = [1, 2, 3, 4, 5]
+      .map(
+        (n) =>
+          `<option value="${n}"${n === v ? ' selected' : ''}>L${n}</option>`
+      )
+      .join('');
+    return (
+      `<select onchange="setPlayerLevel(${index}, this.value)" ` +
+      `class="shrink-0 min-w-[3.5rem] text-xs font-bold rounded-xl border border-emerald-600/50 bg-emerald-900/50 text-emerald-100 py-1.5 pl-1 pr-0" ` +
+      `title="Power level (Balanced Americano: used to even matches)" ` +
+      `aria-label="Power level">${opts}</select>`
+    );
+  };
+
+  const syncPlayerLevelControls = () => {
+    const isBal = state.newTournament.mode === 'balanced';
+    const wrap = $('player-level-wrap');
+    if (wrap) wrap.classList.toggle('hidden', !isBal);
+    const hint = $('power-level-hint');
+    if (hint) hint.classList.toggle('hidden', !isBal);
   };
 
   const renderPlayersList = () => {
@@ -1099,18 +1343,27 @@
     if (!list) return;
 
     const players = normalizePlayers(state.newTournament.players);
+    const showLevelUi = state.newTournament.mode === 'balanced';
 
-    if (state.newTournament.mode === 'fixed') {
+    if (isFixedPairRosterMode(state.newTournament.mode)) {
       const pairCount = Math.floor(players.length / 2);
       const rows = [];
       for (let pi = 0; pi < pairCount; pi++) {
         const a = players[pi * 2];
         const b = players[pi * 2 + 1];
+        const ia = pi * 2;
+        const ib = pi * 2 + 1;
         rows.push(`
-        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm">
-          <div class="flex flex-col gap-0.5 min-w-0">
+        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
+          <div class="flex flex-col gap-1.5 min-w-0">
             <span class="text-[0.65rem] uppercase tracking-wide text-emerald-300/90 font-bold">Pair ${pi + 1}</span>
-            <span class="font-medium truncate"><span class="text-emerald-200/80">${escapeHtml(a.name)}</span> <span class="text-emerald-500/80">+</span> <span class="text-emerald-200/80">${escapeHtml(b.name)}</span></span>
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
+              <span class="font-medium text-emerald-200/80">${escapeHtml(a.name)}</span>
+              ${levelSelectFieldHtml(ia, a.level, showLevelUi)}
+              <span class="text-emerald-500/80">+</span>
+              <span class="font-medium text-emerald-200/80">${escapeHtml(b.name)}</span>
+              ${levelSelectFieldHtml(ib, b.level, showLevelUi)}
+            </div>
           </div>
           <button type="button" onclick="removeFixedPair(${pi})" class="shrink-0 text-emerald-400 hover:text-red-400 transition-colors" title="Remove this pair">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1121,14 +1374,18 @@
       }
       if (players.length % 2 === 1) {
         const last = players[players.length - 1];
+        const li = players.length - 1;
         rows.push(`
-        <div class="flex items-center justify-between bg-amber-900/30 rounded-2xl border border-amber-500/40 px-4 py-3 slide-in shadow-cozy-sm">
+        <div class="flex items-center justify-between bg-amber-900/30 rounded-2xl border border-amber-500/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
           <div class="flex flex-col gap-0.5 min-w-0">
             <span class="text-[0.65rem] uppercase tracking-wide text-amber-200/90 font-bold">Incomplete pair</span>
-            <span class="font-medium truncate text-amber-100">${escapeHtml(last.name)}</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-medium truncate text-amber-100">${escapeHtml(last.name)}</span>
+              ${levelSelectFieldHtml(li, last.level, showLevelUi)}
+            </div>
             <span class="text-xs text-amber-200/80">Add one more player to complete the pair.</span>
           </div>
-          <button type="button" onclick="removePlayer(${players.length - 1})" class="shrink-0 text-amber-300 hover:text-red-400 transition-colors" title="Remove">
+          <button type="button" onclick="removePlayer(${li})" class="shrink-0 text-amber-300 hover:text-red-400 transition-colors" title="Remove">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -1138,12 +1395,12 @@
       list.innerHTML = rows.join('');
     } else {
       list.innerHTML = players
-        .map((p, i) => `
-        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm">
-          <div class="flex items-center gap-2">
+        .map(
+          (p, i) => `
+        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
+          <div class="flex items-center flex-wrap gap-x-2 gap-y-1.5 min-w-0">
             <span class="font-medium">${escapeHtml(p.name)}</span>
-
-            ${state.newTournament.mode === 'mix'
+            ${isMixLikeMode(state.newTournament.mode)
               ? `
                 <button
                   type="button"
@@ -1159,15 +1416,17 @@
               `
               : ''
             }
+            ${levelSelectFieldHtml(i, p.level, showLevelUi)}
           </div>
 
-          <button onclick="removePlayer(${i})" class="text-emerald-400 hover:text-red-400 transition-colors">
+          <button onclick="removePlayer(${i})" class="shrink-0 text-emerald-400 hover:text-red-400 transition-colors" aria-label="Remove player">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
-      `)
+      `
+        )
         .join('');
     }
 
@@ -1175,6 +1434,7 @@
     if (count) count.textContent = `${players.length} players added`;
     syncMexicanoPlayersHint();
     syncFixedPairsHint();
+    syncPlayerLevelControls();
   };
 
   const addPlayer = () => {
@@ -1193,10 +1453,14 @@
 
     const name = resolved.charAt(0).toUpperCase() + resolved.slice(1);
 
-    const isMix = state.newTournament.mode === 'mix';
+    const isMix = isMixLikeMode(state.newTournament.mode);
     const gender = isMix ? state.playerGenderDraft : null;
+    const level =
+      state.newTournament.mode === 'balanced'
+        ? readPlayerLevelDraft()
+        : DEFAULT_PLAYER_LEVEL;
 
-    state.newTournament.players.push({ name, gender });
+    state.newTournament.players.push({ name, gender, level });
 
     input.value = '';
     input.focus();
@@ -1224,13 +1488,13 @@
       return;
     }
 
-    if (state.newTournament.mode === 'fixed' && names.length % 2 !== 0) {
+    if (isFixedPairRosterMode(state.newTournament.mode) && names.length % 2 !== 0) {
       names = names.slice(0, names.length - 1);
       toast('Fixed pairs: nama harus berpasangan (urutan 1+2, 3+4, …). Baris terakhir tanpa pasangan diabaikan.');
     }
 
     state.newTournament.players = normalizePlayers(state.newTournament.players);
-    const isMix = state.newTournament.mode === 'mix';
+    const isMix = isMixLikeMode(state.newTournament.mode);
     const genderDraft = isMix ? state.playerGenderDraft : null;
 
     let added = 0;
@@ -1247,7 +1511,11 @@
         continue;
       }
       const name = resolved.charAt(0).toUpperCase() + resolved.slice(1);
-      state.newTournament.players.push({ name, gender: genderDraft });
+      const level =
+        state.newTournament.mode === 'balanced'
+          ? readPlayerLevelDraft()
+          : DEFAULT_PLAYER_LEVEL;
+      state.newTournament.players.push({ name, gender: genderDraft, level });
       added++;
     }
 
@@ -1295,7 +1563,7 @@
   };
 
   const togglePlayerGender = (index) => {
-    if (state.newTournament.mode !== 'mix') return;
+    if (!isMixLikeMode(state.newTournament.mode)) return;
 
     const norm = normalizePlayers(state.newTournament.players);
     const p = norm[index];
@@ -1307,6 +1575,17 @@
     renderPlayersList();
     updateGenderBalanceWarning();
     updateGenderUI();
+    updateButtonStates();
+  };
+
+  const setPlayerLevel = (index, value) => {
+    if (state.newTournament.mode !== 'balanced') return;
+    const norm = normalizePlayers(state.newTournament.players);
+    const p = norm[index];
+    if (!p) return;
+    p.level = clampPlayerLevel(value);
+    state.newTournament.players = norm;
+    renderPlayersList();
     updateButtonStates();
   };
 
@@ -1330,15 +1609,17 @@
         return;
       }
 
-      if (state.newTournament.mode === 'mix') {
+      if (isMixLikeMode(state.newTournament.mode)) {
         const { m, f, total } = countGender(state.newTournament.players);
         if (total % 2 !== 0 || m !== f) {
-          toast(`Mix Americano requires balanced gender. Male ${m} / Female ${f}.`);
+          toast(
+            `Mix (Mix Mexicano) needs equal M/F. Male ${m} / Female ${f}.`
+          );
           return;
         }
       }
 
-      if (state.newTournament.mode === 'fixed') {
+      if (isFixedPairRosterMode(state.newTournament.mode)) {
         const n = normalizePlayers(state.newTournament.players).length;
         if (n % 2 !== 0) {
           toast('Fixed pairs: add an even number of names (complete pairs).');
@@ -1403,7 +1684,7 @@
     const courts = state.newTournament.courts || 1;
     const minPlayers = courts * 4;
 
-    if (state.newTournament.mode === 'fixed') {
+    if (isFixedPairRosterMode(state.newTournament.mode)) {
       el.textContent = `Minimum ${minPlayers} players (even count; pairs: 1+2, 3+4, …)`;
     } else {
       el.textContent = `Minimum ${minPlayers} players required`;
@@ -1429,9 +1710,15 @@
             ? 'Mexicano'
             : md === 'mix'
               ? 'Mix'
-              : md === 'fixed'
-                ? 'Fixed pairs'
-                : 'Americano';
+              : md === 'fixedmex'
+                ? 'Fixed pairs Mexicano'
+                : md === 'fixed'
+                  ? 'Fixed pairs Americana'
+                  : md === 'balanced'
+                    ? 'Balanced Americano'
+                    : md === 'mixmex'
+                      ? 'Mix Mexicano'
+                      : 'Americano';
         return `
           <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-600/50 rounded-3xl p-4 text-left transition-all slide-in shadow-cozy-sm">
             <h3 class="font-semibold text-lg mb-1">${escapeHtml(t.title)}</h3>
@@ -1540,6 +1827,69 @@
         court: c + 1,
         team1: [quad[0], quad[1]],
         team2: [quad[2], quad[3]],
+        score1: '',
+        score2: ''
+      });
+    }
+    return matches;
+  }
+
+  /**
+   * Mix + Mexicano: equal M/F; same benching and per-gender standing order as Mexicano;
+   * each court: (M0,F0) vs (M1,F1) from parallel sorted lists (round 1: roster; later: points).
+   */
+  function buildMixMexicanoMatches (playersFull, courts, allRounds, roundNo, tournament) {
+    const malesAll = playersFull.filter((p) => p.gender === 'M').map((p) => p.name);
+    const femalesAll = playersFull.filter((p) => p.gender === 'F').map((p) => p.name);
+    const maxCourts = Math.min(
+      courts,
+      Math.floor(malesAll.length / 2),
+      Math.floor(femalesAll.length / 2)
+    );
+    if (maxCourts <= 0) return [];
+    const need = maxCourts * 2;
+    const activeM = pickActivePlayersMexicano(malesAll, need, allRounds, roundNo);
+    const activeF = pickActivePlayersMexicano(femalesAll, need, allRounds, roundNo);
+    const rn = Number(roundNo) || 1;
+    const tSub = {
+      ...tournament,
+      rounds: JSON.stringify(
+        safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
+      )
+    };
+
+    let orderedM;
+    let orderedF;
+    if (rn === 1) {
+      const actM = new Set(activeM);
+      const actF = new Set(activeF);
+      orderedM = malesAll.filter((n) => actM.has(n));
+      orderedF = femalesAll.filter((n) => actF.has(n));
+    } else {
+      const board = computeLeaderboardSorted(tSub, 'points');
+      const actM = new Set(activeM);
+      const actF = new Set(activeF);
+      orderedM = board.map((row) => row.name).filter((n) => actM.has(n));
+      activeM.forEach((n) => {
+        if (!orderedM.includes(n)) orderedM.push(n);
+      });
+      orderedF = board.map((row) => row.name).filter((n) => actF.has(n));
+      activeF.forEach((n) => {
+        if (!orderedF.includes(n)) orderedF.push(n);
+      });
+    }
+
+    const matches = [];
+    for (let c = 0; c < maxCourts; c++) {
+      const m0 = orderedM[c * 2];
+      const m1 = orderedM[c * 2 + 1];
+      const f0 = orderedF[c * 2];
+      const f1 = orderedF[c * 2 + 1];
+      if (!m0 || !m1 || !f0 || !f1) break;
+      matches.push({
+        court: c + 1,
+        team1: [m0, f0],
+        team2: [m1, f1],
         score1: '',
         score2: ''
       });
@@ -1690,8 +2040,31 @@
       return;
     }
 
-    // ---------- FIXED PAIRS (stable teams; opponents rotate) ----------
-    if (mode === 'fixed') {
+    if (mode === 'mixmex') {
+      const playersFull = getPlayersFull();
+      const malesN = playersFull.filter((p) => p.gender === 'M').length;
+      const femN = playersFull.filter((p) => p.gender === 'F').length;
+      const maxCourts = Math.min(
+        courts,
+        Math.floor(malesN / 2),
+        Math.floor(femN / 2)
+      );
+      let matches = [];
+      if (maxCourts > 0) {
+        matches = buildMixMexicanoMatches(
+          playersFull, courts, rounds, roundNo, state.currentTournament
+        );
+      }
+      roundData = { round: roundNo, matches };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
+    // ---------- FIXED PAIRS — Americana (shuffle attempts + opponent variety) or Mexicano (bench + standings) ----------
+    if (mode === 'fixed' || mode === 'fixedmex') {
       const playersFull = getPlayersFull();
       if (playersFull.length % 2 !== 0) {
         roundData = { round: roundNo, matches: [] };
@@ -1711,9 +2084,15 @@
       let matches = [];
       if (maxCourts > 0) {
         const needPairs = maxCourts * 2;
-        const active = pickActiveFixedPairs(allPairObjs, needPairs, rounds, roundNo);
-        const history = buildMixHistory();
-        matches = buildBestFixedPairMatches(active, history);
+        if (mode === 'fixedmex') {
+          matches = buildFixedPairsMexicanoMatches(
+            allPairObjs, courts, rounds, roundNo, state.currentTournament
+          );
+        } else {
+          const active = pickActiveFixedPairs(allPairObjs, needPairs, rounds, roundNo);
+          const history = buildMixHistory();
+          matches = buildBestFixedPairMatches(active, history);
+        }
       }
       roundData = { round: roundNo, matches };
       rounds.push(roundData);
@@ -1723,7 +2102,32 @@
       return;
     }
 
-    // ---------- NORMAL MODE (fair bench + partner/opponent variety) ----------
+    // ---------- BALANCED AMERICANO (power levels; same bench/rotation as normal) ----------
+    if (mode === 'balanced') {
+      const players = getPlayers();
+      const playersFull = getPlayersFull();
+      const levelByName = makeLevelByNameMap(playersFull);
+      const maxCourts = Math.min(courts, Math.floor(players.length / 4));
+      let matches = [];
+
+      if (maxCourts > 0) {
+        const slots = maxCourts * 4;
+        const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
+        const history = buildMixHistory();
+        matches = buildBestNormalMatches(
+          active, maxCourts, history, rounds, roundNo, players, levelByName
+        );
+      }
+
+      roundData = { round: roundNo, matches };
+      rounds.push(roundData);
+      setRounds(rounds);
+      await saveCurrentTournament();
+      renderCourts(roundData);
+      return;
+    }
+
+    // ---------- NORMAL MODE (fair bench + partner/opponent variety; no power-level pairing) ----------
     {
       const players = getPlayers();
       const maxCourts = Math.min(courts, Math.floor(players.length / 4));
@@ -1733,7 +2137,9 @@
         const slots = maxCourts * 4;
         const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
         const history = buildMixHistory();
-        matches = buildBestNormalMatches(active, maxCourts, history, rounds, roundNo, players);
+        matches = buildBestNormalMatches(
+          active, maxCourts, history, rounds, roundNo, players, null
+        );
       }
 
       roundData = { round: roundNo, matches };
@@ -1959,7 +2365,19 @@
     const tm = state.currentTournament.title || '';
     const md = state.currentTournament.mode || 'normal';
     const modeSuffix =
-      md === 'mexicano' ? ' · Mexicano' : md === 'mix' ? ' · Mix' : md === 'fixed' ? ' · Fixed pairs' : '';
+      md === 'mexicano'
+        ? ' · Mexicano'
+        : md === 'mixmex'
+          ? ' · Mix Mexicano'
+          : md === 'mix'
+            ? ' · Mix'
+            : md === 'fixedmex'
+              ? ' · Fixed Mexicano'
+              : md === 'fixed'
+                ? ' · Fixed Americana'
+                : md === 'balanced'
+                  ? ' · Balanced Americano'
+                  : '';
     if (title) title.textContent = tm + modeSuffix;
     if (ind) ind.textContent = `Round ${state.currentTournament.current_round}`;
 
@@ -2167,15 +2585,21 @@
   const encodeShareMode = (mode) => {
     const m = mode || 'normal';
     if (m === 'mexicano') return 'e';
+    if (m === 'mixmex') return 'j';
     if (m === 'mix') return 'i';
+    if (m === 'fixedmex') return 'u';
     if (m === 'fixed') return 'p';
+    if (m === 'balanced') return 'b';
     return 'n';
   };
 
   const decodeShareMode = (c) => {
     if (c === 'e') return 'mexicano';
+    if (c === 'j') return 'mixmex';
     if (c === 'i') return 'mix';
+    if (c === 'u') return 'fixedmex';
     if (c === 'p') return 'fixed';
+    if (c === 'b') return 'balanced';
     return 'normal';
   };
 
@@ -3273,6 +3697,7 @@
   window.showLeaderboard = showLeaderboard;
   window.backToRounds = backToRounds;
   window.togglePlayerGender = togglePlayerGender;
+  window.setPlayerLevel = setPlayerLevel;
   window.updateGenderBalanceWarning = updateGenderBalanceWarning;
 
   window.switchShareTab = switchShareTab;
