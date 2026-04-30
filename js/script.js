@@ -979,6 +979,8 @@
   const refreshAppVersionLabel = () => {
     const el = $('app-version');
     if (el) el.textContent = `Version ${APP_VERSION}`;
+    const whatsNew = $('whats-new-version');
+    if (whatsNew) whatsNew.textContent = `What’s new in ${APP_VERSION}`;
   };
 
   /* ---------- Round helpers ---------- */
