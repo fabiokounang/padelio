@@ -120,15 +120,11 @@
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
 
-  <!-- AdSense script only -->
-  <!--
   <script
     async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
     crossorigin="anonymous"
   ></script>
-  -->
-
 
   <script type="application/ld+json">
     {
@@ -138,6 +134,16 @@
       "url": "https://padelio.id/",
       "description": "Padelio helps clubs and social groups run Americano padel tournaments with fair player rotation, score tracking, and live leaderboards.",
       "inLanguage": "en"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Padelio",
+      "url": "https://padelio.id/",
+      "logo": "https://padelio.id/icons/icon-512.png",
+      "description": "Padel tournament helper for Americano and related formats: rotation, scores, and leaderboards."
     }
   </script>
 </head>
@@ -199,15 +205,19 @@
           <div class="border-t border-white/5 px-4 pb-3.5">
             <ul class="text-xs text-slate-200/95 space-y-1.5 list-disc list-outside pl-4 leading-relaxed pt-3">
               <li>
-                <strong>Fixed pairs</strong> — pick this mode when two people always play together on the same team
-                and only opponents change between rounds. Bench rotation and matchups stay fair.
+                <strong>Mix Mexicano</strong> — Mexicano benching and standings, with every team one male and one female (equal M/F roster).
               </li>
               <li>
-                <strong>Clearer list &amp; paste tips</strong> — we spell out that order matters (e.g. lines 1–2 = pair A, 3–4 = pair B),
-                so bulk paste and quick adds match the pairs you expect.
+                <strong>Balanced Americano</strong> — same rotation as normal Americano, plus power levels (L1–L5) to keep matches competitive across skill spreads.
               </li>
               <li>
-                <strong>Share links</strong> — spectate or pass along fixed-pair tournaments through the same share flow as other modes.
+                <strong>Player levels</strong> — set a level per player for Balanced mode; pairing balances teams using strength while rotation stays fair.
+              </li>
+              <li>
+                <strong>Fixed pairs &amp; multiple Mexicano variants</strong> — fixed teams for Americano or Mexicano-style matchups; share links work across modes.
+              </li>
+              <li>
+                <strong>Organizer guides</strong> — Mexicano-style modes, Mix Mexicano, and Balanced Americano are covered in the guides index (see <em>Free organizer guides</em> on this page or <em>Explore → Guides</em> in the footer).
               </li>
             </ul>
           </div>
@@ -322,7 +332,8 @@
         <h2 class="text-lg font-extrabold mb-2 text-slate-50">Free organizer guides</h2>
         <p class="text-slate-300/95 text-sm leading-relaxed mb-3">
           Read practical guides for Americano format setup, score handling, mix planning,
-          and common mistakes that can reduce session quality.
+          Mexicano-style modes (including Mix Mexicano and Balanced Americano), and common mistakes that can reduce session quality.
+          Start from the index—each topic has its own page, including Mexicano &amp; advanced modes.
         </p>
         <a
           href="guides.html"
@@ -448,7 +459,7 @@
           <h3 id="whats-new-about-heading" class="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-100">
             <span aria-hidden="true">✨</span> What’s new
           </h3>
-          <p class="text-slate-400/90 text-xs font-mono mb-3">Version 1.5</p>
+          <p id="spa-about-version" class="text-slate-400/90 text-xs font-mono mb-3" aria-label="App version"></p>
           <ul class="text-slate-300/95 text-sm space-y-2 list-disc list-outside pl-4 leading-relaxed">
             <li>
               <strong>Fixed pairs mode</strong> — the same two players stay on one team; opponents rotate across rounds with fair benching
@@ -910,35 +921,84 @@
 
         <p id="gender-balance-warning" class="text-xs text-red-400 hidden mb-2"></p>
 
-        <div class="flex gap-3 mb-4 items-stretch flex-wrap">
+        <div class="flex gap-3 mb-4 items-center flex-wrap">
           <input
             type="text"
             id="player-name"
             placeholder="Player name"
-            class="flex-1 min-w-0 sm:flex-[4] bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
+            class="flex-1 min-w-0 sm:flex-[4] h-14 box-border bg-white/5 border border-white/15 rounded-2xl px-4 text-base sm:text-sm text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
             onkeypress="if(event.key==='Enter')addPlayer()"
           />
-          <div id="player-level-wrap" class="hidden shrink-0 flex items-end">
-            <label class="flex flex-col justify-center text-[0.65rem] font-semibold text-slate-400" for="player-level">
-              Lvl
-              <select
-                id="player-level"
-                class="mt-0.5 min-w-[4.5rem] text-sm font-bold rounded-2xl border border-white/15 bg-white/5 text-white py-3 px-2 focus:outline-none focus:border-pink-300/60"
-                title="Default power level for new names (Balanced mode)"
-              >
-                <option value="1">L1</option>
-                <option value="2">L2</option>
-                <option value="3" selected>L3</option>
-                <option value="4">L4</option>
-                <option value="5">L5</option>
-              </select>
-            </label>
+          <div id="player-level-wrap" class="hidden w-full min-[400px]:w-auto min-[400px]:shrink-0 min-[400px]:max-w-[13rem] self-stretch flex items-stretch">
+            <span class="sr-only">Default power level for new player names (Balanced Americano)</span>
+            <select id="player-level" class="sr-only" tabindex="-1" aria-hidden="true" title="Default power level for new names (Balanced mode)">
+              <option value="1">L1</option>
+              <option value="2">L2</option>
+              <option value="3" selected>L3</option>
+              <option value="4">L4</option>
+              <option value="5">L5</option>
+            </select>
+            <details id="player-level-picker" class="level-picker level-picker--toolbar h-full w-full min-[400px]:w-auto" aria-label="Default power level for new players">
+              <summary class="level-picker__trigger level-picker__trigger--toolbar">
+                <span class="level-picker__value">L3</span>
+                <svg class="level-picker__chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <ul class="level-picker__menu" role="listbox" aria-label="Choose default power level">
+                <li>
+                  <button type="button" class="level-picker__option" data-level="1" onclick="setDraftPlayerLevel(1)">
+                    <span class="flex flex-col items-start gap-0.5">
+                      <span class="level-picker__option-label">L1</span>
+                      <span class="level-picker__option-sub">Lowest in group</span>
+                    </span>
+                    <span class="level-picker__check" aria-hidden="true">✓</span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="level-picker__option" data-level="2" onclick="setDraftPlayerLevel(2)">
+                    <span class="flex flex-col items-start gap-0.5">
+                      <span class="level-picker__option-label">L2</span>
+                      <span class="level-picker__option-sub">Below average</span>
+                    </span>
+                    <span class="level-picker__check" aria-hidden="true">✓</span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="level-picker__option" data-level="3" onclick="setDraftPlayerLevel(3)">
+                    <span class="flex flex-col items-start gap-0.5">
+                      <span class="level-picker__option-label">L3</span>
+                      <span class="level-picker__option-sub">Mid · usual default</span>
+                    </span>
+                    <span class="level-picker__check" aria-hidden="true">✓</span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="level-picker__option" data-level="4" onclick="setDraftPlayerLevel(4)">
+                    <span class="flex flex-col items-start gap-0.5">
+                      <span class="level-picker__option-label">L4</span>
+                      <span class="level-picker__option-sub">Above average</span>
+                    </span>
+                    <span class="level-picker__check" aria-hidden="true">✓</span>
+                  </button>
+                </li>
+                <li>
+                  <button type="button" class="level-picker__option" data-level="5" onclick="setDraftPlayerLevel(5)">
+                    <span class="flex flex-col items-start gap-0.5">
+                      <span class="level-picker__option-label">L5</span>
+                      <span class="level-picker__option-sub">Strongest in group</span>
+                    </span>
+                    <span class="level-picker__check" aria-hidden="true">✓</span>
+                  </button>
+                </li>
+              </ul>
+            </details>
           </div>
 
           <button
             type="button"
             onclick="addPlayer()"
-            class="flex-[1] min-w-[56px] h-[56px] flex items-center justify-center bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl transition-all shadow-cozy-sm"
+            class="shrink-0 h-14 w-14 min-w-[3.5rem] flex items-center justify-center bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl transition-all shadow-cozy-sm"
             aria-label="Add player"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

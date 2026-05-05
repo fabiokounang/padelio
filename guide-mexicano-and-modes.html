@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mexicano, Mix Mexicano &amp; Balanced Americano in Padelio | Guide</title>
+  <meta
+    name="description"
+    content="How Mexicano benching and standings work in Padelio: normal Mexicano, fixed pairs Mexicano, Mix Mexicano (M+F teams), and Balanced Americano with power levels."
+  >
+  <meta
+    name="keywords"
+    content="padel mexicano, mix mexicano, fixed pairs mexicano, balanced americano, padel standings, padel tournament modes"
+  >
+  <meta name="author" content="Padelio">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://padelio.id/guide-mexicano-and-modes.html">
+
+  <meta property="og:title" content="Mexicano &amp; advanced modes in Padelio | Guide">
+  <meta property="og:description" content="Practical guide to Mexicano-style modes in Padelio: who plays each round, standings order, mix teams, and power-balanced Americano.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://padelio.id/guide-mexicano-and-modes.html">
+  <meta property="og:image" content="https://padelio.id/icons/icon-512.png">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mexicano &amp; advanced modes in Padelio | Guide">
+  <meta name="twitter:description" content="How bench rotation and leaderboard ordering drive Mexicano, Mix Mexicano, and related formats in Padelio.">
+  <meta name="twitter:image" content="https://padelio.id/icons/icon-512.png">
+
+  <meta name="google-adsense-account" content="ca-pub-6166203591007712">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#065f46">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
+    crossorigin="anonymous"
+  ></script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Mexicano, Mix Mexicano and Balanced Americano in Padelio",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://padelio.id/guide-mexicano-and-modes.html"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Padelio"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Padelio"
+      },
+      "inLanguage": "en"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Mexicano in Padelio?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mexicano selects who sits out each round based on how many courts you run. Round 1 follows the order names appear in your list (blocks of four per court). From round 2 onward, active players are ordered by current standings; within each block of four, pairings are 1st+2nd versus 3rd+4th."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Mix Mexicano differ from Mexicano?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mix Mexicano uses the same bench and standings logic as Mexicano, but each team must be one male and one female. You need equal male and female counts. Males and females are ordered separately for standings; pairings form (M1+F1) versus (M2+F2) per court block."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is Balanced Americano?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Balanced Americano keeps the same rotation idea as normal Americano but assigns each player a power level (L1–L5). Padelio uses those levels to build fairer teams within each round while partners and opponents still rotate across rounds."
+          }
+        }
+      ]
+    }
+  </script>
+</head>
+
+<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+  <div id="app" class="w-full min-h-full flex flex-col">
+    <main class="page flex-1 flex flex-col p-6 max-w-4xl mx-auto w-full">
+      <a href="guides.html" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to Guides
+      </a>
+
+      <article>
+        <h1 class="text-3xl font-bold mb-3">Mexicano-style modes and Balanced Americano in Padelio</h1>
+        <p class="text-slate-200 text-sm leading-relaxed mb-4">
+          This guide explains how <strong>Mexicano</strong>, <strong>Fixed pairs Mexicano</strong>, <strong>Mix Mexicano</strong>,
+          and <strong>Balanced Americano</strong> behave inside Padelio. It is written for organizers who already run social sessions
+          and want predictable rules for benching, standings, and team construction—without re-reading scattered UI hints during the event.
+        </p>
+        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+          For the classic rotating Americano format (without Mexicano benching), see
+          <a href="guide-americano-format.html" class="text-teal-300 hover:text-teal-100 underline underline-offset-2">Americano format explained</a>.
+          For score targets and leaderboard habits, see
+          <a href="guide-scoring-and-leaderboard.html" class="text-teal-300 hover:text-teal-100 underline underline-offset-2">Scoring and leaderboard strategy</a>.
+        </p>
+
+        <h2 class="text-xl font-semibold mb-2">Mexicano (normal)</h2>
+        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+          Mexicano answers two practical questions: <em>who sits out</em> when you do not have enough courts for everyone,
+          and <em>how pairings are chosen</em> once a leaderboard exists.
+        </p>
+        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+          <li>
+            <strong>Round 1</strong> uses the order players appear in your list. For each court, the first four names fill court 1,
+            the next four court 2, and so on. Anyone beyond what your court count allows sits that round (bench).
+          </li>
+          <li>
+            <strong>From round 2 onward</strong>, only players selected to be “active” this round are ordered by <strong>current standings</strong>
+            (points). Within each block of four active players for a court, pairings follow the usual Mexicano pattern:
+            <strong>1st + 2nd</strong> play versus <strong>3rd + 4th</strong> in that block.
+          </li>
+          <li>
+            Who is active still depends on how many courts you configured and how many players you have—Padelio applies the same Mexicano
+            benching logic so the session stays coherent when your roster is larger than <code class="text-teal-200/90">courts × 4</code>.
+          </li>
+        </ul>
+
+        <h2 class="text-xl font-semibold mb-2">Fixed pairs Mexicano</h2>
+        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+          Here each <strong>team is two fixed players</strong> that stay together every round (you define pairs by list order:
+          lines 1–2, 3–4, …). Opponents and benching follow Mexicano-style rules: which <em>teams</em> play is driven by standings and capacity,
+          not by reshuffling partners inside a pair.
+        </p>
+        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+          From round 2, active teams are typically ordered by <strong>team points</strong> (sum of both players’ points), then matched
+          in pairs for each court block—for example 1st-ranked team versus 2nd, 3rd versus 4th, consistent with how your session is set up
+          in the app. This keeps the social “same partner all day” promise while still letting standings influence matchups.
+        </p>
+
+        <h2 class="text-xl font-semibold mb-2">Mix Mexicano</h2>
+        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+          Mix Mexicano uses the <strong>same benching and leaderboard philosophy</strong> as Mexicano, but every team on court must be
+          <strong>one male and one female</strong>. You need <strong>equal numbers of M and F</strong> in the roster to start.
+        </p>
+        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+          <li>
+            Males and females are tracked as <strong>two separate orderings</strong>. Round 1 follows each gender’s list order for who is active.
+          </li>
+          <li>
+            After round 1, each gender’s active players are ordered by <strong>individual standings</strong> among players of that gender,
+            then combined into mixed teams for each court: conceptually <strong>(M1 + F1)</strong> versus <strong>(M2 + F2)</strong>
+            within each four-player block that shares a court.
+          </li>
+          <li>
+            If this is your first Mix Mexicano event, tell players in advance: <strong>list order matters for round 1</strong> within
+            each gender, just like Mexicano order matters for everyone in normal Mexicano.
+          </li>
+        </ul>
+
+        <h2 class="text-xl font-semibold mb-2">Balanced Americano</h2>
+        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+          Balanced Americano is <strong>not</strong> a Mexicano variant: it follows normal Americano rotation, but each player has a
+          <strong>power level</strong> (L1 lowest … L5 highest). Padelio uses levels to form more evenly matched teams <em>within</em> each round,
+          while still rotating partnerships and opponents across rounds like a classic Americano.
+        </p>
+        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+          Use it when your group has a wide skill spread and you want matches to feel competitive without manual rearranging.
+          Set levels honestly during player entry; mid-event edits are possible but work best if everyone agrees on the same meaning of each level.
+        </p>
+
+        <h2 class="text-xl font-semibold mb-2">Organizer checklist for Mexicano-style days</h2>
+        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-6 space-y-2">
+          <li>Confirm <strong>court count</strong> and realistic player count before round 1.</li>
+          <li>For Mix Mexicano, verify <strong>M/F balance</strong> before you lock the list.</li>
+          <li>For Fixed pairs, confirm <strong>pair order</strong> in the list (bulk paste is fine if order is correct).</li>
+          <li>Agree on one person to <strong>enter scores</strong> to avoid double edits.</li>
+          <li>Show or announce <strong>standings</strong> before generating the next round so players trust the order.</li>
+        </ul>
+
+        <h2 class="text-xl font-semibold mb-2">Frequently asked questions</h2>
+        <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+          <div>
+            <h3 class="font-semibold text-slate-200 mb-1">What is Mexicano in Padelio?</h3>
+            <p>
+              Mexicano selects who sits out based on court capacity. Round 1 follows list order in blocks of four per court; later rounds order
+              active players by standings and pair 1st+2nd vs 3rd+4th within each active block.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-200 mb-1">How does Mix Mexicano differ from Mexicano?</h3>
+            <p>
+              Same benching and leaderboard approach, but teams are always mixed gender (M+F), with separate male and female orderings
+              and equal roster counts.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-200 mb-1">What is Balanced Americano?</h3>
+            <p>
+              Normal Americano rotation with optional power levels so teams are more evenly matched each round.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-slate-200 mb-1">Where can I read more about Mix Americano (not Mexicano)?</h3>
+            <p>
+              See <a href="guide-mix-americano.html" class="text-teal-300 hover:text-teal-100 underline underline-offset-2">Mix Americano planning</a>
+              for gender-balanced classic Americano sessions without Mexicano benching rules.
+            </p>
+          </div>
+        </div>
+      </article>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+      <div class="max-w-3xl mx-auto">
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              A lightweight helper for padel tournaments, player rotation,
+              fast score entry, and live leaderboards for social and club sessions.
+            </p>
+          </div>
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <div class="flex flex-col gap-2 text-sm">
+              <a href="index.html" class="text-left text-slate-400 hover:text-white transition-colors">Home</a>
+              <a href="about.html" class="text-left text-slate-400 hover:text-white transition-colors">About</a>
+              <a href="guides.html" class="text-left text-slate-400 hover:text-white transition-colors">Guides</a>
+              <a href="privacy-policy.html" class="text-left text-slate-400 hover:text-white transition-colors">Privacy Policy</a>
+              <a href="terms.html" class="text-left text-slate-400 hover:text-white transition-colors">Terms of Service</a>
+              <a href="contact.html" class="text-left text-slate-400 hover:text-white transition-colors">Contact</a>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+              <li>Club sessions</li>
+              <li>Friendly Americano tournaments</li>
+              <li>Weekend social padel</li>
+              <li>Simple mobile score tracking</li>
+            </ul>
+          </div>
+        </div>
+        <div class="border-t border-slate-800 mt-6 pt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-slate-500">© 2026 Padelio. All rights reserved.</p>
+          <p class="text-xs text-slate-500">Built for community padel sessions.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+  <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+  <script src="js/lz-string.min.js"></script>
+  <script src="js/script.js"></script>
+</body>
+
+</html>

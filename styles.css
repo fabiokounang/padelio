@@ -72,3 +72,266 @@ body::before {
   outline: none;
   box-shadow: 0 0 0 3px rgba(251, 207, 232, 0.25);
 }
+
+/* Balanced Americano: custom power-level picker (dark panel, no native <select> popup) */
+.level-picker {
+  position: relative;
+  z-index: 2;
+}
+
+.level-picker--toolbar {
+  width: 100%;
+  max-width: 13rem;
+}
+
+@media (min-width: 400px) {
+  .level-picker--toolbar {
+    width: auto;
+    min-width: 8.75rem;
+  }
+}
+
+.level-picker--row {
+  flex-shrink: 0;
+  max-width: 9rem;
+}
+
+.level-picker__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0 0.9rem;
+  list-style: none;
+  cursor: pointer;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(165deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.92) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 20px -8px rgba(0, 0, 0, 0.45);
+  color: #f1f5f9;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+/* Add-players row: same 56px height as #player-name and the + button */
+.level-picker__trigger--toolbar {
+  height: 3.5rem;
+  min-height: 3.5rem;
+  max-height: 3.5rem;
+  border-radius: 1rem;
+}
+
+.level-picker__trigger::-webkit-details-marker {
+  display: none;
+}
+
+.level-picker__trigger:hover {
+  border-color: rgba(94, 234, 212, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(45, 212, 191, 0.15),
+    0 8px 28px -12px rgba(45, 212, 191, 0.18);
+}
+
+.level-picker[open] > .level-picker__trigger {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 2px rgba(45, 212, 191, 0.22);
+}
+
+.level-picker__value {
+  font-variant-numeric: tabular-nums;
+}
+
+.level-picker__hint {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.95);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.level-picker__chevron {
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: rgba(148, 211, 204, 0.85);
+  transition: transform 0.2s ease;
+}
+
+.level-picker[open] .level-picker__chevron {
+  transform: rotate(180deg);
+}
+
+.level-picker__menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.98);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 22px 48px -12px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.level-picker__menu > li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.level-picker__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  margin: 0;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.level-picker__option:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.level-picker__option:focus-visible {
+  outline: 2px solid rgba(244, 114, 182, 0.65);
+  outline-offset: 0;
+}
+
+.level-picker__option--active {
+  background: rgba(45, 212, 191, 0.18);
+  color: #ccfbf1;
+}
+
+.level-picker__option-label {
+  font-variant-numeric: tabular-nums;
+}
+
+.level-picker__option-sub {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: rgba(148, 163, 184, 0.95);
+  margin-top: 0.1rem;
+}
+
+.level-picker__check {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #5eead4;
+  opacity: 0;
+}
+
+.level-picker__option--active .level-picker__check {
+  opacity: 1;
+}
+
+/* Compact variant (player list rows) */
+.level-picker--row .level-picker__trigger {
+  min-height: 2.5rem;
+  padding: 0 0.55rem 0 0.65rem;
+  font-size: 0.8rem;
+  border-radius: 0.85rem;
+  border-color: rgba(52, 211, 153, 0.28);
+  background:
+    linear-gradient(165deg, rgba(6, 78, 59, 0.55) 0%, rgba(15, 23, 42, 0.85) 100%);
+}
+
+.level-picker--row .level-picker__menu {
+  top: calc(100% + 0.25rem);
+  padding: 0.25rem;
+}
+
+.level-picker--row .level-picker__option {
+  padding: 0.45rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.level-picker--row .level-picker__chevron {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Player list rows: compact pill rail (dropdown menus clip inside scroll areas) */
+.level-rail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.75) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 12px -6px rgba(0, 0, 0, 0.35);
+}
+
+.level-rail__btn {
+  min-width: 1.65rem;
+  height: 1.85rem;
+  padding: 0 0.35rem;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: rgba(226, 232, 240, 0.82);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.level-rail__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.level-rail__btn:focus-visible {
+  outline: 2px solid rgba(244, 114, 182, 0.55);
+  outline-offset: 1px;
+}
+
+.level-rail__btn--active {
+  color: #042f2e;
+  background: linear-gradient(135deg, #5eead4 0%, #2dd4bf 45%, #14b8a6 100%);
+  box-shadow:
+    0 1px 4px -1px rgba(45, 212, 191, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+@media (min-width: 640px) {
+  .level-rail__btn {
+    font-size: 0.72rem;
+    min-width: 1.75rem;
+    height: 1.95rem;
+  }
+}

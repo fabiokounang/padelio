@@ -972,7 +972,7 @@
   };
 
   /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.6.3';
+  const APP_VERSION = '1.6.5';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -981,6 +981,10 @@
     if (el) el.textContent = `Version ${APP_VERSION}`;
     const whatsNew = $('whats-new-version');
     if (whatsNew) whatsNew.textContent = `What’s new in ${APP_VERSION}`;
+    const aboutV = $('about-app-version');
+    if (aboutV) aboutV.textContent = `Version ${APP_VERSION}`;
+    const spaAbout = $('spa-about-version');
+    if (spaAbout) spaAbout.textContent = `Version ${APP_VERSION}`;
   };
 
   /* ---------- Round helpers ---------- */
@@ -1315,21 +1319,41 @@
 
   const readPlayerLevelDraft = () => clampPlayerLevel($('player-level')?.value);
 
+  const syncDraftLevelPicker = () => {
+    const sel = $('player-level');
+    const picker = $('player-level-picker');
+    if (!sel || !picker) return;
+    const v = String(clampPlayerLevel(sel.value));
+    sel.value = v;
+    const valEl = picker.querySelector('.level-picker__value');
+    if (valEl) valEl.textContent = `L${v}`;
+    picker.querySelectorAll('.level-picker__option[data-level]').forEach((btn) => {
+      const on = btn.getAttribute('data-level') === v;
+      btn.classList.toggle('level-picker__option--active', on);
+    });
+  };
+
+  const setDraftPlayerLevel = (n) => {
+    const sel = $('player-level');
+    if (!sel) return;
+    sel.value = String(clampPlayerLevel(n));
+    syncDraftLevelPicker();
+    const picker = $('player-level-picker');
+    if (picker) picker.removeAttribute('open');
+  };
+
   const levelSelectFieldHtml = (index, level, show) => {
     if (!show) return '';
     const v = clampPlayerLevel(level);
-    const opts = [1, 2, 3, 4, 5]
+    const btns = [1, 2, 3, 4, 5]
       .map(
         (n) =>
-          `<option value="${n}"${n === v ? ' selected' : ''}>L${n}</option>`
+          `<button type="button" onclick="setPlayerLevel(${index}, '${n}')" ` +
+          `class="level-rail__btn ${n === v ? 'level-rail__btn--active' : ''}" ` +
+          `data-level="${n}" aria-pressed="${n === v}" aria-label="Power level L${n}">L${n}</button>`
       )
       .join('');
-    return (
-      `<select onchange="setPlayerLevel(${index}, this.value)" ` +
-      `class="shrink-0 min-w-[3.5rem] text-xs font-bold rounded-xl border border-emerald-600/50 bg-emerald-900/50 text-emerald-100 py-1.5 pl-1 pr-0" ` +
-      `title="Power level (Balanced Americano: used to even matches)" ` +
-      `aria-label="Power level">${opts}</select>`
-    );
+    return `<div class="level-rail" role="group" aria-label="Power level">${btns}</div>`;
   };
 
   const syncPlayerLevelControls = () => {
@@ -1338,6 +1362,7 @@
     if (wrap) wrap.classList.toggle('hidden', !isBal);
     const hint = $('power-level-hint');
     if (hint) hint.classList.toggle('hidden', !isBal);
+    if (isBal) syncDraftLevelPicker();
   };
 
   const renderPlayersList = () => {
@@ -1744,6 +1769,32 @@
     const container = $('courts-container');
     if (!container) return;
 
+    const mode = state.currentTournament?.mode || 'normal';
+    let levelForDisplay = null;
+    if (mode === 'balanced') {
+      const playersFull = getPlayersFull();
+      const levelByName = makeLevelByNameMap(playersFull);
+      const resolve = makeRosterNameResolve(playersFull.map((p) => p.name));
+      levelForDisplay = (rawName) => {
+        const key = resolve(rawName);
+        return levelByName.has(key) ? levelByName.get(key) : DEFAULT_PLAYER_LEVEL;
+      };
+    }
+
+    const playerCourtLine = (rawName) => {
+      const nameHtml = escapeHtml(fixCommonNameTypos(rawName));
+      if (!levelForDisplay) {
+        return `<div class="font-medium">${nameHtml}</div>`;
+      }
+      const lv = levelForDisplay(rawName);
+      return `
+        <div class="flex flex-row items-center justify-center gap-1.5 flex-wrap">
+          <span class="font-medium leading-tight">${nameHtml}</span>
+          <span class="inline-flex shrink-0 items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-md text-[0.65rem] font-extrabold tabular-nums bg-teal-500/25 text-teal-50 border border-teal-400/40 shadow-sm" title="Power level">L${lv}</span>
+        </div>
+      `;
+    };
+
     container.innerHTML = roundData.matches
       .map(
         (match, idx) => `
@@ -1753,9 +1804,9 @@
           <div class="flex items-center gap-4">
             <!-- Team 1 -->
             <div class="flex-1 text-center">
-              <div class="text-sm mb-2 space-y-1">
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1[0]))}</div>
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1[1]))}</div>
+              <div class="text-sm mb-2 space-y-2">
+                ${playerCourtLine(match.team1[0])}
+                ${playerCourtLine(match.team1[1])}
               </div>
               <div class="flex items-center justify-center gap-2">
                 <input type="number" id="score-input-${idx}-1" value="${match.score1 ?? ''}" min="0"
@@ -1770,9 +1821,9 @@
 
             <!-- Team 2 -->
             <div class="flex-1 text-center">
-              <div class="text-sm mb-2 space-y-1">
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2[0]))}</div>
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2[1]))}</div>
+              <div class="text-sm mb-2 space-y-2">
+                ${playerCourtLine(match.team2[0])}
+                ${playerCourtLine(match.team2[1])}
               </div>
               <div class="flex items-center justify-center gap-2">
                 <input type="number" id="score-input-${idx}-2" value="${match.score2 ?? ''}" min="0"
@@ -3700,7 +3751,11 @@
   window.backToRounds = backToRounds;
   window.togglePlayerGender = togglePlayerGender;
   window.setPlayerLevel = setPlayerLevel;
+  window.setDraftPlayerLevel = setDraftPlayerLevel;
   window.updateGenderBalanceWarning = updateGenderBalanceWarning;
+
+  /* After all handlers exist; safe for index.html #player-level-picker (no-op on other pages). */
+  syncDraftLevelPicker();
 
   window.switchShareTab = switchShareTab;
   window.exitShareViewer = exitShareViewer;
