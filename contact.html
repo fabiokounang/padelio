@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 
 <head>
+  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='light')document.documentElement.classList.remove('dark');}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -20,7 +21,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#065f46">
+  <meta name="theme-color" content="#1a1522">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -58,12 +59,14 @@
     crossorigin
   >
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   >
 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="js/tailwind-padelio-config.js"></script>
+  <link rel="stylesheet" href="/styles.css?v=1.6.6">
+  <script src="js/theme.js"></script>
 
   <!-- SDK -->
   <script src="/_sdk/element_sdk.js"></script>
@@ -86,10 +89,10 @@
   </script>
 </head>
 
-<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+<body class="h-full padel-body overflow-auto pb-20">
   <div id="app" class="w-full min-h-full flex flex-col">
     <div id="page-contact" class="page flex-1 flex flex-col p-6">
-      <a href="index.html" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+      <a href="index.html" class="padel-back">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -97,66 +100,66 @@
       </a>
 
       <h1 class="text-2xl font-bold mb-2">Contact</h1>
-      <p class="text-slate-200 text-sm mb-6 leading-relaxed">
+      <p class="text-slate-700 dark:text-slate-200 text-sm mb-6 leading-relaxed">
         Need help with Padelio or have a policy question? Reach us using the channels below.
       </p>
 
       <div class="space-y-4">
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+        <div class="padel-card">
           <h2 class="font-semibold text-lg mb-2">General support</h2>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
-            Email: <a href="mailto:support@padelio.id" class="underline text-slate-200">support@padelio.id</a>
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
+            Email: <a href="mailto:support@padelio.id" class="underline text-slate-700 dark:text-slate-200">support@padelio.id</a>
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+        <div class="padel-card">
           <h2 class="font-semibold text-lg mb-2">Technical feedback</h2>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             For bug reports or feature feedback, you can also open an issue on
-            <a href="https://github.com/fabiokounang/padelio/issues" target="_blank" rel="noopener noreferrer" class="underline text-slate-200">GitHub Issues</a>.
+            <a href="https://github.com/fabiokounang/padelio/issues" target="_blank" rel="noopener noreferrer" class="underline text-slate-700 dark:text-slate-200">GitHub Issues</a>.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+        <div class="padel-card">
           <h2 class="font-semibold text-lg mb-2">Policy requests</h2>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Privacy and terms questions can be sent by email. Please include your browser, device, and a short summary to help us respond faster.
           </p>
         </div>
       </div>
 
-      <div class="text-xs text-slate-400 mt-6 leading-relaxed">
+      <div class="text-xs text-slate-600 dark:text-slate-400 mt-6 leading-relaxed">
         We aim to respond as soon as possible on business days.
       </div>
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+    <footer class="padel-footer mt-auto">
       <div class="max-w-3xl mx-auto">
         <div class="grid gap-6 md:grid-cols-3">
           <div>
-            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
+            <h3 class="text-slate-900 dark:text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               A lightweight helper for padel tournaments, player rotation,
               fast score entry, and live leaderboards for social and club sessions.
             </p>
           </div>
 
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Explore</h4>
             <div class="flex flex-col gap-2 text-sm">
-              <a href="index.html" class="text-left text-slate-400 hover:text-white transition-colors">Home</a>
-              <a href="about.html" class="text-left text-slate-400 hover:text-white transition-colors">About</a>
-              <a href="guides.html" class="text-left text-slate-400 hover:text-white transition-colors">Guides</a>
-              <a href="privacy-policy.html" class="text-left text-slate-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="terms.html" class="text-left text-slate-400 hover:text-white transition-colors">Terms of Service</a>
-              <a href="contact.html" class="text-left text-slate-400 hover:text-white transition-colors">Contact</a>
+              <a href="index.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Home</a>
+              <a href="about.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">About</a>
+              <a href="guides.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Guides</a>
+              <a href="privacy-policy.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</a>
+              <a href="terms.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</a>
+              <a href="contact.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
           </div>
 
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
-            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               <li>Club sessions</li>
               <li>Friendly Americano tournaments</li>
               <li>Weekend social padel</li>
@@ -174,7 +177,15 @@
   </div>
   <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   <script src="js/lz-string.min.js"></script>
+  <script src="js/version.js"></script>
   <script src="js/script.js"></script>
+
+  <button type="button" onclick="padelioToggleTheme()" class="padel-theme-fab" title="Toggle light / dark theme" aria-label="Toggle light and dark theme">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  </button>
+
 </body>
 
 </html>

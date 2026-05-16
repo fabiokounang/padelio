@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 
 <head>
+  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='light')document.documentElement.classList.remove('dark');}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -19,7 +20,7 @@
   <link rel="canonical" href="https://padelio.id/guide-organizer-checklist.html">
 
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#065f46">
+  <meta name="theme-color" content="#1a1522">
 
   <meta property="og:title" content="Tournament Organizer Checklist | Padelio Guide">
   <meta property="og:description" content="A practical checklist for running fair and smooth Americano padel sessions.">
@@ -37,9 +38,11 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="js/tailwind-padelio-config.js"></script>
+  <link rel="stylesheet" href="/styles.css?v=1.6.6">
+  <script src="js/theme.js"></script>
 
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
@@ -58,26 +61,26 @@
   </script>
 </head>
 
-<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+<body class="h-full padel-body overflow-auto pb-20">
   <div id="app" class="w-full min-h-full flex flex-col">
     <main class="page flex-1 flex flex-col p-6 max-w-4xl mx-auto w-full">
-      <a href="guides.html" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+      <a href="guides.html" class="padel-back">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         Back to Guides
       </a>
 
-      <article>
-        <h1 class="text-3xl font-bold mb-3">Tournament organizer checklist for smooth events</h1>
-        <p class="text-slate-200 text-sm leading-relaxed mb-4">
+      <article class="padel-prose">
+        <h1 class="padel-page-title mb-3">Tournament organizer checklist for smooth events</h1>
+        <p class="padel-lead mb-4">
           Strong padel sessions are rarely accidental. The best events feel calm and efficient because organizers follow
           a repeatable system. This checklist is for club admins, coaches, and community hosts who want fewer delays,
           fewer score disputes, and better player satisfaction.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Before players arrive</h2>
-        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+        <ul class="list-disc pl-5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
           <li>Confirm total courts and session duration.</li>
           <li>Choose mode: normal or mix.</li>
           <li>Set points target based on available time.</li>
@@ -86,13 +89,13 @@
         </ul>
 
         <h2 class="text-xl font-semibold mb-2">At registration</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Enter player names clearly and consistently. Misspelled names create confusion on leaderboards and can reduce trust
           in final standings. If you expect substitutes, note that early so late changes do not interrupt round flow.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Start-of-session briefing</h2>
-        <ol class="list-decimal pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+        <ol class="list-decimal pl-5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
           <li>Explain scoring target and how scores are entered.</li>
           <li>Clarify that leaderboard updates happen every round.</li>
           <li>Describe tie behavior and fair-play expectations.</li>
@@ -100,14 +103,14 @@
         </ol>
 
         <h2 class="text-xl font-semibold mb-2">Round execution routine</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Use the same routine every round: announce pairings, start courts together, collect scores in fixed order,
           repeat scores once, and publish standings before moving forward. This rhythm keeps players focused and reduces
           idle downtime that usually causes confusion.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Quality checks during play</h2>
-        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+        <ul class="list-disc pl-5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
           <li>Watch for repeated delays between rounds.</li>
           <li>Confirm players can find the correct court quickly.</li>
           <li>Check if score submissions are complete before advancing.</li>
@@ -115,55 +118,55 @@
         </ul>
 
         <h2 class="text-xl font-semibold mb-2">Closing the event</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Before announcing winners, verify final-round results once. Read the top leaderboard positions clearly and thank
           all participants. If possible, gather a short feedback note about format pace, fairness perception, and overall flow.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Simple post-event improvement loop</h2>
-        <p class="text-slate-300 text-sm leading-relaxed">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
           Write three short notes after each session: what worked, what caused delay, and what to change next time.
           Over a few events, this habit makes your sessions noticeably more stable without extra software complexity.
         </p>
       </article>
 
-      <div class="mt-8 bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
+      <div class="mt-8 padel-card">
         <h2 class="text-lg font-semibold mb-2">Apply this checklist now</h2>
-        <p class="text-slate-300 text-sm leading-relaxed">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
           Open Padelio and use this checklist while creating your next tournament. Consistency in setup and scoring
           is often the fastest way to improve player experience.
         </p>
         <div class="mt-3 flex flex-wrap gap-3 text-sm">
-          <a href="index.html" class="underline text-slate-200 hover:text-white">Open the app</a>
-          <a href="contact.html" class="underline text-slate-200 hover:text-white">Contact support</a>
+          <a href="index.html" class="underline text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white">Open the app</a>
+          <a href="contact.html" class="underline text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white">Contact support</a>
         </div>
       </div>
     </main>
 
-    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+    <footer class="padel-footer mt-auto">
       <div class="max-w-3xl mx-auto">
         <div class="grid gap-6 md:grid-cols-3">
           <div>
-            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
+            <h3 class="text-slate-900 dark:text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               A lightweight helper for padel tournaments, player rotation,
               fast score entry, and live leaderboards for social and club sessions.
             </p>
           </div>
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Explore</h4>
             <div class="flex flex-col gap-2 text-sm">
-              <a href="index.html" class="text-left text-slate-400 hover:text-white transition-colors">Home</a>
-              <a href="about.html" class="text-left text-slate-400 hover:text-white transition-colors">About</a>
-              <a href="guides.html" class="text-left text-slate-400 hover:text-white transition-colors">Guides</a>
-              <a href="privacy-policy.html" class="text-left text-slate-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="terms.html" class="text-left text-slate-400 hover:text-white transition-colors">Terms of Service</a>
-              <a href="contact.html" class="text-left text-slate-400 hover:text-white transition-colors">Contact</a>
+              <a href="index.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Home</a>
+              <a href="about.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">About</a>
+              <a href="guides.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Guides</a>
+              <a href="privacy-policy.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</a>
+              <a href="terms.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</a>
+              <a href="contact.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
           </div>
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
-            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               <li>Club sessions</li>
               <li>Friendly Americano tournaments</li>
               <li>Weekend social padel</li>
@@ -180,7 +183,15 @@
   </div>
   <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   <script src="js/lz-string.min.js"></script>
+  <script src="js/version.js"></script>
   <script src="js/script.js"></script>
+
+  <button type="button" onclick="padelioToggleTheme()" class="padel-theme-fab" title="Toggle light / dark theme" aria-label="Toggle light and dark theme">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  </button>
+
 </body>
 
 </html>

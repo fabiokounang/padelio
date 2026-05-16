@@ -67,7 +67,7 @@
 
     const card = document.createElement('div');
     card.className =
-      'relative min-w-[260px] max-w-[88vw] px-4 py-3 pr-10 rounded-2xl border border-emerald-300/35 bg-emerald-500/20 backdrop-blur-md text-emerald-50 shadow-[0_14px_38px_-14px_rgba(16,185,129,0.65)]';
+      'relative min-w-[260px] max-w-[88vw] px-4 py-3 pr-10 rounded-2xl border border-emerald-400/55 dark:border-emerald-300/35 bg-emerald-50/95 dark:bg-emerald-500/20 backdrop-blur-md text-emerald-950 dark:text-emerald-50 shadow-[0_14px_38px_-14px_rgba(16,185,129,0.28)] dark:shadow-[0_14px_38px_-14px_rgba(16,185,129,0.65)]';
     card.style.opacity = '0';
     card.style.transition = 'opacity 180ms ease';
 
@@ -79,12 +79,12 @@
     closeBtn.type = 'button';
     closeBtn.setAttribute('aria-label', 'Close notification');
     closeBtn.className =
-      'absolute top-1.5 right-1.5 w-7 h-7 rounded-full text-emerald-100/90 hover:text-white hover:bg-emerald-400/25 transition-colors text-base leading-none';
+      'absolute top-1.5 right-1.5 w-7 h-7 rounded-full text-emerald-800 dark:text-emerald-100/90 hover:text-slate-900 dark:hover:text-white hover:bg-emerald-400/25 transition-colors text-base leading-none';
     closeBtn.textContent = '×';
 
     const timer = document.createElement('div');
     timer.className =
-      'absolute left-2 right-2 bottom-1 h-0.5 rounded-full bg-emerald-200/80 origin-left';
+      'absolute left-2 right-2 bottom-1 h-0.5 rounded-full bg-emerald-600/35 dark:bg-emerald-200/80 origin-left';
     timer.style.width = '100%';
     timer.style.transition = `width ${TOAST_DURATION_MS}ms linear`;
 
@@ -395,6 +395,205 @@
     return out;
   };
 
+  const isMexicanoFamilyMode = (m) =>
+    m === 'mexicano' || m === 'mixmex' || m === 'fixedmex';
+
+  const gamesNeededToWinMatch = (bestOf) =>
+    Math.max(1, Math.ceil((Number(bestOf) || 3) / 2));
+
+  /** Mexicano best-of: auto opponent when other field empty (e.g. BO3 → 3|0, 2|1, 0|2). */
+  const gamesOppFromEntered = (entered, profile) => {
+    const W = profile.gamesTarget;
+    const max = profile.bestOf;
+    const s = clamp(Number(entered), 0, max);
+    if (s === max) return 0;
+    if (s === W) return Math.max(0, W - 1);
+    if (s === 0) return W;
+    return null;
+  };
+
+  const isMexGamesScoreTie = (g1, g2) => {
+    const a = Number(g1) || 0;
+    const b = Number(g2) || 0;
+    return a === b && a > 0;
+  };
+
+  const isMexMatchComplete = (g1, g2, profile) => {
+    const W = profile.gamesTarget;
+    const maxTotal = profile.bestOf;
+    const a = Number(g1) || 0;
+    const b = Number(g2) || 0;
+    if (isMexGamesScoreTie(a, b)) return false;
+    if (a + b >= maxTotal) return true;
+    const leader = Math.max(a, b);
+    const trailer = Math.min(a, b);
+    if (leader >= W && trailer >= W - 1) return true;
+    if (leader >= W && leader > trailer && trailer >= 1 && a + b >= maxTotal - 1) return true;
+    return false;
+  };
+
+  /** Which fixed teams (pair keys) played in the previous round. */
+  const getFixedPairsOnCourtLastRound = (lastRound, resolve) => {
+    const onCourt = new Set();
+    if (!lastRound) return onCourt;
+    (lastRound.matches || []).forEach((m) => {
+      for (const team of [m.team1, m.team2]) {
+        if (team && team.length === 2) {
+          onCourt.add(pairKey(resolve(team[0]), resolve(team[1])));
+        }
+      }
+    });
+    return onCourt;
+  };
+
+  const canAwardMexGame = (match, profile) => {
+    const g1 = Number(match.score1) || 0;
+    const g2 = Number(match.score2) || 0;
+    if (isMexGamesScoreTie(g1, g2)) return false;
+    return !isMexMatchComplete(g1, g2, profile);
+  };
+
+  const mexGamesScoreHint = (profile) => {
+    const W = profile.gamesTarget;
+    const n = profile.bestOf;
+    const ex = [`${W}-0`];
+    if (n > W) ex.push(`${W}-1`, `${n}-0`, `0-${n}`);
+    return `First to ${W} games (best of ${n}) · ${ex.join(', ')} · seri = skor sama (mis. 1-1)`;
+  };
+
+  /** Best-of games: 0..bestOf per side, total ≤ bestOf, seri below win target (e.g. 1-1). */
+  const normalizeMexGamesScores = (g1, g2, profile) => {
+    const W = profile.gamesTarget;
+    const maxTotal = profile.bestOf;
+    let a = Math.max(0, Math.floor(Number(g1) || 0));
+    let b = Math.max(0, Math.floor(Number(g2) || 0));
+
+    a = Math.min(a, maxTotal);
+    b = Math.min(b, maxTotal);
+
+    if (a === b && a > 0 && a < W && a + b <= maxTotal) {
+      return { g1: a, g2: b };
+    }
+
+    if (a >= W && b >= W) {
+      if (a >= b) b = Math.min(b, W - 1, Math.max(0, maxTotal - a));
+      else a = Math.min(a, W - 1, Math.max(0, maxTotal - b));
+    }
+    if (a >= W) b = Math.min(b, Math.max(0, maxTotal - a));
+    if (b >= W) a = Math.min(a, Math.max(0, maxTotal - b));
+
+    while (a + b > maxTotal) {
+      if (a >= b && a > 0) a--;
+      else if (b > 0) b--;
+      else break;
+    }
+
+    return { g1: a, g2: b };
+  };
+
+  const applyMexGamesScoresToMatch = (match, profile, g1, g2) => {
+    const norm = normalizeMexGamesScores(g1, g2, profile);
+    match.score1 = norm.g1;
+    match.score2 = norm.g2;
+    return norm;
+  };
+
+  /**
+   * Rally (mirror) vs best-of games. Only Mexicano-family modes use `mex_score_kind` / `mex_best_of_games`.
+   */
+  const getTournamentScoringProfile = (t) => {
+    const mode = t?.mode || 'normal';
+    if (!isMexicanoFamilyMode(mode)) {
+      return {
+        style: 'rally',
+        rallyCap: Number(t?.points_to_win) || 21,
+        gamesTarget: null,
+        bestOf: null,
+        mirrorOpp: true
+      };
+    }
+    if (t?.mex_score_kind === 'games') {
+      const bestOf = Math.min(7, Math.max(3, Number(t?.mex_best_of_games) || 3));
+      return {
+        style: 'games',
+        rallyCap: null,
+        gamesTarget: gamesNeededToWinMatch(bestOf),
+        bestOf,
+        mirrorOpp: false
+      };
+    }
+    return {
+      style: 'rally',
+      rallyCap: Number(t?.points_to_win) || 21,
+      gamesTarget: null,
+      bestOf: null,
+      mirrorOpp: true
+    };
+  };
+
+  /** Prefer classic 1+2 vs 3+4 when anti-repeat / balance scores tie. */
+  const MEXICANO_CLASSIC_SPLIT_BIAS = 38;
+
+  const scoreMexicanoTwoTeams = (
+    team1,
+    team2,
+    history,
+    lastRoundPartnerSet,
+    resolve,
+    levelByName
+  ) => {
+    const { partnerCount, opposeCount, matchupCount } = history;
+    const a1 = resolve(team1[0]);
+    const a2 = resolve(team1[1]);
+    const b1 = resolve(team2[0]);
+    const b2 = resolve(team2[1]);
+    const pairA = { m: a1, f: a2 };
+    const pairB = { m: b1, f: b2 };
+    let s = 0;
+    s += (partnerCount.get(pairKey(a1, a2)) || 0) * 50;
+    s += (partnerCount.get(pairKey(b1, b2)) || 0) * 50;
+    s += (lastRoundPartnerSet.has(pairKey(a1, a2)) ? 80000 : 0);
+    s += (lastRoundPartnerSet.has(pairKey(b1, b2)) ? 80000 : 0);
+    s += pairCrossOpposeScore(pairA, pairB, opposeCount) * 10;
+    s += (matchupCount.get(matchupKey(pairA, pairB)) || 0) * 200;
+    if (levelByName && levelByName.size) {
+      const sum = (x, y) =>
+        getLevelForPairing(levelByName, resolve, x) +
+        getLevelForPairing(levelByName, resolve, y);
+      s += POWER_LEVEL_MATCH_BETA * Math.abs(sum(a1, a2) - sum(b1, b2));
+    }
+    return s;
+  };
+
+  /** Pick 1+2 vs 3+4, 1+3 vs 2+4, or 1+4 vs 2+3 — classic wins on ties. */
+  const pickBestMexicanoQuadSplit = (
+    quadNames,
+    history,
+    lastRoundPartnerSet,
+    resolve,
+    levelByName
+  ) => {
+    const [a, b, c, d] = quadNames;
+    const splits = [
+      { classic: true, t1: [a, b], t2: [c, d] },
+      { classic: false, t1: [a, c], t2: [b, d] },
+      { classic: false, t1: [a, d], t2: [b, c] }
+    ];
+    let best = null;
+    for (const sp of splits) {
+      let sc = scoreMexicanoTwoTeams(
+        sp.t1, sp.t2, history, lastRoundPartnerSet, resolve, levelByName
+      );
+      if (!sp.classic) sc += MEXICANO_CLASSIC_SPLIT_BIAS;
+      if (!best || sc < best.sc) {
+        best = { sc, t1: sp.t1, t2: sp.t2 };
+      }
+    }
+    return { team1: best.t1, team2: best.t2 };
+  };
+
+  const TENNIS_PTS_LABEL = ['0', '15', '30', '40'];
+
   /** Fresh selection logic: never-played first, then benched-last-round first, then low play count. */
   const pickActivePlayersNormal = (allNames, slots, allRounds, roundNo) => {
     const resolve = makeRosterNameResolve(allNames);
@@ -559,14 +758,8 @@
       return allPairs.slice(0, Math.min(pairSlots, allPairs.length));
     }
 
-    const onCourtLast = new Set();
-    (lastRound.matches || []).forEach((m) => {
-      for (const name of [...(m.team1 || []), ...(m.team2 || [])]) {
-        onCourtLast.add(resolve(name));
-      }
-    });
-
-    const mustPlay = allPairs.filter((p) => !onCourtLast.has(resolve(p.m)));
+    const pairsOnCourtLast = getFixedPairsOnCourtLastRound(lastRound, resolve);
+    const mustPlay = allPairs.filter((p) => !pairsOnCourtLast.has(tKey(p)));
     if (mustPlay.length > pairSlots) {
       return pickActiveFixedPairs(allPairs, pairSlots, allRounds, roundNo);
     }
@@ -695,20 +888,8 @@
         return (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0);
       });
     }
-    const matches = [];
-    for (let c = 0; c < maxCourts; c++) {
-      const t0 = ordered[c * 2];
-      const t1 = ordered[c * 2 + 1];
-      if (!t0 || !t1) break;
-      matches.push({
-        court: c + 1,
-        team1: [t0.m, t0.f],
-        team2: [t1.m, t1.f],
-        score1: '',
-        score2: ''
-      });
-    }
-    return matches;
+    const history = buildMixHistory();
+    return buildBestFixedPairMatches(ordered, history) || [];
   };
 
   /**
@@ -770,6 +951,7 @@
     }));
 
     keyed.sort((a, b) => {
+      if ((a.played === 0) !== (b.played === 0)) return a.played === 0 ? -1 : 1;
       if (a.played !== b.played) return a.played - b.played;
       if (a.streak !== b.streak) return b.streak - a.streak;
       return a.tieRot - b.tieRot;
@@ -904,6 +1086,9 @@
     else if (mode === 'balanced') state.newTournament.mode = 'balanced';
     else state.newTournament.mode = 'normal';
     state.playerGenderDraft = 'M';
+    if (isMexicanoFamilyMode(state.newTournament.mode)) {
+      state.newTournament.mexScoreKind = state.newTournament.mexScoreKind || 'rally';
+    }
     updateGenderUI();
     navigateTo('new-title');
   };
@@ -960,6 +1145,10 @@
       title: '',
       courts: 0,
       points: 0,
+      /** Mexicano-family only: 'rally' | 'games' */
+      mexScoreKind: 'rally',
+      /** Best-of max games when mexScoreKind === 'games' (3–7); null until user picks. */
+      mexBestOf: null,
       players: []
     },
 
@@ -971,12 +1160,16 @@
     shareLeaderboardSort: 'points'
   };
 
-  /** Bump when you ship user-visible fixes or features (shown on home). */
-  const APP_VERSION = '1.6.5';
+  /** Locked in js/version.js — do not change here. */
+  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.6';
 
   const defaultConfig = { app_title: 'Padelio' };
 
   const refreshAppVersionLabel = () => {
+    if (typeof window.padelioApplyVersionLabels === 'function') {
+      window.padelioApplyVersionLabels();
+      return;
+    }
     const el = $('app-version');
     if (el) el.textContent = `Version ${APP_VERSION}`;
     const whatsNew = $('whats-new-version');
@@ -1164,19 +1357,48 @@
       syncPlayerLevelControls();
     }
 
+    if (page === 'new-points') {
+      syncNewPointsPage();
+    }
+
     updateAdVisibility(page);
   };
 
   /* ---------- New tournament flow ---------- */
+  /** Applied via styles.css — avoids Tailwind CDN missing dynamic utilities. */
+  const CHIP_SELECTED = 'padelio-chip-selected';
+
+  const isMexBestOfChosen = () => {
+    const n = Number(state.newTournament.mexBestOf);
+    return n >= 3 && n <= 7;
+  };
+
+  const canProceedFromPointsStep = () => {
+    if (isMexicanoFamilyMode(state.newTournament.mode) && state.newTournament.mexScoreKind === 'games') {
+      return isMexBestOfChosen();
+    }
+    return state.newTournament.points > 0;
+  };
+
   const resetNewTournament = () => {
-    state.newTournament = { mode: 'normal', title: '', courts: 0, points: 0, players: [] };
+    state.newTournament = {
+      mode: 'normal',
+      title: '',
+      courts: 0,
+      points: 0,
+      mexScoreKind: 'rally',
+      mexBestOf: null,
+      players: []
+    };
     state.playerGenderDraft = 'M';
 
     const t = $('tournament-title');
     if (t) t.value = '';
 
-    $$('.court-btn').forEach((b) => b.classList.remove('border-emerald-400', 'bg-emerald-600'));
-    $$('.points-btn').forEach((b) => b.classList.remove('border-emerald-400', 'bg-emerald-600'));
+    $$('.court-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
+    $$('.points-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
+    $$('.mex-bo-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
+    $$('.mex-kind-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
 
     const list = $('players-list');
     if (list) list.innerHTML = '';
@@ -1202,7 +1424,8 @@
     };
 
     setDisabled(btnToPoints, !(state.newTournament.courts > 0));
-    setDisabled(btnToPlayers, !(state.newTournament.points > 0));
+
+    setDisabled(btnToPlayers, !canProceedFromPointsStep());
 
     const courts = Number(state.newTournament.courts) || 0;
     const minPlayers = Math.max(4, courts * 4);
@@ -1236,27 +1459,82 @@
   const selectCourts = (num) => {
     state.newTournament.courts = Number(num) || 0;
     $$('.court-btn').forEach((b) => {
-      b.classList.remove('border-emerald-400', 'bg-emerald-600');
-      if (Number(b.dataset.courts) === state.newTournament.courts) {
-        b.classList.add('border-emerald-400', 'bg-emerald-600');
-      }
+      b.classList.toggle(CHIP_SELECTED, Number(b.dataset.courts) === state.newTournament.courts);
     });
     updateMinPlayersText();
     updateButtonStates();
   };
 
   const goToPoints = () => {
-    if (state.newTournament.courts > 0) navigateTo('new-points');
+    if (state.newTournament.courts > 0) {
+      navigateTo('new-points');
+    }
+  };
+
+  const syncNewPointsPage = () => {
+    const std = $('new-points-standard');
+    const mex = $('new-points-mex');
+    const tit = $('points-page-title');
+    const sub = $('points-page-sub');
+    const rallyPanel = $('mex-panel-rally');
+    const gamesPanel = $('mex-panel-games');
+
+    const isMex = isMexicanoFamilyMode(state.newTournament.mode);
+    const kind = state.newTournament.mexScoreKind === 'games' ? 'games' : 'rally';
+
+    if (std) std.classList.toggle('hidden', isMex);
+    if (mex) mex.classList.toggle('hidden', !isMex);
+
+    if (tit) tit.textContent = isMex ? 'Match scoring' : 'Points to Win';
+    if (sub) {
+      sub.textContent = isMex
+        ? 'Rally to a target, or best-of games (tennis-style: 0–40 per game; games won add to leaderboard).'
+        : 'Select points per match';
+    }
+
+    if (rallyPanel) rallyPanel.classList.toggle('hidden', !isMex || kind !== 'rally');
+    if (gamesPanel) gamesPanel.classList.toggle('hidden', !isMex || kind !== 'games');
+
+    $$('.mex-kind-btn').forEach((b) => {
+      const k = b.dataset.mexKind;
+      const on = k === 'games' ? kind === 'games' : kind === 'rally';
+      b.classList.toggle(CHIP_SELECTED, on);
+    });
+
+    $$('.mex-bo-btn').forEach((b) => {
+      const bo = Number(b.dataset.bo);
+      const on = kind === 'games' && isMexBestOfChosen() && bo === Number(state.newTournament.mexBestOf);
+      b.classList.toggle(CHIP_SELECTED, on);
+    });
+
+    $$('.points-btn').forEach((b) => {
+      b.classList.toggle(CHIP_SELECTED, Number(b.dataset.points) === state.newTournament.points);
+    });
   };
 
   const selectPoints = (num) => {
     state.newTournament.points = Number(num) || 0;
     $$('.points-btn').forEach((b) => {
-      b.classList.remove('border-emerald-400', 'bg-emerald-600');
-      if (Number(b.dataset.points) === state.newTournament.points) {
-        b.classList.add('border-emerald-400', 'bg-emerald-600');
-      }
+      b.classList.toggle(CHIP_SELECTED, Number(b.dataset.points) === state.newTournament.points);
     });
+    updateButtonStates();
+  };
+
+  const selectMexScoreKind = (kind) => {
+    const next = kind === 'games' ? 'games' : 'rally';
+    state.newTournament.mexScoreKind = next;
+    state.newTournament.mexBestOf = null;
+    if (next === 'games') {
+      state.newTournament.points = 0;
+      $$('.points-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
+    }
+    syncNewPointsPage();
+    updateButtonStates();
+  };
+
+  const selectMexBestOf = (n) => {
+    state.newTournament.mexBestOf = Math.min(7, Math.max(3, Number(n)));
+    syncNewPointsPage();
     updateButtonStates();
   };
 
@@ -1308,13 +1586,12 @@
   };
 
   const goToPlayers = () => {
-    if (state.newTournament.points > 0) {
-      navigateTo('new-players');
-      updateGenderUI(); // ✅ supaya toggle muncul kalau mix
-      syncMexicanoPlayersHint();
-      syncFixedPairsHint();
-      syncPlayerLevelControls();
-    }
+    if (!canProceedFromPointsStep()) return;
+    navigateTo('new-players');
+    updateGenderUI();
+    syncMexicanoPlayersHint();
+    syncFixedPairsHint();
+    syncPlayerLevelControls();
   };
 
   const readPlayerLevelDraft = () => clampPlayerLevel($('player-level')?.value);
@@ -1381,18 +1658,18 @@
         const ia = pi * 2;
         const ib = pi * 2 + 1;
         rows.push(`
-        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
+        <div class="flex items-center justify-between bg-emerald-50/95 dark:bg-emerald-800/50 rounded-2xl border border-emerald-300/70 dark:border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
           <div class="flex flex-col gap-1.5 min-w-0">
-            <span class="text-[0.65rem] uppercase tracking-wide text-emerald-300/90 font-bold">Pair ${pi + 1}</span>
+            <span class="text-[0.65rem] uppercase tracking-wide text-emerald-800/95 dark:text-emerald-300/90 font-bold">Pair ${pi + 1}</span>
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm">
-              <span class="font-medium text-emerald-200/80">${escapeHtml(a.name)}</span>
+              <span class="font-medium text-emerald-900/95 dark:text-emerald-200/80">${escapeHtml(a.name)}</span>
               ${levelSelectFieldHtml(ia, a.level, showLevelUi)}
-              <span class="text-emerald-500/80">+</span>
-              <span class="font-medium text-emerald-200/80">${escapeHtml(b.name)}</span>
+              <span class="text-emerald-700/90 dark:text-emerald-500/80">+</span>
+              <span class="font-medium text-emerald-900/95 dark:text-emerald-200/80">${escapeHtml(b.name)}</span>
               ${levelSelectFieldHtml(ib, b.level, showLevelUi)}
             </div>
           </div>
-          <button type="button" onclick="removeFixedPair(${pi})" class="shrink-0 text-emerald-400 hover:text-red-400 transition-colors" title="Remove this pair">
+          <button type="button" onclick="removeFixedPair(${pi})" class="shrink-0 text-emerald-700 dark:text-emerald-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Remove this pair">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -1403,16 +1680,16 @@
         const last = players[players.length - 1];
         const li = players.length - 1;
         rows.push(`
-        <div class="flex items-center justify-between bg-amber-900/30 rounded-2xl border border-amber-500/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
+        <div class="flex items-center justify-between bg-amber-50/95 dark:bg-amber-900/30 rounded-2xl border border-amber-400/55 dark:border-amber-500/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
           <div class="flex flex-col gap-0.5 min-w-0">
-            <span class="text-[0.65rem] uppercase tracking-wide text-amber-200/90 font-bold">Incomplete pair</span>
+            <span class="text-[0.65rem] uppercase tracking-wide text-amber-900/90 dark:text-amber-200/90 font-bold">Incomplete pair</span>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="font-medium truncate text-amber-100">${escapeHtml(last.name)}</span>
+              <span class="font-medium truncate text-amber-950 dark:text-amber-100">${escapeHtml(last.name)}</span>
               ${levelSelectFieldHtml(li, last.level, showLevelUi)}
             </div>
-            <span class="text-xs text-amber-200/80">Add one more player to complete the pair.</span>
+            <span class="text-xs text-amber-900/85 dark:text-amber-200/80">Add one more player to complete the pair.</span>
           </div>
-          <button type="button" onclick="removePlayer(${li})" class="shrink-0 text-amber-300 hover:text-red-400 transition-colors" title="Remove">
+          <button type="button" onclick="removePlayer(${li})" class="shrink-0 text-amber-800 dark:text-amber-300 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Remove">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -1424,7 +1701,7 @@
       list.innerHTML = players
         .map(
           (p, i) => `
-        <div class="flex items-center justify-between bg-emerald-800/50 rounded-2xl border border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
+        <div class="flex items-center justify-between bg-emerald-50/95 dark:bg-emerald-800/50 rounded-2xl border border-emerald-300/70 dark:border-emerald-600/40 px-4 py-3 slide-in shadow-cozy-sm gap-2">
           <div class="flex items-center flex-wrap gap-x-2 gap-y-1.5 min-w-0">
             <span class="font-medium">${escapeHtml(p.name)}</span>
             ${isMixLikeMode(state.newTournament.mode)
@@ -1432,8 +1709,8 @@
                 <button
                   type="button"
                   onclick="togglePlayerGender(${i})"
-                  class="text-xs px-2 py-1 rounded-full bg-emerald-900/50 border border-emerald-700 text-emerald-200
-         hover:border-emerald-300 hover:bg-emerald-900/80 transition-all
+                  class="text-xs px-2 py-1 rounded-full bg-emerald-200/90 dark:bg-emerald-900/50 border border-emerald-400/60 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200
+         hover:border-emerald-500 dark:hover:border-emerald-300 hover:bg-emerald-300/90 dark:hover:bg-emerald-900/80 transition-all
          cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
                   title="Tap to switch gender"
                 >
@@ -1446,7 +1723,7 @@
             ${levelSelectFieldHtml(i, p.level, showLevelUi)}
           </div>
 
-          <button onclick="removePlayer(${i})" class="shrink-0 text-emerald-400 hover:text-red-400 transition-colors" aria-label="Remove player">
+          <button onclick="removePlayer(${i})" class="shrink-0 text-emerald-700 dark:text-emerald-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" aria-label="Remove player">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -1668,16 +1945,37 @@
         btn.classList.add('opacity-50', 'cursor-not-allowed');
       }
 
+      const mexFam = isMexicanoFamilyMode(state.newTournament.mode);
+
+      let points_to_win = state.newTournament.points;
+      let mex_score_kind = null;
+      let mex_best_of_games = null;
+
+      if (mexFam) {
+        if (state.newTournament.mexScoreKind === 'games') {
+          mex_score_kind = 'games';
+          mex_best_of_games = Math.min(7, Math.max(3, Number(state.newTournament.mexBestOf)));
+          points_to_win = gamesNeededToWinMatch(mex_best_of_games);
+        } else {
+          mex_score_kind = 'rally';
+          mex_best_of_games = null;
+          points_to_win = state.newTournament.points;
+        }
+      }
+
       const tournament = {
         id: Date.now().toString(),
         title: state.newTournament.title,
         mode: state.newTournament.mode,
         courts: state.newTournament.courts,
-        points_to_win: state.newTournament.points,
+        points_to_win,
         players: JSON.stringify(normalizePlayers(state.newTournament.players)),
         rounds: JSON.stringify([]),
         current_round: 1,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        ...(mexFam && mex_score_kind
+          ? { mex_score_kind, mex_best_of_games }
+          : {})
       };
 
       const result = await window.dataSdk.create(tournament);
@@ -1687,9 +1985,14 @@
         return;
       }
 
-      // ✅ sukses: balik home + reset flow
+      const createdId = result.data?.__backendId;
       resetNewTournament();
-      navigateTo('home');
+
+      if (createdId) {
+        await openTournament(createdId);
+      } else {
+        navigateTo('home');
+      }
 
     } catch (e) {
       toast('Failed to create tournament');
@@ -1724,7 +2027,7 @@
     if (!list) return;
 
     if (state.tournaments.length === 0) {
-      list.innerHTML = '<p class="text-emerald-400 text-center py-8 text-sm">No tournaments yet</p>';
+      list.innerHTML = '<p class="text-emerald-600 dark:text-emerald-400 text-center py-8 text-sm">No tournaments yet</p>';
       return;
     }
 
@@ -1747,9 +2050,9 @@
                       ? 'Mix Mexicano'
                       : 'Americano';
         return `
-          <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-800/50 hover:bg-emerald-700/50 border border-emerald-600/50 rounded-3xl p-4 text-left transition-all slide-in shadow-cozy-sm">
+          <button onclick="openTournament('${t.__backendId}')" class="w-full bg-emerald-50/95 dark:bg-emerald-800/50 hover:bg-emerald-100/80 dark:hover:bg-emerald-700/50 border border-emerald-300/70 dark:border-emerald-600/50 rounded-3xl p-4 text-left transition-all slide-in shadow-cozy-sm">
             <h3 class="font-semibold text-lg mb-1">${escapeHtml(t.title)}</h3>
-            <div class="flex items-center gap-4 text-sm text-emerald-300 flex-wrap">
+            <div class="flex items-center gap-4 text-sm text-emerald-700 dark:text-emerald-300 flex-wrap">
               <span>${modeLabel}</span>
               <span>•</span>
               <span>${t.courts} court${t.courts > 1 ? 's' : ''}</span>
@@ -1765,11 +2068,72 @@
   };
 
   /* ---------- Rounds generation/render ---------- */
+  const mexAwardGamePts = (match, winnerTeam, profile) => {
+    if (!canAwardMexGame(match, profile)) return false;
+    let g1 = Number(match.score1) || 0;
+    let g2 = Number(match.score2) || 0;
+    if (winnerTeam === 1) g1++;
+    else g2++;
+    applyMexGamesScoresToMatch(match, profile, g1, g2);
+    match.mx_game = { i1: 0, i2: 0 };
+    return true;
+  };
+
+  const mexTennisPoint = async (matchIdx, team) => {
+    if (state.shareViewerMode) return;
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+    const profile = getTournamentScoringProfile(state.currentTournament);
+    if (profile.style !== 'games') return;
+
+    ensureViewingRoundValid();
+    const rounds = getRounds();
+    const activeRound = state.viewingRound ?? state.currentTournament.current_round;
+    const roundData = rounds.find((r) => Number(r.round) === Number(activeRound));
+    if (!roundData) return;
+    const match = roundData.matches?.[matchIdx];
+    if (!match) return;
+
+    if (!canAwardMexGame(match, profile)) {
+      toast(`Match sudah selesai (best of ${profile.bestOf}).`);
+      return;
+    }
+
+    const g = match.mx_game ? { ...match.mx_game } : { i1: 0, i2: 0 };
+    const side = team === 1 ? 1 : 2;
+    let awarded = false;
+
+    if (g.i1 >= 3 && g.i2 >= 3) {
+      awarded = mexAwardGamePts(match, side, profile);
+    } else if (side === 1) {
+      if (g.i1 === 3 && g.i2 < 3) {
+        awarded = mexAwardGamePts(match, 1, profile);
+      } else {
+        g.i1 = Math.min(g.i1 + 1, 3);
+      }
+    } else if (g.i2 === 3 && g.i1 < 3) {
+      awarded = mexAwardGamePts(match, 2, profile);
+    } else {
+      g.i2 = Math.min(g.i2 + 1, 3);
+    }
+
+    if (!awarded) match.mx_game = g;
+
+    setRounds(rounds);
+    await saveCurrentTournament();
+    renderSpecificRound(state.viewingRound ?? state.currentTournament.current_round);
+  };
+
   const renderCourts = (roundData) => {
     const container = $('courts-container');
     if (!container) return;
 
     const mode = state.currentTournament?.mode || 'normal';
+    const sProf = getTournamentScoringProfile(state.currentTournament);
+    const numMax = sProf.style === 'games' ? sProf.bestOf : sProf.rallyCap;
+    const scoreHint =
+      sProf.style === 'games' ? mexGamesScoreHint(sProf) : `Rally to ${sProf.rallyCap} (scores mirror)`;
+
     let levelForDisplay = null;
     if (mode === 'balanced') {
       const playersFull = getPlayersFull();
@@ -1790,16 +2154,32 @@
       return `
         <div class="flex flex-row items-center justify-center gap-1.5 flex-wrap">
           <span class="font-medium leading-tight">${nameHtml}</span>
-          <span class="inline-flex shrink-0 items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-md text-[0.65rem] font-extrabold tabular-nums bg-teal-500/25 text-teal-50 border border-teal-400/40 shadow-sm" title="Power level">L${lv}</span>
+          <span class="inline-flex shrink-0 items-center justify-center min-w-[1.75rem] px-1.5 py-0.5 rounded-md text-[0.65rem] font-extrabold tabular-nums bg-teal-100 text-teal-900 dark:bg-teal-500/25 dark:text-teal-50 border border-teal-400/55 dark:border-teal-400/40 shadow-sm" title="Power level">L${lv}</span>
         </div>
       `;
     };
 
+    const showTennisStrip = sProf.style === 'games';
+    const tennisInteractive = showTennisStrip && !state.shareViewerMode;
+
     container.innerHTML = roundData.matches
       .map(
-        (match, idx) => `
-        <div class="bg-emerald-800/50 rounded-3xl p-4 border border-emerald-600/45 shadow-cozy-sm">
-          <div class="text-center text-sm text-emerald-400 mb-3 font-medium">Court ${match.court}</div>
+        (match, idx) => {
+          const mg = match.mx_game || { i1: 0, i2: 0 };
+          const l1 = TENNIS_PTS_LABEL[Math.min(mg.i1, 3)] ?? '0';
+          const l2 = TENNIS_PTS_LABEL[Math.min(mg.i2, 3)] ?? '0';
+          const g1n = Number(match.score1) || 0;
+          const g2n = Number(match.score2) || 0;
+          const mexMatchDone = showTennisStrip && isMexMatchComplete(g1n, g2n, sProf);
+          const ptBtnClass =
+            'text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-300/90 dark:border-white/20 text-emerald-900 dark:text-emerald-100';
+          const ptBtnOn =
+            'bg-slate-200/90 dark:bg-white/10 hover:bg-slate-300/90 dark:hover:bg-white/15';
+          const ptBtnOff = 'bg-slate-100/80 dark:bg-white/5 opacity-50 cursor-not-allowed';
+          return `
+        <div class="bg-emerald-50/95 dark:bg-emerald-800/50 rounded-3xl p-4 border border-emerald-300/75 dark:border-emerald-600/45 shadow-cozy-sm">
+          <div class="text-center text-sm text-emerald-700 dark:text-emerald-400 mb-1 font-medium">Court ${match.court}</div>
+          <div class="text-center text-[10px] text-emerald-700/95 dark:text-emerald-500/90 mb-3 leading-snug">${escapeHtml(scoreHint)}</div>
 
           <div class="flex items-center gap-4">
             <!-- Team 1 -->
@@ -1810,14 +2190,15 @@
               </div>
               <div class="flex items-center justify-center gap-2">
                 <input type="number" id="score-input-${idx}-1" value="${match.score1 ?? ''}" min="0"
+                  max="${numMax}"
                   onfocus="setEditingScore(true)"
                   oninput="updateScoreLive(${idx}, 1)"
                   onblur="commitScore(${idx}, 1)"
-                  class="w-16 bg-emerald-700/90 border border-emerald-500/50 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25">
+                  class="w-16 bg-emerald-100 dark:bg-emerald-700/90 border border-emerald-400/70 dark:border-emerald-500/50 rounded-xl text-center text-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25">
               </div>
             </div>
 
-            <div class="text-2xl text-emerald-300 font-extrabold">vs</div>
+            <div class="text-2xl text-emerald-700 dark:text-emerald-300 font-extrabold">vs</div>
 
             <!-- Team 2 -->
             <div class="flex-1 text-center">
@@ -1827,22 +2208,56 @@
               </div>
               <div class="flex items-center justify-center gap-2">
                 <input type="number" id="score-input-${idx}-2" value="${match.score2 ?? ''}" min="0"
+                  max="${numMax}"
                   onfocus="setEditingScore(true)"
                   oninput="updateScoreLive(${idx}, 2)"
                   onblur="commitScore(${idx}, 2)"
-                  class="w-16 bg-emerald-700/90 border border-emerald-500/50 rounded-xl text-center text-xl font-bold text-white focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25">
+                  class="w-16 bg-emerald-100 dark:bg-emerald-700/90 border border-emerald-400/70 dark:border-emerald-500/50 rounded-xl text-center text-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25">
               </div>
             </div>
           </div>
+          ${
+            showTennisStrip
+              ? `
+          <div class="mt-4 pt-3 border-t border-emerald-200/80 dark:border-emerald-700/45 text-center">
+            <div class="text-[10px] text-emerald-700/95 dark:text-emerald-300/90 uppercase tracking-wide mb-2">Current game (optional): 0 → 15 → 30 → 40 · deuce = next point wins</div>
+            <div class="flex justify-center items-center gap-6 text-sm">
+              <div class="flex flex-col items-center gap-1">
+                <span class="tabular-nums text-lg font-bold text-emerald-900 dark:text-emerald-100">${l1}</span>
+                ${
+                  tennisInteractive
+                    ? `<button type="button" ${mexMatchDone ? 'disabled' : ''} onclick="mexTennisPoint(${idx}, 1)"
+                  class="${ptBtnClass} ${mexMatchDone ? ptBtnOff : ptBtnOn}">
+                  + Point
+                </button>`
+                    : ''
+                }
+              </div>
+              <div class="flex flex-col items-center gap-1">
+                <span class="tabular-nums text-lg font-bold text-emerald-900 dark:text-emerald-100">${l2}</span>
+                ${
+                  tennisInteractive
+                    ? `<button type="button" ${mexMatchDone ? 'disabled' : ''} onclick="mexTennisPoint(${idx}, 2)"
+                  class="${ptBtnClass} ${mexMatchDone ? ptBtnOff : ptBtnOn}">
+                  + Point
+                </button>`
+                    : ''
+                }
+              </div>
+            </div>
+          </div>`
+              : ''
+          }
         </div>
-      `
+      `;
+        }
       )
       .join('');
   };
 
   /**
-   * Mexicano: round 1 pairs follow roster order (A+B vs C+D per block of 4).
-   * Later rounds: active players ordered by standings, same block pairing (1st+2nd vs 3rd+4th in each block).
+   * Mexicano: players ordered by roster (R1) or standings (R2+), blocks of four per court.
+   * Team split in each block minimizes repeat partners/opponents vs classic 1+2 vs 3+4 bias.
    */
   function buildMexicanoMatches (players, courts, rounds, roundNo, tournament) {
     const maxCourts = Math.min(courts, Math.floor(players.length / 4));
@@ -1857,6 +2272,12 @@
         safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
       )
     };
+
+    const history = buildMixHistory();
+    const prevRound = getPreviousRoundDatum(rounds, roundNo);
+    const resolve = makeRosterNameResolve(players);
+    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
+    const levelByName = makeLevelByNameMap(getPlayersFull());
 
     let ordered = [];
     if (rn === 1) {
@@ -1876,10 +2297,13 @@
       const base = c * 4;
       const quad = ordered.slice(base, base + 4);
       if (quad.length < 4) break;
+      const { team1, team2 } = pickBestMexicanoQuadSplit(
+        quad, history, lastRoundPartnerSet, resolve, levelByName
+      );
       matches.push({
         court: c + 1,
-        team1: [quad[0], quad[1]],
-        team2: [quad[2], quad[3]],
+        team1,
+        team2,
         score1: '',
         score2: ''
       });
@@ -1889,7 +2313,7 @@
 
   /**
    * Mix + Mexicano: equal M/F; same benching and per-gender standing order as Mexicano;
-   * each court: (M0,F0) vs (M1,F1) from parallel sorted lists (round 1: roster; later: points).
+   * each court: pick (M0,F0)/(M1,F1) vs (M0,F1)/(M1,F0) to reduce repeat partners and matchups.
    */
   function buildMixMexicanoMatches (playersFull, courts, allRounds, roundNo, tournament) {
     const malesAll = playersFull.filter((p) => p.gender === 'M').map((p) => p.name);
@@ -1932,6 +2356,13 @@
       });
     }
 
+    const history = buildMixHistory();
+    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
+    const rosterNames = [...malesAll, ...femalesAll];
+    const resolve = makeRosterNameResolve(rosterNames);
+    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
+    const levelByName = makeLevelByNameMap(playersFull);
+
     const matches = [];
     for (let c = 0; c < maxCourts; c++) {
       const m0 = orderedM[c * 2];
@@ -1939,10 +2370,21 @@
       const f0 = orderedF[c * 2];
       const f1 = orderedF[c * 2 + 1];
       if (!m0 || !m1 || !f0 || !f1) break;
+      const A1 = [m0, f0];
+      const A2 = [m1, f1];
+      const B1 = [m0, f1];
+      const B2 = [m1, f0];
+      const sA = scoreMexicanoTwoTeams(
+        A1, A2, history, lastRoundPartnerSet, resolve, levelByName
+      );
+      const sB = scoreMexicanoTwoTeams(
+        B1, B2, history, lastRoundPartnerSet, resolve, levelByName
+      );
+      const useA = sA <= sB;
       matches.push({
         court: c + 1,
-        team1: [m0, f0],
-        team2: [m1, f1],
+        team1: useA ? A1 : B1,
+        team2: useA ? A2 : B2,
         score1: '',
         score2: ''
       });
@@ -2218,7 +2660,7 @@
       const c = $('courts-container');
       if (c) {
         c.innerHTML = `
-          <div class="bg-emerald-800/50 rounded-3xl p-6 border border-emerald-600/45 text-center text-emerald-200 shadow-cozy-sm">
+          <div class="bg-emerald-50/95 dark:bg-emerald-800/50 rounded-3xl p-6 border border-emerald-300/75 dark:border-emerald-600/45 text-center text-emerald-800 dark:text-emerald-200 shadow-cozy-sm">
             No data for Round ${rn} yet.
           </div>
         `;
@@ -2250,11 +2692,97 @@
     const match = roundData.matches?.[matchIdx];
     if (!match) return;
 
-    const maxPoints = Number(state.currentTournament.points_to_win) || 21;
-
+    const prof = getTournamentScoringProfile(state.currentTournament);
+    const maxPts =
+      prof.style === 'games'
+        ? prof.bestOf
+        : Number(state.currentTournament.points_to_win) || 21;
     const input1 = $(`score-input-${matchIdx}-1`);
     const input2 = $(`score-input-${matchIdx}-2`);
     if (!input1 || !input2) return;
+
+    if (prof.style === 'games') {
+      const raw = (team === 1 ? input1.value : input2.value).trim();
+
+      if (raw === '') {
+        if (team === 1) {
+          match.score1 = '';
+          input1.value = '';
+        } else {
+          match.score2 = '';
+          input2.value = '';
+        }
+        if (input1.value.trim() === '' && input2.value.trim() === '') {
+          match.score1 = '';
+          match.score2 = '';
+          delete match.mx_game;
+        }
+        setRounds(rounds);
+        debouncedSaveTournament();
+        return;
+      }
+
+      let s = parseInt(raw, 10);
+      if (!Number.isFinite(s) || s < 0) return;
+      s = clamp(s, 0, maxPts);
+
+      const otherRaw = team === 1 ? input2.value.trim() : input1.value.trim();
+      if (otherRaw !== '' && parseInt(otherRaw, 10) === s) {
+        if (s < prof.gamesTarget) {
+          match.score1 = s;
+          match.score2 = s;
+          input1.value = String(s);
+          input2.value = String(s);
+          delete match.mx_game;
+          setRounds(rounds);
+          debouncedSaveTournament();
+          return;
+        }
+        const normTie = applyMexGamesScoresToMatch(match, prof, s, s);
+        input1.value = String(normTie.g1);
+        input2.value = String(normTie.g2);
+        delete match.mx_game;
+        setRounds(rounds);
+        debouncedSaveTournament();
+        return;
+      }
+
+      const opp = gamesOppFromEntered(s, prof);
+
+      if (team === 1) {
+        match.score1 = s;
+        input1.value = String(s);
+        if (opp !== null && input2.value.trim() === '') {
+          match.score2 = opp;
+          input2.value = String(opp);
+        }
+      } else {
+        match.score2 = s;
+        input2.value = String(s);
+        if (opp !== null && input1.value.trim() === '') {
+          match.score1 = opp;
+          input1.value = String(opp);
+        }
+      }
+
+      const r1 = input1.value.trim();
+      const r2 = input2.value.trim();
+      if (r1 !== '' && r2 !== '') {
+        const norm = applyMexGamesScoresToMatch(match, prof, r1, r2);
+        input1.value = String(norm.g1);
+        input2.value = String(norm.g2);
+      } else if (team === 1) {
+        match.score1 = s;
+        input1.value = String(s);
+      } else {
+        match.score2 = s;
+        input2.value = String(s);
+      }
+      delete match.mx_game;
+      setRounds(rounds);
+      debouncedSaveTournament();
+      return;
+    }
 
     const raw = (team === 1 ? input1.value : input2.value).trim();
 
@@ -2272,19 +2800,25 @@
 
     let s = parseInt(raw, 10);
     if (!Number.isFinite(s) || s < 0) return;
-    s = clamp(s, 0, maxPoints);
+    s = clamp(s, 0, maxPts);
 
-    const opp = Math.max(0, maxPoints - s);
-
-    // don't rewrite the input being typed (cursor-safe)
-    if (team === 1) {
+    const otherRaw = team === 1 ? input2.value.trim() : input1.value.trim();
+    if (otherRaw !== '' && parseInt(otherRaw, 10) === s) {
       match.score1 = s;
-      match.score2 = opp;
-      input2.value = String(opp);
-    } else {
       match.score2 = s;
-      match.score1 = opp;
-      input1.value = String(opp);
+      input1.value = String(s);
+      input2.value = String(s);
+    } else {
+      const opp = Math.max(0, maxPts - s);
+      if (team === 1) {
+        match.score1 = s;
+        match.score2 = opp;
+        input2.value = String(opp);
+      } else {
+        match.score2 = s;
+        match.score1 = opp;
+        input1.value = String(opp);
+      }
     }
 
     setRounds(rounds);
@@ -2307,11 +2841,38 @@
     const match = roundData.matches?.[matchIdx];
     if (!match) return;
 
-    const maxPoints = Number(state.currentTournament.points_to_win) || 21;
-
+    const prof = getTournamentScoringProfile(state.currentTournament);
+    const maxPts =
+      prof.style === 'games'
+        ? prof.bestOf
+        : Number(state.currentTournament.points_to_win) || 21;
     const input1 = $(`score-input-${matchIdx}-1`);
     const input2 = $(`score-input-${matchIdx}-2`);
     if (!input1 || !input2) return;
+
+    if (prof.style === 'games') {
+      const r1 = input1.value.trim();
+      const r2 = input2.value.trim();
+
+      if (r1 === '' && r2 === '') {
+        match.score1 = '';
+        match.score2 = '';
+        input1.value = '';
+        input2.value = '';
+        delete match.mx_game;
+      } else {
+        let g1 = r1 === '' ? 0 : clamp(parseInt(r1, 10) || 0, 0, maxPts);
+        let g2 = r2 === '' ? 0 : clamp(parseInt(r2, 10) || 0, 0, maxPts);
+        const norm = applyMexGamesScoresToMatch(match, prof, g1, g2);
+        input1.value = String(norm.g1);
+        input2.value = String(norm.g2);
+        delete match.mx_game;
+      }
+
+      setRounds(rounds);
+      saveCurrentTournament().catch(() => {});
+      return;
+    }
 
     const raw = (team === 1 ? input1.value : input2.value).trim();
 
@@ -2323,16 +2884,21 @@
     } else {
       let s = parseInt(raw, 10);
       if (!Number.isFinite(s) || s < 0) s = 0;
-      s = clamp(s, 0, maxPoints);
+      s = clamp(s, 0, maxPts);
 
-      const opp = Math.max(0, maxPoints - s);
-
-      if (team === 1) {
+      const otherRaw = team === 1 ? input2.value.trim() : input1.value.trim();
+      if (otherRaw !== '' && parseInt(otherRaw, 10) === s) {
         match.score1 = s;
-        match.score2 = opp;
-      } else {
         match.score2 = s;
-        match.score1 = opp;
+      } else {
+        const opp = Math.max(0, maxPts - s);
+        if (team === 1) {
+          match.score1 = s;
+          match.score2 = opp;
+        } else {
+          match.score2 = s;
+          match.score1 = opp;
+        }
       }
 
       input1.value = match.score1 === '' ? '' : String(match.score1);
@@ -2340,7 +2906,6 @@
     }
 
     setRounds(rounds);
-    // final save once
     saveCurrentTournament().catch(() => {});
   };
 
@@ -2736,6 +3301,12 @@
       R
     };
     if (hasGender) payload.G = playersArr.map((p) => p.gender);
+    if (isMexicanoFamilyMode(t.mode || 'normal')) {
+      payload.mk = t.mex_score_kind === 'games' ? 'g' : 'r';
+      if (t.mex_score_kind === 'games') {
+        payload.mb = Math.min(7, Math.max(3, Number(t.mex_best_of_games) || 3));
+      }
+    }
     return payload;
   };
 
@@ -2778,15 +3349,26 @@
       };
     });
 
+    const mode = decodeShareMode(w.m);
+    const mexExtra =
+      isMexicanoFamilyMode(mode) && (w.mk === 'g' || w.mk === 'r')
+        ? {
+            mex_score_kind: w.mk === 'g' ? 'games' : 'rally',
+            mex_best_of_games:
+              w.mk === 'g' ? Math.min(7, Math.max(3, Number(w.mb) || 3)) : null
+          }
+        : {};
+
     return {
       v: SHARE_PAYLOAD_VERSION,
       title: String(w.t ?? 'Tournament'),
-      mode: decodeShareMode(w.m),
+      mode,
       courts: w.c,
       points_to_win: w.w,
       current_round: w.cr,
       players: JSON.stringify(playersExpanded),
-      rounds: JSON.stringify(roundsExpanded)
+      rounds: JSON.stringify(roundsExpanded),
+      ...mexExtra
     };
   };
 
@@ -2850,6 +3432,10 @@
       rounds: t.rounds,
       current_round: t.current_round
     };
+    if (isMexicanoFamilyMode(t.mode || 'normal') && t.mex_score_kind) {
+      canonical.mex_score_kind = t.mex_score_kind;
+      canonical.mex_best_of_games = t.mex_best_of_games ?? null;
+    }
     const compact = buildCompactSharePayload(t);
 
     const plain = encodeSharePayload(canonical);
@@ -2893,6 +3479,11 @@
     return url;
   };
 
+  const formatLeaderboardDiff = (diff) => {
+    const n = Number(diff) || 0;
+    return n > 0 ? `+${n}` : String(n);
+  };
+
   const sortLeaderboardRows = (rows, sortMode) => {
     const byWinRate = sortMode === 'winRate';
     return [...rows].sort((a, b) => {
@@ -2900,10 +3491,12 @@
         if (b.winRate !== a.winRate) return b.winRate - a.winRate;
         if (b.wins !== a.wins) return b.wins - a.wins;
         if (b.points !== a.points) return b.points - a.points;
+        if (b.diff !== a.diff) return b.diff - a.diff;
         if (b.matches !== a.matches) return b.matches - a.matches;
         return String(a.name).localeCompare(String(b.name));
       }
       if (b.points !== a.points) return b.points - a.points;
+      if (b.diff !== a.diff) return b.diff - a.diff;
       if (b.wins !== a.wins) return b.wins - a.wins;
       if (b.winRate !== a.winRate) return b.winRate - a.winRate;
       return String(a.name).localeCompare(String(b.name));
@@ -2920,7 +3513,7 @@
 
     const scores = {};
     players.forEach((p) => {
-      scores[p] = { points: 0, wins: 0, losses: 0, ties: 0, matches: 0 };
+      scores[p] = { points: 0, conceded: 0, wins: 0, losses: 0, ties: 0, matches: 0 };
     });
 
     rounds.forEach((round) => {
@@ -2951,6 +3544,7 @@
 
         apply((p, side) => {
           scores[p].points += side === 1 ? score1 : score2;
+          scores[p].conceded += side === 1 ? score2 : score1;
         });
 
         if (score1 > score2) {
@@ -2977,7 +3571,8 @@
 
     const rows = Object.entries(scores).map(([name, data]) => {
       const winRate = data.matches > 0 ? (data.wins / data.matches) * 100 : 0;
-      return { name, ...data, winRate };
+      const diff = data.points - data.conceded;
+      return { name, ...data, winRate, diff };
     });
     return sortLeaderboardRows(rows, sortMode);
   };
@@ -2987,11 +3582,11 @@
     return sorted
       .map(
         (p, i) => `
-          <div class="flex items-center bg-emerald-800/50 rounded-3xl p-4 shadow-cozy-sm ${
+          <div class="flex items-center bg-emerald-50/95 dark:bg-emerald-800/50 rounded-3xl p-4 shadow-cozy-sm ${
             i === 0 ? 'border-2 border-amber-300'
             : i === 1 ? 'border-2 border-slate-300'
             : i === 2 ? 'border-2 border-orange-400/90'
-            : 'border border-emerald-600/45'
+            : 'border border-emerald-300/75 dark:border-emerald-600/45'
           }">
             <div class="w-8 h-8 flex items-center justify-center rounded-full ${
               i === 0 ? 'bg-gradient-to-br from-amber-200 to-amber-400 text-slate-900'
@@ -3003,23 +3598,31 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="font-semibold">${escapeHtml(fixCommonNameTypos(p.name))}</div>
-              <div class="text-sm text-emerald-300">
-                Match: ${p.matches} | W: ${p.wins} | L: ${p.losses} | T: ${p.ties}
+              <div class="text-sm text-emerald-700 dark:text-emerald-300">
+                Match: ${p.matches} | W: ${p.wins} | L: ${p.losses} | T: ${p.ties} | Diff: ${formatLeaderboardDiff(p.diff)}
               </div>
               ${
                 byWinRate
-                  ? `<div class="text-xs text-emerald-400 mt-1">Total points: ${p.points}</div>`
-                  : `<div class="text-xs text-emerald-400 mt-1">Win rate: ${p.winRate.toFixed(1)}%</div>`
+                  ? `<div class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Total points: ${p.points}</div>`
+                  : `<div class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Win rate: ${p.winRate.toFixed(1)}%</div>`
               }
             </div>
             <div class="text-right shrink-0">
               ${
                 byWinRate
-                  ? `<div class="text-2xl font-bold text-teal-300">${p.winRate.toFixed(1)}%</div>
-                     <div class="text-xs text-teal-400/90">win rate</div>`
-                  : `<div class="text-2xl font-bold text-emerald-400">${p.points}</div>
-                     <div class="text-xs text-emerald-400">points</div>`
+                  ? `<div class="text-2xl font-bold text-teal-700 dark:text-teal-300">${p.winRate.toFixed(1)}%</div>
+                     <div class="text-xs text-teal-700 dark:text-teal-400/90">win rate</div>`
+                  : `<div class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">${p.points}</div>
+                     <div class="text-xs text-emerald-700 dark:text-emerald-400">points</div>`
               }
+              <div class="text-sm font-bold tabular-nums mt-1 ${
+                p.diff > 0
+                  ? 'text-teal-700 dark:text-teal-300'
+                  : p.diff < 0
+                    ? 'text-rose-700 dark:text-rose-300'
+                    : 'text-slate-600 dark:text-slate-400'
+              }">${formatLeaderboardDiff(p.diff)}</div>
+              <div class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">diff</div>
             </div>
           </div>
         `
@@ -3027,81 +3630,80 @@
       .join('');
   };
 
-  /** Compact standings for screenshots: 2-column grid, full stats per row. */
+  const leaderboardShotRankClass = (i) => {
+    if (i === 0) return 'lb-shot__rank--gold';
+    if (i === 1) return 'lb-shot__rank--silver';
+    if (i === 2) return 'lb-shot__rank--bronze';
+    return 'lb-shot__rank--default';
+  };
+
+  const leaderboardShotTierClass = (i) => {
+    if (i === 0) return 'lb-shot__tr--gold';
+    if (i === 1) return 'lb-shot__tr--silver';
+    if (i === 2) return 'lb-shot__tr--bronze';
+    return '';
+  };
+
+  const leaderboardShotDiffClass = (diff) => {
+    const n = Number(diff) || 0;
+    if (n > 0) return 'lb-shot__diff--pos';
+    if (n < 0) return 'lb-shot__diff--neg';
+    return 'lb-shot__diff--zero';
+  };
+
+  /** Standings card for screenshots — single clean table. */
   const renderLeaderboardScreenshotHtml = (sorted, title, sortMode = 'points') => {
     const byWinRate = sortMode === 'winRate';
     const t = title != null && String(title).trim() ? escapeHtml(String(title).trim()) : '';
-    const sub = byWinRate ? 'Rank · win rate' : 'Rank · total points';
-    const heading = t
-      ? `<div class="text-center mb-3 pb-3 border-b border-white/10 col-span-2">
-           <div class="text-lg font-extrabold text-white tracking-tight">${t}</div>
-           <div class="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90 mt-1">Leaderboard</div>
-           <div class="text-[10px] text-slate-400 mt-0.5">${sub}</div>
-         </div>`
-      : `<div class="text-center mb-3 pb-3 border-b border-white/10 col-span-2">
-           <div class="text-[11px] font-semibold uppercase tracking-wider text-teal-400/90">Standings</div>
-           <div class="text-[10px] text-slate-400 mt-0.5">${sub}</div>
-         </div>`;
+    const sub = byWinRate ? 'By win rate' : 'By total points';
+    const primaryHdr = byWinRate ? 'WR' : 'Pts';
 
-    const cells = sorted
+    const titleBlock = t ? `<h2 class="lb-shot__title">${t}</h2>` : '';
+    const header = `<header class="lb-shot__head">
+        ${titleBlock}
+        <p class="lb-shot__label">Leaderboard</p>
+        <p class="lb-shot__sub">${sub}</p>
+      </header>`;
+
+    const rows = sorted
       .map((p, i) => {
-        const statLine = `${p.matches}M ${p.wins}-${p.losses}-${p.ties} · ${p.points} pts · ${p.winRate.toFixed(0)}% WR`;
-        const rankGrad =
-          i === 0
-            ? 'from-amber-200 to-amber-400 text-slate-900'
-            : i === 1
-              ? 'from-slate-200 to-slate-400 text-slate-900 ring-1 ring-white/25'
-              : i === 2
-                ? 'from-orange-300 to-orange-500 text-white'
-                : 'bg-emerald-800 text-white';
-        const rowRing =
-          i === 0
-            ? 'ring-1 ring-amber-300/50'
-            : i === 1
-              ? 'ring-1 ring-slate-400/40'
-              : i === 2
-                ? 'ring-1 ring-orange-400/45'
-                : '';
-        const primaryNum = byWinRate ? p.winRate.toFixed(0) : String(p.points);
-        const primaryCls = byWinRate
-          ? 'text-sm sm:text-base font-bold text-teal-200 tabular-nums leading-none'
-          : 'text-sm sm:text-base font-bold text-emerald-300 tabular-nums leading-none';
-        const subLblCls = byWinRate ? 'text-[6px] sm:text-[7px] text-teal-500/85 leading-none' : 'text-[6px] sm:text-[7px] text-emerald-500/80 leading-none';
-        const subLbl = byWinRate ? '%' : 'pts';
+        const primaryVal = byWinRate ? `${p.winRate.toFixed(0)}%` : String(p.points);
+        const tier = leaderboardShotTierClass(i);
+        const tip = `${p.matches} matches · ${p.points} pts · ${p.winRate.toFixed(0)}% win rate`;
         return `
-          <div class="flex items-center gap-1 rounded-xl px-1.5 py-1 sm:px-2 sm:py-1.5 bg-emerald-950/50 border border-emerald-800/40 min-w-0 ${rowRing}">
-            <div class="w-5 h-5 sm:w-6 sm:h-6 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br ${rankGrad} text-[9px] sm:text-[10px] font-extrabold shadow-sm tabular-nums">
-              ${i + 1}
-            </div>
-            <div class="flex-1 min-w-0 overflow-hidden">
-              <div class="font-semibold text-[10px] sm:text-[11px] leading-tight truncate">${escapeHtml(fixCommonNameTypos(p.name))}</div>
-              <div class="text-[7px] sm:text-[8px] text-emerald-300/90 tabular-nums leading-none mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis" title="${statLine}">
-                ${statLine}
-              </div>
-            </div>
-            <div class="shrink-0 w-7 sm:w-8 flex flex-col items-end justify-center text-right">
-              <div class="${primaryCls}">${primaryNum}</div>
-              <div class="${subLblCls} leading-none">${subLbl}</div>
-            </div>
-          </div>
-        `;
+        <div class="lb-shot__tr ${tier}" role="row" title="${escapeHtml(tip)}">
+          <span class="lb-shot__rank ${leaderboardShotRankClass(i)}" role="cell">${i + 1}</span>
+          <span class="lb-shot__player" role="cell">
+            <span class="lb-shot__name">${escapeHtml(fixCommonNameTypos(p.name))}</span>
+            <span class="lb-shot__matches">${p.matches} match${p.matches === 1 ? '' : 'es'}</span>
+          </span>
+          <span class="lb-shot__record" role="cell">${p.wins}-${p.losses}-${p.ties}</span>
+          <span class="lb-shot__primary" role="cell">${primaryVal}</span>
+          <span class="lb-shot__diff ${leaderboardShotDiffClass(p.diff)}" role="cell">${formatLeaderboardDiff(p.diff)}</span>
+        </div>`;
       })
       .join('');
 
-    return `
-      <div class="rounded-3xl border border-teal-400/25 bg-gradient-to-b from-slate-900/95 to-slate-950 p-2 sm:p-4 shadow-cozy-sm">
-        <div class="grid grid-cols-2 gap-x-1.5 gap-y-1 sm:gap-x-3 sm:gap-y-2">
-          ${heading}
-          ${cells}
+    return `<div class="lb-shot">
+        ${header}
+        <div class="lb-shot__table" role="table">
+          <div class="lb-shot__tr lb-shot__tr--head" role="row">
+            <span role="columnheader">#</span>
+            <span role="columnheader">Player</span>
+            <span role="columnheader">W-L-T</span>
+            <span role="columnheader">${primaryHdr}</span>
+            <span role="columnheader">Diff</span>
+          </div>
+          ${rows}
         </div>
-      </div>
-    `;
+        <footer class="lb-shot__foot">padelio.id</footer>
+      </div>`;
   };
 
   const LB_TAB_ACTIVE =
-    'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50';
+    'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-500/45 dark:border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50';
   const LB_TAB_IDLE =
-    'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors';
+    'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors';
 
   const applyHostLeaderboardLayoutUi = () => {
     const layout = state.hostLeaderboardLayout === 'screenshot' ? 'screenshot' : 'standard';
@@ -3444,19 +4046,19 @@
         const matches = (round.matches || [])
           .map(
             (match) => `
-          <div class="bg-emerald-900/40 rounded-2xl p-3 border border-emerald-700/40 mb-3">
-            <div class="text-center text-xs text-emerald-400 mb-2 font-medium">Court ${match.court}</div>
+          <div class="bg-emerald-50/95 dark:bg-emerald-900/40 rounded-2xl p-3 border border-emerald-300/75 dark:border-emerald-700/40 mb-3">
+            <div class="text-center text-xs text-emerald-700 dark:text-emerald-400 mb-2 font-medium">Court ${match.court}</div>
             <div class="flex items-center gap-3 text-sm">
               <div class="flex-1 text-center space-y-1">
                 <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[0]))}</div>
                 <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[1]))}</div>
-                <div class="text-lg font-bold text-emerald-300 mt-1">${escapeHtml(String(match.score1 ?? '—'))}</div>
+                <div class="text-lg font-bold text-emerald-800 dark:text-emerald-300 mt-1">${escapeHtml(String(match.score1 ?? '—'))}</div>
               </div>
-              <div class="text-emerald-500 font-extrabold text-xs">vs</div>
+              <div class="text-emerald-700 dark:text-emerald-500 font-extrabold text-xs">vs</div>
               <div class="flex-1 text-center space-y-1">
                 <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2?.[0]))}</div>
                 <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2?.[1]))}</div>
-                <div class="text-lg font-bold text-emerald-300 mt-1">${escapeHtml(String(match.score2 ?? '—'))}</div>
+                <div class="text-lg font-bold text-emerald-800 dark:text-emerald-300 mt-1">${escapeHtml(String(match.score2 ?? '—'))}</div>
               </div>
             </div>
           </div>
@@ -3465,7 +4067,7 @@
           .join('');
         return `
           <div class="mb-8">
-            <h3 class="text-sm font-extrabold text-white mb-3 sticky top-0 bg-slate-950/90 py-2 border-b border-white/10">Round ${Number(round.round) || '?'}</h3>
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3 sticky top-0 bg-white/92 dark:bg-slate-950/90 py-2 border-b border-slate-200/80 dark:border-white/10">Round ${Number(round.round) || '?'}</h3>
             ${matches}
           </div>
         `;
@@ -3487,9 +4089,9 @@
     const sortRow = $('share-lb-sort-row');
     if (sortRow) sortRow.classList.toggle('hidden', !onLb);
     const active =
-      'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50';
+      'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-500/45 dark:border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50';
     const idle =
-      'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors';
+      'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors';
     if (t1) t1.className = onLb ? active : idle;
     if (t2) t2.className = !onLb ? active : idle;
     if (onLb) {
@@ -3683,7 +4285,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js');
+        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.6-design-remake-2');
 
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;
@@ -3704,6 +4306,31 @@
   }
 
   /* ---------- expose globals (for inline handlers) ---------- */
+  /** Bubble-phase fallback if inline onclick is stripped or blocked; idempotent. */
+  const wireWizardChipClicks = () => {
+    const courtsRoot = $('page-new-courts');
+    if (courtsRoot && courtsRoot.dataset.padChipDlgt !== '1') {
+      courtsRoot.dataset.padChipDlgt = '1';
+      courtsRoot.addEventListener('click', (e) => {
+        const btn = e.target.closest('.court-btn');
+        if (!btn || !courtsRoot.contains(btn)) return;
+        const n = Number(btn.getAttribute('data-courts'));
+        if (Number.isFinite(n) && n > 0) selectCourts(n);
+      });
+    }
+    const pointsRoot = $('page-new-points');
+    if (pointsRoot && pointsRoot.dataset.padChipDlgt !== '1') {
+      pointsRoot.dataset.padChipDlgt = '1';
+      pointsRoot.addEventListener('click', (e) => {
+        const btn = e.target.closest('.points-btn');
+        if (!btn || !pointsRoot.contains(btn)) return;
+        const n = Number(btn.getAttribute('data-points'));
+        if (Number.isFinite(n) && n > 0) selectPoints(n);
+      });
+    }
+  };
+  wireWizardChipClicks();
+
   window.escapeHtml = escapeHtml;
 
   window.setEditingScore = setEditingScore;
@@ -3715,6 +4342,8 @@
   window.selectCourts = selectCourts;
   window.goToPoints = goToPoints;
   window.selectPoints = selectPoints;
+  window.selectMexScoreKind = selectMexScoreKind;
+  window.selectMexBestOf = selectMexBestOf;
   window.goToPlayers = goToPlayers;
 
   window.selectMode = selectMode;
@@ -3731,6 +4360,7 @@
 
   window.updateScoreLive = updateScoreLive;
   window.commitScore = commitScore;
+  window.mexTennisPoint = mexTennisPoint;
 
   window.prevRoundView = prevRoundView;
   window.nextRoundView = nextRoundView;

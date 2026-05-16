@@ -1,17 +1,53 @@
 // service-worker.js
-const VERSION = "v2026-04-18-06-whats-new-collapsible"; // <-- ganti tiap deploy
+const VERSION = "v1.6.6-design-remake-2";
 const CACHE_NAME = `padel-cache-${VERSION}`;
+const STYLES_URL = "/styles.css?v=1.6.6";
 
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/js/lz-string.min.js",
-  "/styles.css", // kalau file ini ada
-  // tambahin icon kalau ada:
-  // "/icons/icon-192.png",
-  // "/icons/icon-512.png",
+  STYLES_URL,
+  "/js/script.js",
+  "/js/version.js",
+  "/js/theme.js",
+  "/js/tailwind-padelio-config.js",
 ];
+
+function isHtmlRequest(req) {
+  const accept = req.headers.get("accept") || "";
+  return req.mode === "navigate" || accept.includes("text/html");
+}
+
+function isFreshAssetRequest(url) {
+  if (url.pathname.endsWith(".css")) return true;
+  if (url.pathname.endsWith(".js") && url.pathname.startsWith("/js/")) return true;
+  return false;
+}
+
+/** Network-first: always try latest CSS/JS (fixes stale design after deploy). */
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const fresh = await fetch(request, { cache: "no-store" });
+    if (fresh.ok) cache.put(request, fresh.clone());
+    return fresh;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    throw new Error("offline");
+  }
+}
+
+/** Cache-first for icons/images only. */
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  const fresh = await fetch(request);
+  const cache = await caches.open(CACHE_NAME);
+  if (fresh.ok) cache.put(request, fresh.clone());
+  return fresh;
+}
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -34,41 +70,31 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-
-  // Only handle GET
   if (req.method !== "GET") return;
 
-  const accept = req.headers.get("accept") || "";
-  const isHTML = req.mode === "navigate" || accept.includes("text/html");
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
 
-  // HTML: network-first supaya update cepat
-  if (isHTML) {
+  if (isHtmlRequest(req)) {
     event.respondWith(
       (async () => {
         try {
           const fresh = await fetch(req, { cache: "no-store" });
           const cache = await caches.open(CACHE_NAME);
-          cache.put(req, fresh.clone());
+          if (fresh.ok) cache.put(req, fresh.clone());
           return fresh;
-        } catch (e) {
-          const cached = await caches.match(req);
-          return cached || caches.match("/index.html");
+        } catch {
+          return (await caches.match(req)) || (await caches.match("/index.html"));
         }
       })()
     );
     return;
   }
 
-  // Others: cache-first (fast)
-  event.respondWith(
-    (async () => {
-      const cached = await caches.match(req);
-      if (cached) return cached;
+  if (isFreshAssetRequest(url)) {
+    event.respondWith(networkFirst(req));
+    return;
+  }
 
-      const fresh = await fetch(req);
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(req, fresh.clone());
-      return fresh;
-    })()
-  );
+  event.respondWith(cacheFirst(req));
 });

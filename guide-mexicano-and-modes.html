@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 
 <head>
+  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='light')document.documentElement.classList.remove('dark');}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -31,9 +32,17 @@
 
   <meta name="google-adsense-account" content="ca-pub-6166203591007712">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#065f46">
+  <meta name="theme-color" content="#1a1522">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="js/tailwind-padelio-config.js"></script>
+  <link rel="stylesheet" href="/styles.css?v=1.6.6">
+  <script src="js/theme.js"></script>
   <script
     async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6166203591007712"
@@ -94,36 +103,36 @@
   </script>
 </head>
 
-<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+<body class="h-full padel-body overflow-auto pb-20">
   <div id="app" class="w-full min-h-full flex flex-col">
     <main class="page flex-1 flex flex-col p-6 max-w-4xl mx-auto w-full">
-      <a href="guides.html" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+      <a href="guides.html" class="padel-back">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         Back to Guides
       </a>
 
-      <article>
-        <h1 class="text-3xl font-bold mb-3">Mexicano-style modes and Balanced Americano in Padelio</h1>
-        <p class="text-slate-200 text-sm leading-relaxed mb-4">
+      <article class="padel-prose">
+        <h1 class="padel-page-title mb-3">Mexicano-style modes and Balanced Americano in Padelio</h1>
+        <p class="padel-lead mb-4">
           This guide explains how <strong>Mexicano</strong>, <strong>Fixed pairs Mexicano</strong>, <strong>Mix Mexicano</strong>,
           and <strong>Balanced Americano</strong> behave inside Padelio. It is written for organizers who already run social sessions
           and want predictable rules for benching, standings, and team construction—without re-reading scattered UI hints during the event.
         </p>
-        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
           For the classic rotating Americano format (without Mexicano benching), see
-          <a href="guide-americano-format.html" class="text-teal-300 hover:text-teal-100 underline underline-offset-2">Americano format explained</a>.
+          <a href="guide-americano-format.html" class="text-teal-300 hover:text-teal-800 dark:hover:text-teal-100 underline underline-offset-2">Americano format explained</a>.
           For score targets and leaderboard habits, see
-          <a href="guide-scoring-and-leaderboard.html" class="text-teal-300 hover:text-teal-100 underline underline-offset-2">Scoring and leaderboard strategy</a>.
+          <a href="guide-scoring-and-leaderboard.html" class="text-teal-300 hover:text-teal-800 dark:hover:text-teal-100 underline underline-offset-2">Scoring and leaderboard strategy</a>.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Mexicano (normal)</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Mexicano answers two practical questions: <em>who sits out</em> when you do not have enough courts for everyone,
           and <em>how pairings are chosen</em> once a leaderboard exists.
         </p>
-        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+        <ul class="list-disc pl-5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
           <li>
             <strong>Round 1</strong> uses the order players appear in your list. For each court, the first four names fill court 1,
             the next four court 2, and so on. Anyone beyond what your court count allows sits that round (bench).
@@ -140,23 +149,23 @@
         </ul>
 
         <h2 class="text-xl font-semibold mb-2">Fixed pairs Mexicano</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Here each <strong>team is two fixed players</strong> that stay together every round (you define pairs by list order:
           lines 1–2, 3–4, …). Opponents and benching follow Mexicano-style rules: which <em>teams</em> play is driven by standings and capacity,
           not by reshuffling partners inside a pair.
         </p>
-        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
           From round 2, active teams are typically ordered by <strong>team points</strong> (sum of both players’ points), then matched
           in pairs for each court block—for example 1st-ranked team versus 2nd, 3rd versus 4th, consistent with how your session is set up
           in the app. This keeps the social “same partner all day” promise while still letting standings influence matchups.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Mix Mexicano</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Mix Mexicano uses the <strong>same benching and leaderboard philosophy</strong> as Mexicano, but every team on court must be
           <strong>one male and one female</strong>. You need <strong>equal numbers of M and F</strong> in the roster to start.
         </p>
-        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
+        <ul class="list-disc pl-5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4 space-y-2">
           <li>
             Males and females are tracked as <strong>two separate orderings</strong>. Round 1 follows each gender’s list order for who is active.
           </li>
@@ -172,18 +181,18 @@
         </ul>
 
         <h2 class="text-xl font-semibold mb-2">Balanced Americano</h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-3">
           Balanced Americano is <strong>not</strong> a Mexicano variant: it follows normal Americano rotation, but each player has a
           <strong>power level</strong> (L1 lowest … L5 highest). Padelio uses levels to form more evenly matched teams <em>within</em> each round,
           while still rotating partnerships and opponents across rounds like a classic Americano.
         </p>
-        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+        <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
           Use it when your group has a wide skill spread and you want matches to feel competitive without manual rearranging.
           Set levels honestly during player entry; mid-event edits are possible but work best if everyone agrees on the same meaning of each level.
         </p>
 
         <h2 class="text-xl font-semibold mb-2">Organizer checklist for Mexicano-style days</h2>
-        <ul class="list-disc pl-5 text-slate-300 text-sm leading-relaxed mb-6 space-y-2">
+        <ul class="list-disc pl-5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6 space-y-2">
           <li>Confirm <strong>court count</strong> and realistic player count before round 1.</li>
           <li>For Mix Mexicano, verify <strong>M/F balance</strong> before you lock the list.</li>
           <li>For Fixed pairs, confirm <strong>pair order</strong> in the list (bulk paste is fine if order is correct).</li>
@@ -192,31 +201,31 @@
         </ul>
 
         <h2 class="text-xl font-semibold mb-2">Frequently asked questions</h2>
-        <div class="space-y-4 text-sm text-slate-300 leading-relaxed">
+        <div class="space-y-4 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           <div>
-            <h3 class="font-semibold text-slate-200 mb-1">What is Mexicano in Padelio?</h3>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-200 mb-1">What is Mexicano in Padelio?</h3>
             <p>
               Mexicano selects who sits out based on court capacity. Round 1 follows list order in blocks of four per court; later rounds order
               active players by standings and pair 1st+2nd vs 3rd+4th within each active block.
             </p>
           </div>
           <div>
-            <h3 class="font-semibold text-slate-200 mb-1">How does Mix Mexicano differ from Mexicano?</h3>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-200 mb-1">How does Mix Mexicano differ from Mexicano?</h3>
             <p>
               Same benching and leaderboard approach, but teams are always mixed gender (M+F), with separate male and female orderings
               and equal roster counts.
             </p>
           </div>
           <div>
-            <h3 class="font-semibold text-slate-200 mb-1">What is Balanced Americano?</h3>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-200 mb-1">What is Balanced Americano?</h3>
             <p>
               Normal Americano rotation with optional power levels so teams are more evenly matched each round.
             </p>
           </div>
           <div>
-            <h3 class="font-semibold text-slate-200 mb-1">Where can I read more about Mix Americano (not Mexicano)?</h3>
+            <h3 class="font-semibold text-slate-700 dark:text-slate-200 mb-1">Where can I read more about Mix Americano (not Mexicano)?</h3>
             <p>
-              See <a href="guide-mix-americano.html" class="text-teal-300 hover:text-teal-100 underline underline-offset-2">Mix Americano planning</a>
+              See <a href="guide-mix-americano.html" class="text-teal-300 hover:text-teal-800 dark:hover:text-teal-100 underline underline-offset-2">Mix Americano planning</a>
               for gender-balanced classic Americano sessions without Mexicano benching rules.
             </p>
           </div>
@@ -224,30 +233,30 @@
       </article>
     </main>
 
-    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+    <footer class="padel-footer mt-auto">
       <div class="max-w-3xl mx-auto">
         <div class="grid gap-6 md:grid-cols-3">
           <div>
-            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
+            <h3 class="text-slate-900 dark:text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               A lightweight helper for padel tournaments, player rotation,
               fast score entry, and live leaderboards for social and club sessions.
             </p>
           </div>
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Explore</h4>
             <div class="flex flex-col gap-2 text-sm">
-              <a href="index.html" class="text-left text-slate-400 hover:text-white transition-colors">Home</a>
-              <a href="about.html" class="text-left text-slate-400 hover:text-white transition-colors">About</a>
-              <a href="guides.html" class="text-left text-slate-400 hover:text-white transition-colors">Guides</a>
-              <a href="privacy-policy.html" class="text-left text-slate-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="terms.html" class="text-left text-slate-400 hover:text-white transition-colors">Terms of Service</a>
-              <a href="contact.html" class="text-left text-slate-400 hover:text-white transition-colors">Contact</a>
+              <a href="index.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Home</a>
+              <a href="about.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">About</a>
+              <a href="guides.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Guides</a>
+              <a href="privacy-policy.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</a>
+              <a href="terms.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</a>
+              <a href="contact.html" class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Contact</a>
             </div>
           </div>
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
-            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               <li>Club sessions</li>
               <li>Friendly Americano tournaments</li>
               <li>Weekend social padel</li>
@@ -264,7 +273,15 @@
   </div>
   <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   <script src="js/lz-string.min.js"></script>
+  <script src="js/version.js"></script>
   <script src="js/script.js"></script>
+
+  <button type="button" onclick="padelioToggleTheme()" class="padel-theme-fab" title="Toggle light / dark theme" aria-label="Toggle light and dark theme">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  </button>
+
 </body>
 
 </html>

@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 
 <head>
+  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='light')document.documentElement.classList.remove('dark');}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -20,7 +21,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#065f46">
+  <meta name="theme-color" content="#1a1522">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -58,12 +59,14 @@
     crossorigin
   >
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   >
 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="js/tailwind-padelio-config.js"></script>
+  <link rel="stylesheet" href="/styles.css?v=1.6.6">
+  <script src="js/theme.js"></script>
 
   <!-- SDK -->
   <script src="/_sdk/element_sdk.js"></script>
@@ -87,31 +90,31 @@
   </script>
 </head>
 
-<body class="h-full bg-slate-950 text-white overflow-auto pb-20">
+<body class="h-full padel-body overflow-auto pb-20">
   <div id="app" class="w-full min-h-full flex flex-col">
     <!-- About / FAQ -->
     <div id="page-about" class="page flex-1 flex flex-col p-6">
       <a href="index.html"
-        class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+        class="padel-back">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
         Back
       </a>
 
-      <h1 class="text-2xl font-bold mb-2">About Padelio</h1>
-      <p class="text-slate-200 text-sm mb-6 leading-relaxed">
+      <h1 class="padel-page-title">About Padelio</h1>
+      <p class="text-slate-700 dark:text-slate-200 text-sm mb-6 leading-relaxed">
         Padelio is a lightweight helper for padel sessions. It is designed to make tournament setup easier,
         scoring faster, and player rotation more practical for clubs, community games, and friendly events.
       </p>
 
       <div class="space-y-4">
-        <div class="bg-slate-800/40 border border-teal-500/30 rounded-2xl p-5 bg-gradient-to-br from-teal-500/5 to-pink-500/5" role="region" aria-labelledby="whats-new-about-standalone">
-          <h2 id="whats-new-about-standalone" class="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-200">
+        <div class="padel-card padel-card--accent" role="region" aria-labelledby="whats-new-about-standalone">
+          <h2 id="whats-new-about-standalone" class="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-700 dark:text-teal-200">
             <span aria-hidden="true">✨</span> What’s new
           </h2>
           <p id="about-app-version" class="text-slate-500 text-xs font-mono mb-3" aria-label="App version"></p>
-          <ul class="text-slate-300/95 text-sm space-y-2 list-disc list-outside pl-4 leading-relaxed">
+          <ul class="padel-prose">
             <li>
               <strong>Mix Mexicano</strong> — Mexicano-style benching and standings with mixed M+F teams (equal male/female count).
             </li>
@@ -119,7 +122,7 @@
               <strong>Balanced Americano</strong> — power levels (L1–L5) to balance teams while keeping classic Americano rotation.
             </li>
             <li>
-              <strong>Organizer guides</strong> — see the <a href="guides.html" class="text-teal-200 underline underline-offset-2 hover:text-white">guides index</a> (includes Mexicano &amp; advanced modes and other articles).
+              <strong>Organizer guides</strong> — see the <a href="guides.html" class="text-teal-700 dark:text-teal-200 underline underline-offset-2 hover:text-slate-900 dark:hover:text-white">guides index</a> (includes Mexicano &amp; advanced modes and other articles).
             </li>
             <li>
               <strong>Fixed pairs &amp; share</strong> — fixed teams for Americano or Mexicano-style flows; list order defines pairs; share links for spectators.
@@ -127,69 +130,69 @@
           </ul>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">What Padelio helps you do</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">What Padelio helps you do</h3>
+          <p class="padel-muted">
             Instead of manually organizing names, rounds, and score notes during a session, Padelio helps you create a tournament,
             choose the number of courts, set a target score, add players, and move through rounds with a live tournament structure.
             This keeps the session cleaner and easier to manage, especially when many players rotate in and out.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">Who this app is for</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">Who this app is for</h3>
+          <p class="padel-muted">
             Padelio is made for friendly organizers, club admins, community hosts, and padel groups who want a simple system
             for Americano-style sessions. It is especially useful when you want to keep everyone involved, avoid confusion,
             and maintain a fair flow across multiple rounds.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">What is Americano in padel?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">What is Americano in padel?</h3>
+          <p class="padel-muted">
             Americano is a social tournament format where players rotate partners and opponents across rounds.
             The goal is not only to win one match, but to collect as many points as possible over the whole session.
             This format is popular because it keeps the event active, social, and competitive at the same time.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">How do points work in this app?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">How do points work in this app?</h3>
+          <p class="padel-muted">
             You choose a target score for each match, such as 16, 21, 24, or 32 points. When one team score is entered,
             the opposing team score is automatically completed based on the selected target. This helps keep matches short,
             consistent, and easy to track.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">What is the difference between Normal and Mix Americano?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">What is the difference between Normal and Mix Americano?</h3>
+          <p class="padel-muted">
             Normal Americano can be used without gender balancing. Mix Americano is designed for sessions where male and female
             player counts should stay balanced. This helps organizers create a more structured mixed format when needed.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">Does it save my data?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">Does it save my data?</h3>
+          <p class="padel-muted">
             Yes. Your tournaments and scores are stored locally in your browser on your device. This means you can reopen the app
             later on the same browser and continue where you left off, as long as your browser storage has not been cleared.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">Can I use it on mobile?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">Can I use it on mobile?</h3>
+          <p class="padel-muted">
             Yes. Padelio is designed to work well on mobile so organizers can manage sessions courtside without needing a laptop.
             It can also be installed to the home screen as a Progressive Web App for quicker access.
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">How to install the app (PWA)</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">How to install the app (PWA)</h3>
+          <p class="padel-muted">
             <strong>iPhone / iPad (Safari):</strong><br>
             1) Open the website in <strong>Safari</strong>.<br>
             2) Tap the <strong>Share</strong> button.<br>
@@ -204,70 +207,70 @@
           </p>
         </div>
 
-        <div class="bg-slate-800/30 border border-slate-700 rounded-2xl p-5">
-          <h3 class="font-semibold text-lg mb-2">Is this official tournament software?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+        <div class="padel-card">
+          <h3 class="padel-section-title">Is this official tournament software?</h3>
+          <p class="padel-muted">
             No. Padelio is a community utility app built for friendly and social sessions. It is not an official federation system,
             not a certified competition platform, and not intended to replace formal event software used in professional tournaments.
           </p>
         </div>
       </div>
 
-      <div class="mt-6 bg-slate-800/20 border border-slate-700 rounded-2xl p-4">
-        <p class="text-xs text-slate-300 leading-relaxed">
+      <div class="mt-6 padel-card padel-card--flat">
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           Note: Padelio is designed to support community play and social tournament organization. For the best experience,
           use it on a modern browser and keep your device storage active if you want your tournament data to remain available.
         </p>
       </div>
     </div>
 
-    <footer class="border-t border-slate-800 bg-slate-950/95 px-6 py-8 mt-auto">
+    <footer class="padel-footer mt-auto">
       <div class="max-w-3xl mx-auto">
         <div class="grid gap-6 md:grid-cols-3">
           <div>
-            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
+            <h3 class="text-slate-900 dark:text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               A lightweight helper for padel tournaments, player rotation,
               fast score entry, and live leaderboards for social and club sessions.
             </p>
           </div>
 
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Explore</h4>
             <div class="flex flex-col gap-2 text-sm">
               <a
                 href="index.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Home
               </a>
               <a
                 href="about.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 About
               </a>
               <a
                 href="guides.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Guides
               </a>
               <a
                 href="privacy-policy.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Privacy Policy
               </a>
               <a
                 href="terms.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Terms of Service
               </a>
               <a
                 href="contact.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Contact
               </a>
@@ -275,8 +278,8 @@
           </div>
 
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
-            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               <li>Club sessions</li>
               <li>Friendly Americano tournaments</li>
               <li>Weekend social padel</li>
@@ -299,7 +302,15 @@
   </div>
   <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   <script src="js/lz-string.min.js"></script>
+  <script src="js/version.js"></script>
   <script src="js/script.js"></script>
+
+  <button type="button" onclick="padelioToggleTheme()" class="padel-theme-fab" title="Toggle light / dark theme" aria-label="Toggle light and dark theme">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  </button>
+
 </body>
 
 </html>

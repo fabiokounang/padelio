@@ -23,7 +23,7 @@ const allowConsoleError = (text) => {
     /n6wxm\.com/i.test(t) ||
     /adsbygoogle/i.test(t) ||
     /googletagmanager/i.test(t) ||
-    /net::ERR_/i.test(t) ||
+    /Failed to load resource.*403/i.test(t) ||
     /ResizeObserver loop/i.test(t)
   );
 };
@@ -57,8 +57,8 @@ async function main() {
   await page.waitForTimeout(2500);
 
   const versionText = await page.locator('#app-version').textContent();
-  if (!versionText || !/Version\s+\d/i.test(versionText)) {
-    throw new Error(`Expected #app-version label, got: ${versionText}`);
+  if (!versionText || !/Version\s+1\.6\.6/i.test(versionText.trim())) {
+    throw new Error(`Expected #app-version "Version 1.6.6", got: ${versionText}`);
   }
 
   const lzOk = await page.evaluate(() => typeof window.LZString !== 'undefined');
@@ -73,12 +73,12 @@ async function main() {
   await page.waitForTimeout(2000);
 
   await page.getByRole('button', { name: /Start New Tournament/i }).click();
-  await page.getByRole('button', { name: /Normal Americano/i }).click();
+  await page.locator('button[onclick="selectMode(\'normal\')"]').click();
   await page.fill('#tournament-title', 'E2E Smoke');
-  await page.getByRole('button', { name: /^Continue$/i }).click();
+  await page.locator('#page-new-title').getByRole('button', { name: /^Continue$/i }).click();
   await page.locator('.court-btn[data-courts="1"]').click();
   await page.locator('#btn-to-points').click();
-  await page.locator('.points-btn[data-points="21"]').click();
+  await page.locator('#new-points-standard .points-btn[data-points="21"]').click();
   await page.locator('#btn-to-players').click();
 
   const names = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
@@ -90,16 +90,20 @@ async function main() {
   await page.locator('#btn-start').click();
   await page.waitForTimeout(3500);
 
+  const roundsVisible = await page.locator('#page-rounds').evaluate((el) => !el.classList.contains('hidden'));
+  if (!roundsVisible) throw new Error('Expected rounds page right after creating tournament');
+
+  const roundInd = await page.locator('#round-indicator').textContent();
+  if (!/Round\s+1/i.test(roundInd || '')) {
+    throw new Error(`Expected Round 1 indicator, got: ${roundInd}`);
+  }
+
+  await page.evaluate(() => window.navigateTo('home'));
+  await page.waitForTimeout(800);
   const listText = await page.locator('#tournament-list').textContent();
   if (!listText || !/E2E Smoke/i.test(listText)) {
     throw new Error('Tournament list should show "E2E Smoke" after start');
   }
-
-  // --- Open tournament (first button in list) ---
-  await page.locator('#tournament-list button').first().click();
-  await page.waitForTimeout(2000);
-  const roundsVisible = await page.locator('#page-rounds').evaluate((el) => !el.classList.contains('hidden'));
-  if (!roundsVisible) throw new Error('Expected rounds page visible after openTournament');
 
   // --- Share viewer via LZ hash (minimal valid payload) ---
   const minimal = {
@@ -144,7 +148,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('SMOKE OK — home, wizard, open tournament, LZ share viewer');
+  console.log('SMOKE OK — home, wizard, round 1 after create, LZ share viewer');
 }
 
 main().catch((e) => {

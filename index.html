@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
 
 <head>
+  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='light')document.documentElement.classList.remove('dark');}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -63,58 +64,9 @@
   >
 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Nunito', 'Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          },
-          borderRadius: {
-            '4xl': '2rem',
-          },
-          boxShadow: {
-            cozy: '0 12px 40px -12px rgba(244, 114, 182, 0.18), 0 8px 28px -8px rgba(45, 212, 191, 0.1)',
-            'cozy-sm': '0 4px 24px -6px rgba(0, 0, 0, 0.35)',
-          },
-          colors: {
-            slate: {
-              50: '#faf7f4',
-              100: '#f2e9e4',
-              200: '#e5d6cf',
-              300: '#d1beb8',
-              400: '#ad9ba3',
-              500: '#8f7a87',
-              600: '#6f5d6c',
-              700: '#524552',
-              800: '#3a3040',
-              900: '#282030',
-              950: '#1a1522',
-            },
-            emerald: {
-              50: '#edfcf7',
-              100: '#d2f9ed',
-              200: '#a8f0dc',
-              300: '#6ee2c7',
-              400: '#3ecdae',
-              500: '#26b396',
-              600: '#1a917a',
-              700: '#187463',
-              800: '#175c51',
-              900: '#164c44',
-            },
-            lime: {
-              200: '#ecfccb',
-              300: '#d9f99d',
-              400: '#fce7a8',
-              500: '#fcd975',
-            },
-          },
-        },
-      },
-    };
-  </script>
-  <link rel="stylesheet" href="styles.css">
+  <script src="js/tailwind-padelio-config.js"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css?v=1.6.6-lb">
 
   <!-- SDK -->
   <script src="/_sdk/element_sdk.js"></script>
@@ -148,13 +100,13 @@
   </script>
 </head>
 
-<body class="h-full bg-slate-950 text-white overflow-auto pb-20 antialiased selection:bg-pink-400/25 selection:text-white">
+<body class="h-full padel-body overflow-auto pb-20 antialiased selection:bg-teal-500/20 selection:text-slate-900 dark:selection:text-white">
   <div id="app" class="w-full min-h-full min-h-0 flex flex-col">
     <!-- Home Page -->
-    <div id="page-home" class="page flex-1 flex flex-col p-6">
-      <div class="text-center py-8">
+    <div id="page-home" class="page flex-1 flex flex-col p-6 max-w-lg mx-auto w-full">
+      <div class="text-center py-8 padel-shell">
         <div class="flex flex-col items-center">
-          <div class="inline-flex items-center justify-center w-[4.5rem] h-[4.5rem] rounded-3xl mb-4 text-pink-100 hero-icon">
+          <div class="padel-hero-icon">
             <svg class="w-9 h-9" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"></circle>
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
@@ -162,48 +114,32 @@
             </svg>
           </div>
 
-          <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold text-pink-50 mb-4 border border-pink-300/25 bg-gradient-to-r from-pink-500/20 via-violet-500/15 to-teal-400/15 backdrop-blur-sm shadow-cozy-sm">
-            <span class="w-2 h-2 rounded-full bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.7)]"></span>
-            Friendly Padel Scoring Helper
-          </div>
+          <p class="padel-badge">Friendly Padel Scoring Helper</p>
         </div>
 
-        <h1 id="main-title" class="text-4xl font-extrabold mb-3 tracking-tight hero-title">
-          Padelio
-        </h1>
+        <h1 id="main-title" class="padel-hero-title mb-3">Padelio</h1>
 
-        <p class="text-slate-200/95 text-sm leading-relaxed max-w-md mx-auto mb-3 font-medium">
+        <p class="padel-lead max-w-md mx-auto mb-2">
           Create padel tournaments, rotate players fairly, track scores quickly,
           and keep every session organized from start to finish.
         </p>
 
-        <p class="text-slate-400 text-xs max-w-sm mx-auto mb-4 leading-relaxed">
+        <p class="padel-muted max-w-sm mx-auto mb-4">
           Built for clubs, friendly games, weekend sessions, and community events.
         </p>
 
-        <details
-          class="group max-w-md mx-auto mb-5 rounded-2xl border border-teal-400/30 bg-gradient-to-br from-teal-500/[0.12] via-slate-900/30 to-pink-500/10 text-left shadow-cozy-sm backdrop-blur-sm open:border-teal-400/40"
-          aria-labelledby="whats-new-heading"
-        >
-          <summary
-            class="list-none flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold text-teal-100 hover:bg-white/[0.04] transition-colors [&::-webkit-details-marker]:hidden"
-          >
-            <span class="flex items-center gap-2 min-w-0 text-left" id="whats-new-heading">
-              <span class="text-base shrink-0" aria-hidden="true">✨</span>
+        <details class="padel-details group" aria-labelledby="whats-new-heading">
+          <summary>
+            <span class="flex items-center gap-2 min-w-0" id="whats-new-heading">
+              <span aria-hidden="true">✨</span>
               <span id="whats-new-version">What’s new</span>
             </span>
-            <svg
-              class="h-5 w-5 shrink-0 text-teal-200/80 transition-transform duration-200 group-open:rotate-180"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
+            <svg class="h-5 w-5 shrink-0 transition-transform duration-200 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </summary>
-          <div class="border-t border-white/5 px-4 pb-3.5">
-            <ul class="text-xs text-slate-200/95 space-y-1.5 list-disc list-outside pl-4 leading-relaxed pt-3">
+          <div class="padel-details__body">
+            <ul>
               <li>
                 <strong>Mix Mexicano</strong> — Mexicano benching and standings, with every team one male and one female (equal M/F roster).
               </li>
@@ -223,83 +159,31 @@
           </div>
         </details>
 
-        <p id="app-version" class="text-slate-500 text-xs text-center mb-2 font-mono tabular-nums" aria-label="App version">
+        <p id="app-version" class="padel-muted text-center mb-2 font-mono tabular-nums" aria-label="App version">
           
         </p>
         <p class="text-center mb-5 max-w-sm mx-auto">
           <button
             type="button"
             onclick="showUpdateReminderModal()"
-            class="text-teal-400/95 hover:text-teal-200 text-xs font-medium underline underline-offset-2 decoration-teal-500/45 hover:decoration-teal-300"
+            class="padel-link text-xs"
           >
             Tip: clear cache untuk versi terbaru
           </button>
         </p>
 
-        <div class="flex items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-400 flex-wrap mb-1">
-          <a
-            href="about.html"
-            class="rounded-full px-2 py-0.5 hover:text-pink-100 hover:bg-white/5 transition-colors"
-            data-nav="about"
-          >
-            About
-          </a>
-          <a
-            href="guides.html"
-            class="rounded-full px-2 py-0.5 hover:text-pink-100 hover:bg-white/5 transition-colors"
-            data-nav="guides"
-          >
-            Guides
-          </a>
-          <a
-            href="privacy-policy.html"
-            class="rounded-full px-2 py-0.5 hover:text-pink-100 hover:bg-white/5 transition-colors"
-            data-nav="privacy"
-          >
-            Privacy Policy
-          </a>
-          <a
-            href="terms.html"
-            class="rounded-full px-2 py-0.5 hover:text-pink-100 hover:bg-white/5 transition-colors"
-            data-nav="terms"
-          >
-            Terms of Service
-          </a>
-          <a
-            href="contact.html"
-            class="rounded-full px-2 py-0.5 hover:text-pink-100 hover:bg-white/5 transition-colors"
-            data-nav="contact"
-          >
-            Contact
-          </a>
-          <button
-            type="button"
-            onclick="installApp()"
-            class="rounded-full px-2.5 py-1 text-emerald-100 bg-emerald-500/20 border border-emerald-300/35 hover:bg-emerald-400/30 hover:text-white transition-colors shadow-cozy-sm"
-          >
-            Install App
-          </button>
-          <button
-            type="button"
-            onclick="clearAppCacheOnly()"
-            class="rounded-full px-2.5 py-1 text-amber-100 bg-amber-500/20 border border-amber-300/35 hover:bg-amber-400/30 hover:text-white transition-colors shadow-cozy-sm"
-          >
-            Clear Cache
-          </button>
-          <button
-            type="button"
-            onclick="clearAllTournamentData()"
-            class="rounded-full px-2.5 py-1 text-red-100 bg-red-500/20 border border-red-300/35 hover:bg-red-400/30 hover:text-white transition-colors shadow-cozy-sm"
-          >
-            Clear Data
-          </button>
-        </div>
+        <nav class="padel-nav-row" aria-label="Site links">
+          <a href="about.html" class="padel-btn-pill" data-nav="about">About</a>
+          <a href="guides.html" class="padel-btn-pill" data-nav="guides">Guides</a>
+          <a href="privacy-policy.html" class="padel-btn-pill" data-nav="privacy">Privacy</a>
+          <a href="terms.html" class="padel-btn-pill" data-nav="terms">Terms</a>
+          <a href="contact.html" class="padel-btn-pill" data-nav="contact">Contact</a>
+          <button type="button" onclick="installApp()" class="padel-btn-pill padel-btn-pill--success">Install App</button>
+          <button type="button" onclick="clearAppCacheOnly()" class="padel-btn-pill padel-btn-pill--warn">Clear Cache</button>
+          <button type="button" onclick="clearAllTournamentData()" class="padel-btn-pill padel-btn-pill--danger">Clear Data</button>
+        </nav>
 
-        <button
-          type="button"
-          onclick="navigateTo('new-mode')"
-          class="w-full font-bold py-4 px-6 rounded-3xl transition-all duration-300 flex items-center justify-center gap-3 mt-6 mb-3 shadow-cozy text-slate-900 bg-gradient-to-r from-amber-100 via-pink-100 to-teal-100 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 hover:scale-[1.02] active:scale-[0.98] border border-white/20"
-        >
+        <button type="button" onclick="navigateTo('new-mode')" class="padel-btn-primary mt-6 mb-3">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
           </svg>
@@ -307,98 +191,90 @@
         </button>
       </div>
 
-      <a
-        href="about.html"
-        class="w-full border border-white/10 bg-white/5 hover:bg-white/10 backdrop-blur-sm text-slate-100 font-semibold py-3.5 px-6 rounded-3xl transition-all duration-200 flex items-center justify-center gap-2 mb-6 shadow-cozy-sm"
-      >
+      <a href="about.html" class="padel-btn-secondary mb-6">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6h.01M11 10h1v8h-1"></path>
         </svg>
         Learn how Padelio works
       </a>
 
-      <div class="grid grid-cols-2 gap-3 mb-6">
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-4 text-center shadow-cozy-sm backdrop-blur-sm">
-          <div class="text-lg font-extrabold text-pink-100">Fast</div>
-          <p class="text-slate-400 text-xs mt-1.5 leading-snug">Set up rounds and scores in minutes</p>
+      <div class="grid grid-cols-2 gap-3 mb-6 padel-shell">
+        <div class="padel-stat-tile">
+          <strong>Fast</strong>
+          <span>Set up rounds and scores in minutes</span>
         </div>
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-4 text-center shadow-cozy-sm backdrop-blur-sm">
-          <div class="text-lg font-extrabold text-teal-100">Simple</div>
-          <p class="text-slate-400 text-xs mt-1.5 leading-snug">Made for friendly clubs and social sessions</p>
+        <div class="padel-stat-tile">
+          <strong>Simple</strong>
+          <span>Made for friendly clubs and social sessions</span>
         </div>
       </div>
 
-      <div class="mb-6 bg-gradient-to-br from-violet-500/10 via-pink-500/10 to-teal-500/10 border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
-        <h2 class="text-lg font-extrabold mb-2 text-slate-50">Free organizer guides</h2>
-        <p class="text-slate-300/95 text-sm leading-relaxed mb-3">
+      <div class="padel-card mb-6 padel-shell">
+        <h2 class="padel-section-title">Free organizer guides</h2>
+        <p class="padel-muted mb-3">
           Read practical guides for Americano format setup, score handling, mix planning,
           Mexicano-style modes (including Mix Mexicano and Balanced Americano), and common mistakes that can reduce session quality.
           Start from the index—each topic has its own page, including Mexicano &amp; advanced modes.
         </p>
-        <a
-          href="guides.html"
-          onclick="navigateTo('guides'); return false;"
-          class="inline-flex items-center gap-2 text-sm font-semibold text-pink-100 hover:text-white transition-colors"
-        >
-          Open all guides
-          <span aria-hidden="true">→</span>
+        <a href="guides.html" onclick="navigateTo('guides'); return false;" class="padel-link inline-flex items-center gap-2">
+          Open all guides <span aria-hidden="true">→</span>
         </a>
       </div>
 
       <div class="flex-1">
         <div class="flex items-center justify-between mb-3 gap-3">
-          <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider">
+          <h2 class="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
             Saved Tournaments
           </h2>
-          <span class="text-[11px] text-slate-500 font-medium rounded-full bg-white/5 px-2 py-0.5 border border-white/5">
+          <span class="text-[11px] text-slate-500 font-medium rounded-full bg-slate-900/8 dark:bg-white/5 px-2 py-0.5 border border-slate-200/60 dark:border-white/5">
             Stored in your browser
           </span>
         </div>
 
         <div id="tournament-list" class="space-y-3">
-          <p class="text-slate-400 text-center py-8 text-sm">No tournaments yet</p>
+          <p class="text-slate-600 dark:text-slate-400 text-center py-8 text-sm">No tournaments yet</p>
         </div>
 
-        <div class="mt-8 bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="mt-8 padel-card">
           <h3 class="text-lg font-extrabold mb-2">What is Padelio?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is a lightweight tournament helper built for Americano padel sessions.
             It helps organizers create matches faster, rotate players more fairly, track scores clearly,
             and keep the session flowing without manual spreadsheets or messy note-taking.
           </p>
 
           <div class="mt-4 grid gap-3">
-            <div class="bg-slate-950/40 border border-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div class="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 backdrop-blur-sm">
               <div class="font-semibold">How scoring works</div>
-              <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
+              <p class="text-slate-600 dark:text-slate-300/80 text-sm leading-relaxed mt-1">
                 Each match uses a selected target score such as 16, 21, 24, or 32. When one team score is entered,
                 the other team score is completed automatically based on the target. This makes score input faster
                 and keeps every match format consistent.
               </p>
             </div>
 
-            <div class="bg-slate-950/40 border border-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div class="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 backdrop-blur-sm">
               <div class="font-semibold">Who this is for</div>
-              <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
+              <p class="text-slate-600 dark:text-slate-300/80 text-sm leading-relaxed mt-1">
                 Padelio is useful for club organizers, community hosts, social events, weekend padel sessions,
                 and friendly tournaments where players rotate often and want an easy live leaderboard.
               </p>
             </div>
 
-            <div class="bg-slate-950/40 border border-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div class="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 backdrop-blur-sm">
               <div class="font-semibold">Why people use it</div>
-              <p class="text-slate-300/80 text-sm leading-relaxed mt-1">
+              <p class="text-slate-600 dark:text-slate-300/80 text-sm leading-relaxed mt-1">
                 Instead of managing paper notes or spreadsheets during play, organizers can keep tournament flow,
                 pairings, rounds, and points in one simple app that is easy to open on mobile.
               </p>
             </div>
           </div>
 
-          <p class="text-slate-300 text-xs mt-4 leading-relaxed">
-            Tip: On the home screen, use <strong class="text-slate-200 font-semibold">Install app</strong> for one-tap access at the club, or read
+          <p class="text-slate-600 dark:text-slate-300 text-xs mt-4 leading-relaxed">
+            Tip: On the home screen, use <strong class="text-slate-700 dark:text-slate-200 font-semibold">Install app</strong> for one-tap access at the club, or read
             <a
               href="about.html"
-              class="text-teal-200 underline decoration-teal-400/50 hover:text-pink-100 transition-colors"
+              class="text-teal-800 underline decoration-teal-600/55 hover:text-teal-950 dark:text-teal-200 dark:decoration-teal-400/50 hover:text-pink-900 dark:hover:text-pink-100 transition-colors"
               onclick="navigateTo('about'); return false;"
             >
               the full installation guide
@@ -408,27 +284,27 @@
         </div>
 
         <div class="mt-8 space-y-4">
-          <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+          <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
             <h3 class="text-lg font-extrabold mb-2">Why Americano works well for social padel</h3>
-            <p class="text-slate-300/90 text-sm leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
               Americano is popular because it keeps players involved throughout the session. Instead of staying with one partner
               for the whole event, players rotate across rounds, meet different opponents, and keep collecting points over time.
               This makes the format feel more social, more dynamic, and often more enjoyable for club gatherings or weekend games.
             </p>
           </div>
 
-          <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+          <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
             <h3 class="text-lg font-extrabold mb-2">Why organizers use Padelio</h3>
-            <p class="text-slate-300/90 text-sm leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
               Running a padel session manually can become confusing when courts, rounds, and scores need to be updated quickly.
               Organizers often rely on paper notes, chat messages, or spreadsheets, which can slow the event down. Padelio is meant
               to simplify that process so the session can stay focused on play instead of administration.
             </p>
           </div>
 
-          <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+          <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
             <h3 class="text-lg font-extrabold mb-2">Best for clubs, communities, and friendly events</h3>
-            <p class="text-slate-300/90 text-sm leading-relaxed">
+            <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
               Padelio is best suited for community padel groups, club sessions, social mixers, and friendly events where the goal
               is to keep everyone playing and make score tracking easier. It is especially useful for sessions that want a live
               leaderboard and a clearer round flow without using complex tournament software.
@@ -441,7 +317,7 @@
     <!-- About / FAQ -->
     <div id="page-about" class="page hidden flex-1 flex flex-col p-6">
       <button onclick="navigateTo('home')"
-        class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+        class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -449,18 +325,18 @@
       </button>
 
       <h2 class="text-2xl font-bold mb-2">About Padelio</h2>
-      <p class="text-slate-200 text-sm mb-6 leading-relaxed">
+      <p class="text-slate-700 dark:text-slate-200 text-sm mb-6 leading-relaxed">
         Padelio is a lightweight helper for padel sessions. It is designed to make tournament setup easier,
         scoring faster, and player rotation more practical for clubs, community games, and friendly events.
       </p>
 
       <div class="space-y-4">
-        <div class="bg-gradient-to-br from-teal-500/[0.1] via-white/[0.04] to-pink-500/[0.08] border border-teal-400/25 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm" role="region" aria-labelledby="whats-new-about-heading">
-          <h3 id="whats-new-about-heading" class="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-100">
+        <div class="bg-gradient-to-br from-teal-500/[0.1] via-white/[0.04] to-pink-500/[0.08] border border-teal-300/70 dark:border-teal-400/25 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm" role="region" aria-labelledby="whats-new-about-heading">
+          <h3 id="whats-new-about-heading" class="font-semibold text-lg mb-2 flex items-center gap-2 text-teal-900 dark:text-teal-100">
             <span aria-hidden="true">✨</span> What’s new
           </h3>
-          <p id="spa-about-version" class="text-slate-400/90 text-xs font-mono mb-3" aria-label="App version"></p>
-          <ul class="text-slate-300/95 text-sm space-y-2 list-disc list-outside pl-4 leading-relaxed">
+          <p id="spa-about-version" class="text-slate-600 dark:text-slate-400/90 text-xs font-mono mb-3" aria-label="App version"></p>
+          <ul class="text-slate-600/95 dark:text-slate-300/95 text-sm space-y-2 list-disc list-outside pl-4 leading-relaxed">
             <li>
               <strong>Fixed pairs mode</strong> — the same two players stay on one team; opponents rotate across rounds with fair benching
               and varied matchups, similar in spirit to classic Americano fairness.
@@ -475,69 +351,69 @@
           </ul>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">What Padelio helps you do</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Instead of manually organizing names, rounds, and score notes during a session, Padelio helps you create a tournament,
             choose the number of courts, set a target score, add players, and move through rounds with a live tournament structure.
             This keeps the session cleaner and easier to manage, especially when many players rotate in and out.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">Who this app is for</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is made for friendly organizers, club admins, community hosts, and padel groups who want a simple system
             for Americano-style sessions. It is especially useful when you want to keep everyone involved, avoid confusion,
             and maintain a fair flow across multiple rounds.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">What is Americano in padel?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Americano is a social tournament format where players rotate partners and opponents across rounds.
             The goal is not only to win one match, but to collect as many points as possible over the whole session.
             This format is popular because it keeps the event active, social, and competitive at the same time.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">How do points work in this app?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             You choose a target score for each match, such as 16, 21, 24, or 32 points. When one team score is entered,
             the opposing team score is automatically completed based on the selected target. This helps keep matches short,
             consistent, and easy to track.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">What is the difference between Normal and Mix Americano?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Normal Americano can be used without gender balancing. Mix Americano is designed for sessions where male and female
             player counts should stay balanced. This helps organizers create a more structured mixed format when needed.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">Does it save my data?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Yes. Your tournaments and scores are stored locally in your browser on your device. This means you can reopen the app
             later on the same browser and continue where you left off, as long as your browser storage has not been cleared.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">Can I use it on mobile?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Yes. Padelio is designed to work well on mobile so organizers can manage sessions courtside without needing a laptop.
             It can also be installed to the home screen as a Progressive Web App for quicker access.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">How to install the app (PWA)</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             <strong>iPhone / iPad (Safari):</strong><br>
             1) Open the website in <strong>Safari</strong>.<br>
             2) Tap the <strong>Share</strong> button.<br>
@@ -552,17 +428,17 @@
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">Is this official tournament software?</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             No. Padelio is a community utility app built for friendly and social sessions. It is not an official federation system,
             not a certified competition platform, and not intended to replace formal event software used in professional tournaments.
           </p>
         </div>
       </div>
 
-      <div class="mt-6 bg-slate-800/20 border border-slate-700 rounded-2xl p-4">
-        <p class="text-xs text-slate-300 leading-relaxed">
+      <div class="mt-6 bg-slate-200 dark:bg-slate-800/20 border border-slate-700 rounded-2xl p-4">
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
           Note: Padelio is designed to support community play and social tournament organization. For the best experience,
           use it on a modern browser and keep your device storage active if you want your tournament data to remain available.
         </p>
@@ -571,7 +447,7 @@
 
     <!-- Privacy Policy -->
     <div id="page-privacy" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -579,109 +455,109 @@
       </button>
 
       <h2 class="text-2xl font-bold mb-2">Privacy Policy</h2>
-      <p class="text-slate-200 text-sm mb-6">Last updated: March 2026</p>
+      <p class="text-slate-700 dark:text-slate-200 text-sm mb-6">Last updated: March 2026</p>
 
       <div class="space-y-4">
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">1) Introduction</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is a lightweight community utility app created to help users organize friendly Americano padel sessions.
             This Privacy Policy explains what information is stored, how the app works on your device, and how third-party
             services such as advertising providers may interact with the website.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">2) Information stored in the app</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio does not require account registration and does not ask users to create a personal profile in order to use
             the core tournament features. Tournament information such as tournament title, player names, scores, rounds,
             and leaderboard progress may be stored locally in your browser on your own device.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">3) Local storage</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Tournament data is stored in your browser storage so you can reopen the app later without losing progress on the
             same device and browser. This local data is not intended as cloud backup. If you clear browser data, reset your
             device, uninstall the app shortcut, or use a different browser, your stored tournaments may no longer be available.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">4) Personal information</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is designed to work without collecting direct personal identity information such as full legal name,
             password, billing information, or account credentials. Player names entered into tournaments are created by the user
             for session organization purposes and remain on the local device unless the user chooses to share them separately.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">5) Advertising and third-party services</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio may use third-party services such as hosting providers, content delivery services, analytics tools,
             or Google AdSense to support the operation and maintenance of the website. These third parties may collect
             standard technical information such as browser type, device type, approximate location, referral data,
             cookies, or anonymous usage signals according to their own policies.
           </p>
-          <p class="text-slate-200 text-xs mt-3 leading-relaxed">
+          <p class="text-slate-700 dark:text-slate-200 text-xs mt-3 leading-relaxed">
             When advertising is shown, Google and its partners may use cookies or similar technologies to deliver and measure ads.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">6) How data is used</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Local tournament data is used only to provide the app experience on your device, including saving progress,
             showing round information, calculating scores, and displaying the leaderboard. Padelio does not sell user-entered
             tournament data and does not provide a user account system for storing private information on remote servers.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">7) Data security</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Because tournament data is primarily stored locally in your browser, you are responsible for managing access
             to your device and browser. No method of digital storage is perfectly secure, but Padelio is designed to minimize
             unnecessary collection of personal data by keeping the app simple and local-first where possible.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">8) Children’s privacy</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is a general utility website and is not specifically directed to children. Users should avoid entering
             sensitive personal information into tournament fields or other parts of the app.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">9) Changes to this policy</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             This Privacy Policy may be updated from time to time to reflect product changes, legal updates, or service changes.
             When updates are made, the “Last updated” date on this page will also be revised.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">10) Contact</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             If you have questions about this Privacy Policy or want to report an issue related to the app, please contact the
-            developer through the <a href="contact.html" class="underline text-slate-200">Padelio Contact page</a>.
+            developer through the <a href="contact.html" class="underline text-slate-700 dark:text-slate-200">Padelio Contact page</a>.
           </p>
         </div>
       </div>
 
-      <div class="text-xs text-slate-300 pt-4 leading-relaxed">
+      <div class="text-xs text-slate-600 dark:text-slate-300 pt-4 leading-relaxed">
         Reminder: If you switch devices or browsers, tournament data stored locally on the previous device may not transfer automatically.
       </div>
     </div>
 
     <!-- Terms of Service -->
     <div id="page-terms" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white mb-6 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
@@ -689,98 +565,98 @@
       </button>
 
       <h2 class="text-2xl font-bold mb-2">Terms of Service</h2>
-      <p class="text-slate-200 text-sm mb-6">Last updated: March 2026</p>
+      <p class="text-slate-700 dark:text-slate-200 text-sm mb-6">Last updated: March 2026</p>
 
       <div class="space-y-4">
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">1) Acceptance of terms</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             By accessing or using Padelio, you agree to these Terms of Service. If you do not agree with these terms,
             you should discontinue using the website and the associated application features.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">2) Purpose of the application</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is a lightweight community utility designed to assist players and organizers in managing
             Americano-style padel sessions. The app helps create tournaments, rotate players, record match scores,
             and display leaderboard results for social and club-based play.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">3) Community and recreational use</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             The application is intended for community and recreational events. It is not official tournament software
             and is not affiliated with any sports federation, professional tournament system, or governing body.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">4) User responsibility</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Users are responsible for the accuracy of tournament data entered into the system, including player names,
             match scores, and tournament settings. Organizers should ensure fair play and appropriate conduct during
             sessions managed using the app.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">5) Data storage</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Tournament information is stored locally in the user’s browser storage. Padelio does not provide cloud
             backup or account-based synchronization. Users should be aware that clearing browser data or switching
             devices may result in the loss of locally stored tournament information.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">6) Advertising</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             The website may display advertising to support development and hosting costs. Ads may be provided by
             third-party networks such as Google AdSense. Users are not required to interact with advertisements
             while using the app.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">7) Limitation of liability</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Padelio is provided “as is” without warranties of any kind. The developers are not responsible for
             tournament disputes, incorrect scores, data loss, or interruptions caused by browser issues,
             device problems, or network connectivity.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">8) Modifications</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             The application, features, or these Terms of Service may be updated at any time. Continued use of
             the website after updates are published indicates acceptance of the revised terms.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">9) Service availability</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             While the goal is to keep Padelio accessible and functional, availability of the website may vary
             depending on hosting infrastructure, browser compatibility, and maintenance updates.
           </p>
         </div>
 
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-5 shadow-cozy-sm backdrop-blur-sm">
           <h3 class="font-semibold text-lg mb-2">10) Contact</h3>
-          <p class="text-slate-300/90 text-sm leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-300/90 text-sm leading-relaxed">
             Questions regarding these Terms of Service may be directed to the Padelio developer through
-            the <a href="contact.html" class="underline text-slate-200">Padelio Contact page</a>.
+            the <a href="contact.html" class="underline text-slate-700 dark:text-slate-200">Padelio Contact page</a>.
           </p>
         </div>
 
       </div>
 
-      <div class="text-xs text-slate-400 mt-6 leading-relaxed">
+      <div class="text-xs text-slate-600 dark:text-slate-400 mt-6 leading-relaxed">
         By continuing to use Padelio, you acknowledge that you understand these terms and agree to use the app responsibly.
       </div>
     </div>
@@ -788,49 +664,49 @@
 
     <!-- New Tournament - Mode -->
     <div id="page-new-mode" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-pink-900 dark:hover:text-pink-100 mb-6 transition-colors font-medium">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back
       </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Tournament Mode</h2>
-        <p class="text-slate-300 text-sm mb-6">Americano, balanced levels, Mix, Mexicano, Mix Mexicano, or fixed pairs</p>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-6">Americano, balanced levels, Mix, Mexicano, Mix Mexicano, or fixed pairs</p>
 
         <div class="space-y-3">
-          <button onclick="selectMode('normal')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('normal')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Normal Americano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">No gender balancing; classic fair rotation</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">No gender balancing; classic fair rotation</div>
           </button>
 
-          <button onclick="selectMode('balanced')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('balanced')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Balanced Americano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same rotation as normal, plus power levels 1–5 to keep matches even</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">Same rotation as normal, plus power levels 1–5 to keep matches even</div>
           </button>
 
-          <button onclick="selectMode('mix')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('mix')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Mix Americano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Male & Female must be balanced</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">Male & Female must be balanced</div>
           </button>
 
-          <button onclick="selectMode('mexicano')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('mexicano')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Mexicano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Standings set the next round’s pairings</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">Standings set the next round’s pairings</div>
           </button>
 
-          <button onclick="selectMode('mixmex')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('mixmex')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Mix Mexicano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same as Mexicano, but every team is one male and one female (equal M/F required)</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">Same as Mexicano, but every team is one male and one female (equal M/F required)</div>
           </button>
 
-          <button onclick="selectMode('fixed')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('fixed')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Fixed pairs Americano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same two players always one team; opponent mix like normal Americano</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">Same two players always one team; opponent mix like normal Americano</div>
           </button>
 
-          <button onclick="selectMode('fixedmex')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
+          <button onclick="selectMode('fixedmex')" class="w-full bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-100 font-bold py-4 px-6 rounded-3xl transition-all shadow-cozy-sm backdrop-blur-sm">
             Fixed pairs Mexicano
-            <div class="text-slate-300/90 text-xs mt-1 font-medium">Same teams; benching like Mexicano; from round 2, matchups by team points (1v2, 3v4…)</div>
+            <div class="text-slate-600 dark:text-slate-300/90 text-xs mt-1 font-medium">Same teams; benching like Mexicano; from round 2, matchups by team points (1v2, 3v4…)</div>
           </button>
         </div>
       </div>
@@ -838,84 +714,122 @@
   
     <!-- New Tournament - Title -->
     <div id="page-new-title" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
+      <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-pink-900 dark:hover:text-pink-100 mb-6 transition-colors font-medium">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Tournament Name</h2>
-        <p class="text-slate-300 text-sm mb-6">Give your tournament a name</p>
-        <input type="text" id="tournament-title" placeholder="e.g. Sunday Padel Fun" class="w-full bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 mb-6 backdrop-blur-sm">
-        <button onclick="goToCourts()" class="w-full border border-white/10 bg-gradient-to-r from-amber-100/90 via-pink-100/90 to-teal-100/90 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 text-slate-900 font-bold py-4 px-6 rounded-3xl shadow-cozy transition-all duration-200"> Continue </button>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-6">Give your tournament a name</p>
+        <input type="text" id="tournament-title" placeholder="e.g. Sunday Padel Fun" class="w-full bg-slate-900/8 dark:bg-white/5 border border-slate-200/90 dark:border-white/15 rounded-2xl px-4 py-4 text-slate-900 dark:text-white placeholder-lime-600 dark:placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 mb-6 backdrop-blur-sm">
+        <button onclick="goToCourts()" class="w-full border border-slate-200/80 dark:border-white/10 bg-gradient-to-r from-amber-100/90 via-pink-100/90 to-teal-100/90 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 text-slate-900 font-bold py-4 px-6 rounded-3xl shadow-cozy transition-all duration-200"> Continue </button>
       </div>
     </div>
 
     <!-- New Tournament - Courts -->
     <div id="page-new-courts" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('new-title')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
+      <button onclick="navigateTo('new-title')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-pink-900 dark:hover:text-pink-100 mb-6 transition-colors font-medium">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Number of Courts</h2>
-        <p class="text-slate-300 text-sm mb-6">How many courts will be used?</p>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-6">How many courts will be used?</p>
         <div class="grid grid-cols-3 gap-3 mb-6">
-          <button onclick="selectCourts(1)" class="court-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="1">1</button>
-          <button onclick="selectCourts(2)" class="court-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="2">2</button>
-          <button onclick="selectCourts(3)" class="court-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="3">3</button>
-          <button onclick="selectCourts(4)" class="court-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="4">4</button>
-          <button onclick="selectCourts(5)" class="court-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="5">5</button>
-          <button onclick="selectCourts(6)" class="court-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="6">6</button>
+          <button type="button" onclick="selectCourts(1)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="1">1</button>
+          <button type="button" onclick="selectCourts(2)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="2">2</button>
+          <button type="button" onclick="selectCourts(3)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="3">3</button>
+          <button type="button" onclick="selectCourts(4)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="4">4</button>
+          <button type="button" onclick="selectCourts(5)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="5">5</button>
+          <button type="button" onclick="selectCourts(6)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="6">6</button>
         </div>
-        <button onclick="goToPoints()" id="btn-to-points" class="w-full border border-white/10 bg-white/10 hover:bg-white/15 text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
+        <button onclick="goToPoints()" id="btn-to-points" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
       </div>
     </div>
 
     <!-- New Tournament - Points -->
     <div id="page-new-points" class="page hidden flex-1 flex flex-col p-6">
-      <button onclick="navigateTo('new-courts')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
+      <button onclick="navigateTo('new-courts')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-pink-900 dark:hover:text-pink-100 mb-6 transition-colors font-medium">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg> Back </button>
       <div class="flex-1 flex flex-col">
-        <h2 class="text-2xl font-extrabold mb-2">Points to Win</h2>
-        <p class="text-slate-300 text-sm mb-6">Select points per match</p>
-        <div class="grid grid-cols-2 gap-3 mb-6">
-          <button onclick="selectPoints(16)" class="points-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="16">16</button>
-          <button onclick="selectPoints(21)" class="points-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="21">21</button>
-          <button onclick="selectPoints(24)" class="points-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="24">24</button>
-          <button onclick="selectPoints(32)" class="points-btn bg-white/5 border-2 border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="32">32</button>
+        <h2 id="points-page-title" class="text-2xl font-extrabold mb-2">Points to Win</h2>
+        <p id="points-page-sub" class="text-slate-600 dark:text-slate-300 text-sm mb-6">Select points per match</p>
+
+        <div id="new-points-standard" class="mb-6">
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" onclick="selectPoints(16)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="16">16</button>
+            <button type="button" onclick="selectPoints(21)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="21">21</button>
+            <button type="button" onclick="selectPoints(24)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="24">24</button>
+            <button type="button" onclick="selectPoints(32)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="32">32</button>
+          </div>
         </div>
-        <button onclick="goToPlayers()" id="btn-to-players" class="w-full border border-white/10 bg-white/10 hover:bg-white/15 text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
+
+        <div id="new-points-mex" class="hidden mb-6 space-y-4">
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="selectMexScoreKind('rally')" data-mex-kind="rally"
+              class="mex-kind-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold transition-all shadow-cozy-sm">
+              Rally (target points)
+            </button>
+            <button type="button" onclick="selectMexScoreKind('games')" data-mex-kind="games"
+              class="mex-kind-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold transition-all shadow-cozy-sm">
+              Best-of games
+            </button>
+          </div>
+
+          <div id="mex-panel-rally" class="hidden">
+            <p class="text-slate-600 dark:text-slate-400 text-xs mb-3">Rally to this total per team (inputs mirror while typing).</p>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" onclick="selectPoints(16)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="16">16</button>
+              <button type="button" onclick="selectPoints(21)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="21">21</button>
+              <button type="button" onclick="selectPoints(24)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="24">24</button>
+              <button type="button" onclick="selectPoints(32)" class="points-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-points="32">32</button>
+            </div>
+          </div>
+
+          <div id="mex-panel-games" class="hidden">
+            <p class="text-slate-600 dark:text-slate-400 text-xs mb-3">Pick a series length below (e.g. best of 5 → first to 3 games). Games won add to leaderboard points.</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" onclick="selectMexBestOf(3)" data-bo="3" class="mex-bo-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold">Best of 3</button>
+              <button type="button" onclick="selectMexBestOf(4)" data-bo="4" class="mex-bo-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold">Best of 4</button>
+              <button type="button" onclick="selectMexBestOf(5)" data-bo="5" class="mex-bo-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold">Best of 5</button>
+              <button type="button" onclick="selectMexBestOf(6)" data-bo="6" class="mex-bo-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold">Best of 6</button>
+              <button type="button" onclick="selectMexBestOf(7)" data-bo="7" class="mex-bo-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-4 text-sm font-extrabold col-span-2">Best of 7</button>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="goToPlayers()" id="btn-to-players" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
       </div>
     </div>
 
     <!-- New Tournament - Players (fullscreen layer so list scrolls; bar stays on screen — site footer is not .page) -->
-    <div id="page-new-players" class="page hidden fixed inset-0 z-50 flex flex-col bg-slate-950 overflow-hidden">
+    <div id="page-new-players" class="page hidden fixed inset-0 z-50 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
       <div class="shrink-0 px-6 pt-[max(1.25rem,env(safe-area-inset-top))]">
-        <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-slate-300 hover:text-pink-100 mb-6 transition-colors font-medium">
+        <button onclick="navigateTo('new-points')" class="flex items-center gap-2 text-slate-800 dark:text-slate-300 hover:text-pink-900 dark:hover:text-pink-100 mb-6 transition-colors font-medium">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg> Back
         </button>
         <h2 class="text-2xl font-extrabold mb-2">Add Players</h2>
-        <p id="mexicano-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/25 bg-teal-500/10 rounded-2xl px-3 py-2">
-          <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, next four = court 2, …). Later rounds pair by current standings: 1st+2nd vs 3rd+4th in each group of four active players.
+        <p id="mexicano-players-hint" class="hidden text-teal-900 dark:text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/55 dark:border-teal-400/25 bg-teal-50/90 dark:bg-teal-500/10 rounded-2xl px-3 py-2">
+          <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, …). Later rounds order by standings within each active block of four. Teams are formed to match classic Mexicano when possible, or another legal split in that block of four to avoid repeat partners/opponents when your history allows it.
         </p>
-        <p id="mixmex-players-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-500/20 bg-cyan-950/40 rounded-2xl px-3 py-2">
-          <strong>Mix Mexicano:</strong> same bench and standings as Mexicano, but in each court block the top two from the <em>active males</em> and top two from the <em>active females</em> (by list order in round 1, by points after) play as M+F teams: (M1+F1) vs (M2+F2). Males: list in men’s order; females: in women’s order. Equal male/female count required.
+        <p id="mixmex-players-hint" class="hidden text-teal-900 dark:text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-500/35 dark:border-teal-500/20 bg-teal-50/95 dark:bg-cyan-950/40 rounded-2xl px-3 py-2">
+          <strong>Mix Mexicano:</strong> same bench and standings as Mexicano (M and F lists separately). Each court picks the lower-penalty pairing between (M1+F1 vs M2+F2) and (M1+F2 vs M2+F1) to reduce repeated partners and rematches when history allows it.
         </p>
-        <p id="fixed-pairs-hint" class="hidden text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-400/25 bg-amber-500/10 rounded-2xl px-3 py-2">
-          <strong>Fixed pairs — urutan = pasangan:</strong> tambahkan (atau tempel) nama <em>berurutan</em>. Dua nama yang berurutan = satu tim: posisi 1+2, lalu 3+4, dan seterusnya. Contoh empat baris: <span class="text-amber-50/95">Fabio, Pingky, Ridel, Filia</span> (satu nama per baris) → <span class="text-amber-50/95">Fabio + Pingky</span> satu pasang, <span class="text-amber-50/95">Ridel + Filia</span> pasang berikutnya. Hapus tim lewat tombol di tiap baris.
+        <p id="fixed-pairs-hint" class="hidden text-amber-950 dark:text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-500/45 dark:border-amber-400/25 bg-amber-50/95 dark:bg-amber-500/10 rounded-2xl px-3 py-2">
+          <strong>Fixed pairs — urutan = pasangan:</strong> tambahkan (atau tempel) nama <em>berurutan</em>. Dua nama yang berurutan = satu tim: posisi 1+2, lalu 3+4, dan seterusnya. Contoh empat baris: <span class="text-amber-900 dark:text-amber-50/95 font-medium">Fabio, Pingky, Ridel, Filia</span> (satu nama per baris) → <span class="text-amber-900 dark:text-amber-50/95 font-medium">Fabio + Pingky</span> satu pasang, <span class="text-amber-900 dark:text-amber-50/95 font-medium">Ridel + Filia</span> pasang berikutnya. Hapus tim lewat tombol di tiap baris.
         </p>
-        <p id="fixedmex-pairs-hint" class="hidden text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-300/20 bg-amber-900/20 rounded-2xl px-3 py-2">
-          <strong>Fixed Mexicano:</strong> same pair order as above. Who sits follows Mexicano rules; from round 2, active teams are sorted by team points (sum of both players), then 1st vs 2nd, 3rd vs 4th in that order, per court block.
+        <p id="fixedmex-pairs-hint" class="hidden text-amber-950 dark:text-amber-200/90 text-xs leading-relaxed mb-2 border border-amber-400/40 dark:border-amber-300/20 bg-amber-50/95 dark:bg-amber-900/20 rounded-2xl px-3 py-2">
+          <strong>Fixed Mexicano:</strong> pair order as above. Who sits follows Mexicano rules; from round 2, active pairs are sorted by team points. Court opponents are chosen to spread fixed-pair matchups across the session when possible.
         </p>
-        <p id="min-players-text" class="text-slate-300 text-sm mb-2">
+        <p id="min-players-text" class="text-slate-600 dark:text-slate-300 text-sm mb-2">
           Minimum 4 players required
         </p>
-        <p class="text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
+        <p class="text-amber-950 dark:text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
 
-        <p id="power-level-hint" class="hidden text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/20 bg-teal-500/10 rounded-2xl px-3 py-2">
+        <p id="power-level-hint" class="hidden text-teal-900 dark:text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/45 dark:border-teal-400/20 bg-teal-50/95 dark:bg-teal-500/10 rounded-2xl px-3 py-2">
           <strong>Balanced Americano only:</strong> set each player’s <strong>power level</strong> (L1 = lowest … L5 = highest). Pairing uses it to balance teams; partners and opponents still rotate each round like normal Americano.
         </p>
 
@@ -926,7 +840,7 @@
             type="text"
             id="player-name"
             placeholder="Player name"
-            class="flex-1 min-w-0 sm:flex-[4] h-14 box-border bg-white/5 border border-white/15 rounded-2xl px-4 text-base sm:text-sm text-white placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
+            class="flex-1 min-w-0 sm:flex-[4] h-14 box-border bg-slate-900/8 dark:bg-white/5 border border-slate-200/90 dark:border-white/15 rounded-2xl px-4 text-base sm:text-sm text-slate-900 dark:text-white placeholder-lime-600 dark:placeholder-lime-400 focus:outline-none focus:border-pink-300/60 focus:ring-2 focus:ring-pink-400/20 backdrop-blur-sm"
             onkeypress="if(event.key==='Enter')addPlayer()"
           />
           <div id="player-level-wrap" class="hidden w-full min-[400px]:w-auto min-[400px]:shrink-0 min-[400px]:max-w-[13rem] self-stretch flex items-stretch">
@@ -998,7 +912,7 @@
           <button
             type="button"
             onclick="addPlayer()"
-            class="shrink-0 h-14 w-14 min-w-[3.5rem] flex items-center justify-center bg-white/10 hover:bg-white/15 border border-white/10 rounded-2xl transition-all shadow-cozy-sm"
+            class="shrink-0 h-14 w-14 min-w-[3.5rem] flex items-center justify-center bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 border border-slate-200/80 dark:border-white/10 rounded-2xl transition-all shadow-cozy-sm"
             aria-label="Add player"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1007,75 +921,81 @@
           </button>
         </div>
 
-        <details id="bulk-players-details" class="mb-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm">
-          <summary class="cursor-pointer select-none text-teal-200/95 font-semibold hover:text-teal-100">
+        <details id="bulk-players-details" class="mb-3 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/[0.02] dark:bg-white/[0.03] px-3 py-2 text-sm">
+          <summary class="cursor-pointer select-none text-teal-900 dark:text-teal-200/95 font-semibold hover:text-teal-950 dark:hover:text-teal-100">
             Paste many names
           </summary>
-          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+          <p class="text-slate-600 dark:text-slate-400 text-xs mt-2 leading-relaxed">
             One name per line, or paste one spreadsheet row (tab-separated). In Mix mode, the current M/F toggle applies to every name added here.
           </p>
-          <p id="bulk-paste-fixed-hint" class="hidden text-amber-200/90 text-xs mt-2 leading-relaxed border-t border-amber-400/20 pt-2">
+          <p id="bulk-paste-fixed-hint" class="hidden text-amber-950 dark:text-amber-200/90 text-xs mt-2 leading-relaxed border-t border-amber-400/70 dark:border-amber-400/20 pt-2">
             <strong>Mode fixed pairs:</strong> isi <em>berurutan</em> — contoh: baris 1 <strong>Fabio</strong>, baris 2 <strong>Pingky</strong> = satu tim; baris 3 <strong>Ridel</strong>, baris 4 <strong>Filia</strong> = tim berikutnya. (Bukan: Fabio dengan Ridel kecuali itu sengaja dipasangkan via urutan.)
           </p>
           <textarea
             id="player-names-bulk"
             rows="5"
-            class="mt-2 w-full rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-400/20"
+            class="mt-2 w-full rounded-2xl border border-slate-200/90 dark:border-white/15 bg-slate-900/8 dark:bg-white/5 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:border-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-400/20"
             placeholder="Alex&#10;Sam&#10;Jordan"
           ></textarea>
           <button
             type="button"
             onclick="addPlayersFromBulkPaste()"
-            class="mt-2 w-full rounded-2xl border border-teal-400/35 bg-teal-500/15 py-2.5 text-sm font-bold text-teal-50 hover:bg-teal-400/25 transition-colors"
+            class="mt-2 w-full rounded-2xl border border-teal-400/35 bg-teal-500/15 py-2.5 text-sm font-bold text-teal-900 dark:text-teal-50 hover:bg-teal-400/25 transition-colors"
           >
             Add all from list
           </button>
         </details>
       </div>
       <div id="players-list" class="flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-2 px-6 pb-2 touch-pan-y"></div>
-      <div class="shrink-0 border-t border-white/10 bg-slate-950/95 backdrop-blur-md px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]">
+      <div class="shrink-0 border-t border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-slate-950/95 backdrop-blur-md px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-8px_rgba(0,0,0,0.45)]">
         <div class="flex items-center justify-between gap-3 mb-3">
-          <p id="player-count" class="text-sm text-slate-200 font-semibold tabular-nums">0 players added</p>
+          <p id="player-count" class="text-sm text-slate-700 dark:text-slate-200 font-semibold tabular-nums">0 players added</p>
         </div>
-        <button onclick="startTournament()" id="btn-start" class="w-full border border-white/10 bg-gradient-to-r from-amber-100/90 via-pink-100/90 to-teal-100/90 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 text-slate-900 font-bold py-4 px-6 rounded-3xl shadow-cozy transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Start Tournament </button>
+        <button onclick="startTournament()" id="btn-start" class="w-full border border-slate-200/80 dark:border-white/10 bg-gradient-to-r from-amber-100/90 via-pink-100/90 to-teal-100/90 hover:from-amber-50 hover:via-pink-50 hover:to-teal-50 text-slate-900 font-bold py-4 px-6 rounded-3xl shadow-cozy transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Start Tournament </button>
       </div>
     </div>
 
     <!-- Tournament Rounds -->
     <div id="page-rounds" class="page hidden flex-1 flex flex-col">
-      <div class="bg-slate-900/60 backdrop-blur-md border-b border-white/10 p-4 flex items-center justify-between rounded-b-3xl shadow-cozy-sm">
-        <button onclick="navigateTo('home')" class="text-slate-300 hover:text-white transition-colors">
+      <div class="bg-slate-200/80 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 flex items-center justify-between rounded-b-3xl shadow-cozy-sm">
+        <button onclick="navigateTo('home')" class="text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 id="round-title" class="text-lg font-bold truncate mx-4">Tournament</h2>
+        <h2 id="round-title" class="text-lg font-bold truncate mx-4 text-slate-900 dark:text-white">Tournament</h2>
         <div class="relative">
-          <button onclick="toggleMenu()" class="text-slate-300 hover:text-white transition-colors p-1">
+          <button onclick="toggleMenu()" class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors p-1">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <circle cx="12" cy="5" r="2" />
               <circle cx="12" cy="12" r="2" />
               <circle cx="12" cy="19" r="2" />
             </svg>
           </button>
-          <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-2 bg-slate-800/95 border border-white/10 backdrop-blur-md rounded-2xl shadow-cozy overflow-hidden z-50 min-w-40">
-            <button onclick="showLeaderboard()" class="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center gap-3">
+          <div id="dropdown-menu" class="hidden absolute right-0 top-full mt-2 bg-white/95 dark:bg-slate-800/95 border border-slate-200/80 dark:border-white/10 backdrop-blur-md rounded-2xl shadow-cozy overflow-hidden z-50 min-w-40">
+            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); padelioToggleTheme();" class="w-full px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10 transition-colors flex items-center gap-3 text-slate-800 dark:text-slate-100 border-b border-slate-200/80 dark:border-white/10">
+              <svg class="w-5 h-5 text-amber-500 dark:text-amber-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Toggle light / dark
+            </button>
+            <button onclick="showLeaderboard()" class="w-full px-4 py-3 text-left hover:bg-slate-100 dark:hover:bg-white/10 transition-colors flex items-center gap-3 text-slate-800 dark:text-slate-100">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg> Leaderboard </button>
-            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); copySpectatorLinkForHost();" class="w-full px-4 py-3 text-left hover:bg-teal-500/15 transition-colors flex items-center gap-3 text-teal-200">
+            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); copySpectatorLinkForHost();" class="w-full px-4 py-3 text-left hover:bg-teal-100/80 dark:hover:bg-teal-500/15 transition-colors flex items-center gap-3 text-teal-800 dark:text-teal-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg> Copy spectator link </button>
-            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); showSpectatorQrModal();" class="w-full px-4 py-3 text-left hover:bg-violet-500/15 transition-colors flex items-center gap-3 text-violet-200">
+            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); showSpectatorQrModal();" class="w-full px-4 py-3 text-left hover:bg-violet-100/80 dark:hover:bg-violet-500/15 transition-colors flex items-center gap-3 text-violet-800 dark:text-violet-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg> Show spectator QR </button>
-            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); shareSpectatorLinkForHost();" class="w-full px-4 py-3 text-left hover:bg-pink-500/15 transition-colors flex items-center gap-3 text-pink-200">
+            <button type="button" onclick="document.getElementById('dropdown-menu').classList.add('hidden'); shareSpectatorLinkForHost();" class="w-full px-4 py-3 text-left hover:bg-pink-100/80 dark:hover:bg-pink-500/15 transition-colors flex items-center gap-3 text-pink-800 dark:text-pink-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg> Share spectator link </button>
-            <button onclick="confirmDelete()" class="w-full px-4 py-3 text-left hover:bg-red-500/30 transition-colors flex items-center gap-3 text-red-300">
+            <button onclick="confirmDelete()" class="w-full px-4 py-3 text-left hover:bg-red-100/80 dark:hover:bg-red-500/30 transition-colors flex items-center gap-3 text-red-700 dark:text-red-300">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg> Delete Tournament </button>
@@ -1083,25 +1003,25 @@
         </div>
       </div>
       <!-- Delete Confirmation -->
-      <div id="delete-confirm" class="hidden bg-red-900/90 p-4 flex items-center justify-between">
+      <div id="delete-confirm" class="hidden bg-red-100/95 dark:bg-red-900/90 p-4 flex items-center justify-between">
         <span class="text-sm">Delete this tournament?</span>
         <div class="flex gap-2">
-          <button onclick="cancelDelete()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors">Cancel</button>
+          <button onclick="cancelDelete()" class="px-4 py-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-colors">Cancel</button>
           <button onclick="deleteTournament()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-lg text-sm transition-colors">Delete</button>
         </div>
       </div>
       <div class="overflow-auto p-4">
         <div class="flex items-center justify-center gap-4 mb-4">
           <!-- LEFT ARROW -->
-          <button onclick="prevRoundView()" id="btn-prev-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15 transition-all">
+          <button onclick="prevRoundView()" id="btn-prev-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/12 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <!-- ROUND LABEL -->
-          <span class="bg-gradient-to-r from-pink-500/20 to-teal-500/20 border border-white/15 px-6 py-2 rounded-full text-sm font-bold shadow-cozy-sm" id="round-indicator"> Round 1 </span>
+          <span class="bg-gradient-to-r from-pink-500/20 to-teal-500/20 border border-slate-200/90 dark:border-white/15 px-6 py-2 rounded-full text-sm font-bold shadow-cozy-sm" id="round-indicator"> Round 1 </span>
           <!-- RIGHT ARROW -->
-          <button onclick="nextRoundView()" id="btn-next-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/10 hover:bg-white/15 transition-all">
+          <button onclick="nextRoundView()" id="btn-next-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/12 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
@@ -1109,8 +1029,8 @@
         </div>
         <div id="courts-container" class="space-y-4"></div>
       </div>
-      <div class="p-4 bg-slate-900/40 border-t border-white/10 backdrop-blur-sm">
-        <button onclick="nextRound()" class="w-full border border-white/10 bg-white/10 hover:bg-white/15 text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="p-4 bg-slate-100/70 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-white/10 backdrop-blur-sm">
+        <button onclick="nextRound()" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -1119,19 +1039,19 @@
 
     <!-- Spectator / share-only (opened via #p=… on same index) -->
     <div id="page-share-view" class="page hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div class="bg-slate-900/70 backdrop-blur-md border-b border-white/10 p-4 rounded-b-3xl shadow-cozy-sm">
+      <div class="bg-slate-100/90 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 rounded-b-3xl shadow-cozy-sm">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <p class="text-[10px] font-bold uppercase tracking-wider text-teal-300/90 mb-1">Spectator · read-only</p>
             <h2 id="share-view-title" class="text-lg font-extrabold truncate">Tournament</h2>
-            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
               View only. No scores or tournaments can be changed from this link.
             </p>
           </div>
           <button
             type="button"
             onclick="exitShareViewer()"
-            class="shrink-0 text-xs font-semibold px-3 py-2 rounded-2xl border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+            class="shrink-0 text-xs font-semibold px-3 py-2 rounded-2xl border border-slate-200/90 dark:border-white/15 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
           >
             Open app
           </button>
@@ -1141,7 +1061,7 @@
             type="button"
             id="share-tab-lb"
             onclick="switchShareTab('leaderboard')"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
           >
             Leaderboard
           </button>
@@ -1149,7 +1069,7 @@
             type="button"
             id="share-tab-rd"
             onclick="switchShareTab('rounds')"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
           >
             Rounds
           </button>
@@ -1158,25 +1078,25 @@
           <button
             type="button"
             onclick="copyCurrentSpectatorUrl()"
-            class="text-xs font-semibold py-2.5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+            class="text-xs font-semibold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/5 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
           >
             Copy page link
           </button>
           <button
             type="button"
             onclick="shareCurrentSpectatorUrl()"
-            class="text-xs font-semibold py-2.5 rounded-2xl border border-pink-400/25 bg-pink-500/15 hover:bg-pink-500/25 text-pink-50 transition-colors"
+            class="text-xs font-semibold py-2.5 rounded-2xl border border-pink-400/25 bg-pink-500/15 hover:bg-pink-500/25 text-pink-900 dark:text-pink-50 transition-colors"
           >
             Share…
           </button>
         </div>
       </div>
-      <div id="share-lb-subtabs" class="shrink-0 px-4 py-2 border-b border-white/10 bg-slate-950/50 flex gap-2">
+      <div id="share-lb-subtabs" class="shrink-0 px-4 py-2 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
         <button
           type="button"
           id="share-lb-sub-standard"
           onclick="switchShareLeaderboardLayout('standard')"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
         >
           Standard View
         </button>
@@ -1184,23 +1104,23 @@
           type="button"
           id="share-lb-sub-screenshot"
           onclick="switchShareLeaderboardLayout('screenshot')"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
         >
           Screenshot View
         </button>
       </div>
-      <div id="share-lb-sort-row" class="shrink-0 px-4 pb-2 pt-0 border-b border-white/10 bg-slate-950/50 flex gap-2">
+      <div id="share-lb-sort-row" class="shrink-0 px-4 pb-2 pt-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
         <button
           type="button"
           id="share-lb-sort-points"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
         >
           Total points
         </button>
         <button
           type="button"
           id="share-lb-sort-winrate"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
         >
           Win rate
         </button>
@@ -1226,10 +1146,10 @@
 
     <!-- Leaderboard -->
     <div id="page-leaderboard" class="page hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div class="bg-slate-900/60 backdrop-blur-md border-b border-white/10 p-4 rounded-b-3xl shrink-0">
+      <div class="bg-slate-200/80 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 rounded-b-3xl shrink-0">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center min-w-0 flex-1">
-            <button type="button" onclick="backToRounds()" class="text-slate-300 hover:text-white transition-colors shrink-0">
+            <button type="button" onclick="backToRounds()" class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
@@ -1240,7 +1160,7 @@
             <button
               type="button"
               onclick="copySpectatorLinkForHost()"
-              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-teal-400/35 bg-teal-500/15 text-teal-50 hover:bg-teal-400/25 transition-colors"
+              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-teal-400/35 bg-teal-500/15 text-teal-900 dark:text-teal-50 hover:bg-teal-400/25 transition-colors"
             >
               Copy link
             </button>
@@ -1255,7 +1175,7 @@
             <button
               type="button"
               onclick="shareSpectatorLinkForHost()"
-              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-pink-400/30 bg-pink-500/15 text-pink-50 hover:bg-pink-400/25 transition-colors"
+              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-pink-400/30 bg-pink-500/15 text-pink-900 dark:text-pink-50 hover:bg-pink-400/25 transition-colors"
             >
               Share
             </button>
@@ -1266,7 +1186,7 @@
             type="button"
             id="host-lb-tab-standard"
             onclick="switchHostLeaderboardLayout('standard')"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
           >
             Standard
           </button>
@@ -1274,7 +1194,7 @@
             type="button"
             id="host-lb-tab-screenshot"
             onclick="switchHostLeaderboardLayout('screenshot')"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
           >
             Screenshot
           </button>
@@ -1283,14 +1203,14 @@
           <button
             type="button"
             id="host-lb-sort-points"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-50"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
           >
             Total points
           </button>
           <button
             type="button"
             id="host-lb-sort-winrate"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 transition-colors"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
           >
             Win rate
           </button>
@@ -1313,7 +1233,7 @@
     <!-- ADS -->
     <div id="content-ad-wrap" class="hidden px-6 pb-6 min-h-[120px]">
       <div class="max-w-3xl mx-auto">
-        <div class="bg-white/[0.04] border border-white/10 rounded-3xl p-4 backdrop-blur-sm">
+        <div class="bg-slate-900/[0.03] dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 rounded-3xl p-4 backdrop-blur-sm">
           <p class="text-[11px] uppercase tracking-wider text-slate-500 mb-3">Advertisement</p>
 
           <ins
@@ -1330,58 +1250,58 @@
     </div>
 
     <!-- Footer -->
-    <footer class="border-t border-white/10 bg-slate-950/90 backdrop-blur-md px-6 py-8 mt-auto">
+    <footer class="padel-footer mt-auto">
       <div class="max-w-3xl mx-auto">
         <div class="grid gap-6 md:grid-cols-3">
           <div>
-            <h3 class="text-white font-semibold text-base mb-2">Padelio</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">
+            <h3 class="text-slate-900 dark:text-white font-semibold text-base mb-2">Padelio</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
               A lightweight helper for padel tournaments, player rotation,
               fast score entry, and live leaderboards for social and club sessions.
             </p>
           </div>
 
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Explore</h4>
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Explore</h4>
             <div class="flex flex-col gap-2 text-sm">
               <a
                 href="index.html"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Home
               </a>
               <a
                 href="about.html"
                 onclick="navigateTo('about'); return false;"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 About
               </a>
               <a
                 href="guides.html"
                 onclick="navigateTo('guides'); return false;"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Guides
               </a>
               <a
                 href="privacy-policy.html"
                 onclick="navigateTo('privacy'); return false;"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Privacy Policy
               </a>
               <a
                 href="terms.html"
                 onclick="navigateTo('terms'); return false;"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Terms of Service
               </a>
               <a
                 href="contact.html"
                 onclick="navigateTo('contact'); return false;"
-                class="text-left text-slate-400 hover:text-white transition-colors"
+                class="text-left text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Contact
               </a>
@@ -1389,8 +1309,8 @@
           </div>
 
           <div>
-            <h4 class="text-white font-semibold text-sm mb-3">Use Case</h4>
-            <ul class="space-y-2 text-sm text-slate-400 leading-relaxed">
+            <h4 class="text-slate-900 dark:text-white font-semibold text-sm mb-3">Use Case</h4>
+            <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-400 leading-relaxed">
               <li>Club sessions</li>
               <li>Friendly Americano tournaments</li>
               <li>Weekend social padel</li>
@@ -1399,13 +1319,22 @@
           </div>
         </div>
 
-        <div class="border-t border-white/10 mt-6 pt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-xs text-slate-500">
+        <div class="border-t border-slate-200/80 dark:border-white/10 mt-6 pt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-slate-600 dark:text-slate-500">
             © 2026 Padelio. All rights reserved.
           </p>
-          <p class="text-xs text-slate-500">
-            Built for community padel sessions.
-          </p>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <button
+              type="button"
+              onclick="padelioToggleTheme()"
+              class="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-colors"
+            >
+              Theme: light / dark
+            </button>
+            <p class="text-xs text-slate-600 dark:text-slate-500">
+              Built for community padel sessions.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
@@ -1413,45 +1342,45 @@
 
   <div
     id="update-cache-reminder-modal"
-    class="hidden fixed inset-0 z-[210] flex items-center justify-center bg-black/75 p-4"
+    class="hidden fixed inset-0 z-[210] flex items-center justify-center bg-black/40 dark:bg-black/75 p-4"
     role="dialog"
     aria-modal="true"
     aria-labelledby="update-cache-reminder-title"
     onclick="if(event.target===this)hideUpdateReminderModal()"
   >
     <div
-      class="max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-amber-400/35 bg-slate-900/95 p-6 shadow-cozy backdrop-blur-md"
+      class="max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-amber-400/35 bg-white/95 dark:bg-slate-900/95 p-6 shadow-cozy backdrop-blur-md"
       onclick="event.stopPropagation()"
     >
       <div class="flex items-start justify-between gap-3 mb-3">
-        <h3 id="update-cache-reminder-title" class="text-lg font-extrabold text-amber-50 pr-2 leading-snug">
+        <h3 id="update-cache-reminder-title" class="text-lg font-extrabold text-amber-950 dark:text-amber-50 pr-2 leading-snug">
           Versi terbaru &amp; cache
         </h3>
         <button
           type="button"
           onclick="hideUpdateReminderModal()"
-          class="shrink-0 rounded-full border border-white/15 px-2.5 py-1 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
+          class="shrink-0 rounded-full border border-slate-200/90 dark:border-white/15 px-2.5 py-1 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/90 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
           aria-label="Close"
         >
           ×
         </button>
       </div>
-      <p class="text-sm text-slate-200 mb-2 leading-relaxed">
-        <span class="text-amber-200/90 font-semibold">ID</span> — Browser sering menyimpan file lama. Kalau tidak lihat fitur baru atau tampilan aneh, <strong class="text-amber-100/95">kosongkan cache</strong> atau <strong class="text-amber-100/95">muat ulang paksa</strong>.
+      <p class="text-sm text-slate-700 dark:text-slate-200 mb-2 leading-relaxed">
+        <span class="text-amber-800 dark:text-amber-200/90 font-semibold">ID</span> — Browser sering menyimpan file lama. Kalau tidak lihat fitur baru atau tampilan aneh, <strong class="text-amber-950 dark:text-amber-100/95">kosongkan cache</strong> atau <strong class="text-amber-950 dark:text-amber-100/95">muat ulang paksa</strong>.
       </p>
-      <p class="text-sm text-slate-400 mb-4 leading-relaxed">
-        <span class="text-teal-200/80 font-semibold">EN</span> — Browsers cache old files. If something looks outdated, clear app cache or hard-refresh.
+      <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+        <span class="text-teal-800 dark:text-teal-200/80 font-semibold">EN</span> — Browsers cache old files. If something looks outdated, clear app cache or hard-refresh.
       </p>
-      <ul class="text-xs text-slate-300/95 space-y-2 mb-5 list-disc list-outside pl-4 leading-relaxed">
+      <ul class="text-xs text-slate-600/95 dark:text-slate-300/95 space-y-2 mb-5 list-disc list-outside pl-4 leading-relaxed">
         <li>
           Hard refresh:
-          <kbd class="px-1.5 py-0.5 rounded-md bg-slate-800 border border-white/10 text-slate-200 font-mono text-[0.65rem]">Ctrl+Shift+R</kbd>
+          <kbd class="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 font-mono text-[0.65rem]">Ctrl+Shift+R</kbd>
           (Win/Linux) atau
-          <kbd class="px-1.5 py-0.5 rounded-md bg-slate-800 border border-white/10 text-slate-200 font-mono text-[0.65rem]">Cmd+Shift+R</kbd>
+          <kbd class="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 font-mono text-[0.65rem]">Cmd+Shift+R</kbd>
           (Mac)
         </li>
         <li>
-          Atau pakai tombol <strong class="text-amber-200/90">Clear Cache</strong> di halaman ini — <span class="text-emerald-200/90">data turnamen tetap aman</span>.
+          Atau pakai tombol <strong class="text-amber-900 dark:text-amber-200/90">Clear Cache</strong> di halaman ini — <span class="text-emerald-800 dark:text-emerald-200/90">data turnamen tetap aman</span>.
         </li>
       </ul>
       <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
@@ -1459,14 +1388,14 @@
           type="button"
           data-testid="update-tip-dismiss"
           onclick="hideUpdateReminderModal()"
-          class="order-2 sm:order-1 w-full sm:w-auto rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200 hover:bg-white/10"
+          class="order-2 sm:order-1 w-full sm:w-auto rounded-2xl border border-slate-200/90 dark:border-white/15 bg-slate-900/8 dark:bg-white/5 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10"
         >
           Mengerti / Got it
         </button>
         <button
           type="button"
           onclick="clearAppCacheFromUpdateModal()"
-          class="order-1 sm:order-2 w-full sm:w-auto rounded-2xl border border-amber-400/40 bg-amber-500/20 px-4 py-3 text-sm font-bold text-amber-50 hover:bg-amber-400/30"
+          class="order-1 sm:order-2 w-full sm:w-auto rounded-2xl border border-amber-500/50 dark:border-amber-400/40 bg-amber-100 dark:bg-amber-500/20 px-4 py-3 text-sm font-bold text-amber-950 dark:text-amber-50 hover:bg-amber-200/90 dark:hover:bg-amber-400/30"
         >
           Clear cache &amp; reload
         </button>
@@ -1476,31 +1405,31 @@
 
   <div
     id="modal-spectator-qr"
-    class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/70 p-4"
+    class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/35 dark:bg-black/70 p-4"
     role="dialog"
     aria-modal="true"
     aria-labelledby="spectator-qr-title"
     onclick="if(event.target===this)closeSpectatorQrModal()"
   >
     <div
-      class="max-w-sm w-full rounded-3xl border border-white/15 bg-slate-900 p-6 shadow-cozy"
+      class="max-w-sm w-full rounded-3xl border border-slate-200/90 dark:border-white/15 bg-slate-100 dark:bg-slate-900 p-6 shadow-cozy"
       onclick="event.stopPropagation()"
     >
       <div class="flex items-start justify-between gap-3 mb-3">
-        <h3 id="spectator-qr-title" class="text-lg font-extrabold text-white">Spectator QR</h3>
+        <h3 id="spectator-qr-title" class="text-lg font-extrabold text-slate-900 dark:text-white">Spectator QR</h3>
         <button
           type="button"
           onclick="closeSpectatorQrModal()"
-          class="shrink-0 rounded-full border border-white/15 px-2.5 py-1 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
+          class="shrink-0 rounded-full border border-slate-200/90 dark:border-white/15 px-2.5 py-1 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200/90 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
           aria-label="Close"
         >
           ×
         </button>
       </div>
-      <p class="text-sm text-slate-300 mb-3 leading-relaxed">
+      <p class="text-sm text-slate-600 dark:text-slate-300 mb-3 leading-relaxed">
         Scan to open live standings (read-only). Needs internet to draw the QR image.
       </p>
-      <div class="flex justify-center rounded-2xl border border-white/10 bg-white p-3">
+      <div class="flex justify-center rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white p-3">
         <img
           id="spectator-qr-img"
           width="220"
@@ -1509,26 +1438,27 @@
           alt="QR code for spectator link"
         />
       </div>
-      <p id="spectator-qr-offline-hint" class="hidden mt-3 text-center text-sm text-amber-200/95 leading-snug">
+      <p id="spectator-qr-offline-hint" class="hidden mt-3 text-center text-sm text-amber-900 dark:text-amber-200/95 leading-snug">
         You appear offline — use <strong>Copy link</strong> from the menu instead.
       </p>
       <p id="spectator-qr-url-foot" class="mt-3 max-h-24 overflow-y-auto text-[10px] leading-snug text-slate-500 break-all font-mono"></p>
       <button
         type="button"
         onclick="closeSpectatorQrModal(); copySpectatorLinkForHost();"
-        class="mt-4 w-full rounded-2xl border border-teal-400/35 bg-teal-500/15 py-3 text-sm font-bold text-teal-50 hover:bg-teal-400/25 transition-colors"
+        class="mt-4 w-full rounded-2xl border border-teal-400/35 bg-teal-500/15 py-3 text-sm font-bold text-teal-900 dark:text-teal-50 hover:bg-teal-400/25 transition-colors"
       >
         Copy link instead
       </button>
     </div>
   </div>
 
-  <!-- Keeps Tailwind JIT aware of classes used only inside js/script.js templates -->
+  <!-- Keeps Tailwind JIT aware of classes toggled via classList in script.js (not in static markup). -->
   <div class="sr-only" aria-hidden="true">
-    <span class="shadow-cozy shadow-cozy-sm border-emerald-600/40 border-emerald-600/45 border-emerald-600/50 bg-emerald-700/90 border-emerald-500/50 focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25 text-emerald-300 font-extrabold from-amber-200 to-amber-400 text-slate-900 bg-slate-300 text-slate-800 from-orange-300 to-orange-500 border-amber-300 border-slate-300 border-orange-400/90 shadow-sm gap-1 px-1.5 text-[6px] text-[7px] text-[8px] text-[9px] text-[10px] text-[11px] w-5 w-6 w-7 w-8 whitespace-nowrap overflow-hidden text-ellipsis leb-main-scroll z-[100] touch-pan-y"></span>
+    <span class="shadow-cozy shadow-cozy-sm border-emerald-600/40 border-emerald-600/45 border-emerald-600/50 bg-emerald-700/90 border-emerald-500/50 focus:border-pink-300 focus:ring-2 focus:ring-pink-400/25 text-emerald-300 font-extrabold from-amber-200 to-amber-400 text-slate-900 bg-slate-300 text-slate-800 from-orange-300 to-orange-500 border-amber-300 border-slate-300 border-orange-400/90 shadow-sm gap-1 px-1.5 text-[6px] text-[7px] text-[8px] text-[9px] text-[10px] text-[11px] w-5 w-6 w-7 w-8 whitespace-nowrap overflow-hidden text-ellipsis leb-main-scroll z-[100] touch-pan-y border-emerald-400/55 text-emerald-950 dark:text-emerald-50 shadow-[0_14px_38px_-14px_rgba(16,185,129,0.28)] dark:shadow-[0_14px_38px_-14px_rgba(16,185,129,0.65)] bg-emerald-50/95 dark:bg-emerald-900/40 border-emerald-300/75 dark:border-emerald-700/40 text-teal-700 dark:text-teal-300 text-emerald-800 dark:text-emerald-300 text-teal-800 dark:text-teal-200 border-teal-300/45 dark:border-teal-400/25 from-slate-50 to-slate-100/95 dark:from-slate-900/95 dark:to-slate-950 text-teal-900 dark:text-teal-50 border-teal-500/45 dark:border-teal-400/40"></span>
   </div>
   <script>(function(s){s.dataset.zone='10840987',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
   <script src="js/lz-string.min.js"></script>
+  <script src="js/version.js"></script>
   <script src="js/script.js"></script>
 </body>
 
