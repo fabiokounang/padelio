@@ -234,6 +234,154 @@
     return prior.length ? prior[prior.length - 1] : null;
   };
 
+  /** 1 = team1 won, 2 = team2, 0 = tie or unscored. */
+  const getMatchWinSide = (match) => {
+    const s1 = match?.score1;
+    const s2 = match?.score2;
+    const empty1 = s1 === '' || s1 == null;
+    const empty2 = s2 === '' || s2 == null;
+    if (empty1 && empty2) return 0;
+    const n1 = Number(s1) || 0;
+    const n2 = Number(s2) || 0;
+    if (n1 === 0 && n2 === 0) return 0;
+    if (n1 > n2) return 1;
+    if (n2 > n1) return 2;
+    return 0;
+  };
+
+  /**
+   * Mexicano court ladder: winners move up (toward court 1), losers move down.
+   * Court 1 is the top / winners court when multiple courts exist.
+   */
+  const getMexicanoTargetCourtsFromPrevRound = (prevRound, maxCourts, resolve) => {
+    const target = new Map();
+    if (!prevRound || maxCourts < 1) return target;
+
+    (prevRound.matches || []).forEach((m) => {
+      const court = Math.min(maxCourts, Math.max(1, Number(m.court) || 1));
+      const winSide = getMatchWinSide(m);
+      const setTeam = (team, side) => {
+        (team || []).forEach((raw) => {
+          const name = resolve(raw);
+          let next = court;
+          if (winSide === side) next = Math.max(1, court - 1);
+          else if (winSide && winSide !== side) next = Math.min(maxCourts, court + 1);
+          target.set(name, next);
+        });
+      };
+      setTeam(m.team1, 1);
+      setTeam(m.team2, 2);
+    });
+    return target;
+  };
+
+  const getMexicanoTeamTargetCourtsFromPrevRound = (prevRound, maxCourts, resolve) => {
+    const target = new Map();
+    if (!prevRound || maxCourts < 1) return target;
+
+    (prevRound.matches || []).forEach((m) => {
+      const court = Math.min(maxCourts, Math.max(1, Number(m.court) || 1));
+      const winSide = getMatchWinSide(m);
+      const t1 = m.team1 || [];
+      const t2 = m.team2 || [];
+      if (t1.length < 2 || t2.length < 2) return;
+      const k1 = pairKey(resolve(t1[0]), resolve(t1[1]));
+      const k2 = pairKey(resolve(t2[0]), resolve(t2[1]));
+      const nextFor = (won) => {
+        if (!winSide) return court;
+        if (won) return Math.max(1, court - 1);
+        return Math.min(maxCourts, court + 1);
+      };
+      target.set(k1, nextFor(winSide === 1));
+      target.set(k2, nextFor(winSide === 2));
+    });
+    return target;
+  };
+
+  /** Fill courts 1..N with quads of four; prefer players whose ladder target matches that court. */
+  const orderActiveForMexicanoCourts = (
+    active,
+    targetCourtByName,
+    standingsOrder,
+    maxCourts
+  ) => {
+    const remaining = [...active];
+    const standRank = new Map();
+    standingsOrder.forEach((name, i) => standRank.set(name, i));
+    remaining.forEach((name, i) => {
+      if (!standRank.has(name)) standRank.set(name, standingsOrder.length + i);
+    });
+
+    const rankOf = (a, b) => (standRank.get(a) ?? 9999) - (standRank.get(b) ?? 9999);
+
+    const pull = (predicate, count) => {
+      remaining.sort(rankOf);
+      const picked = [];
+      const keep = [];
+      for (const name of remaining) {
+        if (picked.length < count && predicate(name)) picked.push(name);
+        else keep.push(name);
+      }
+      remaining.length = 0;
+      remaining.push(...keep);
+      return picked;
+    };
+
+    const ordered = [];
+    for (let c = 1; c <= maxCourts; c++) {
+      let quad = pull((n) => targetCourtByName.get(n) === c, 4);
+      if (quad.length < 4) quad = quad.concat(pull(() => true, 4 - quad.length));
+      ordered.push(...quad);
+    }
+    if (remaining.length) ordered.push(...remaining);
+    return ordered;
+  };
+
+  const orderPairsForMexicanoCourts = (activePairs, targetByPairKey, rankByKey, maxCourts, keyFn) => {
+    const remaining = [...activePairs];
+    const rankOf = (a, b) => (rankByKey.get(keyFn(a)) ?? 9999) - (rankByKey.get(keyFn(b)) ?? 9999);
+
+    const pull = (predicate, count) => {
+      remaining.sort(rankOf);
+      const picked = [];
+      const keep = [];
+      for (const p of remaining) {
+        if (picked.length < count && predicate(p)) picked.push(p);
+        else keep.push(p);
+      }
+      remaining.length = 0;
+      remaining.push(...keep);
+      return picked;
+    };
+
+    const ordered = [];
+    for (let c = 1; c <= maxCourts; c++) {
+      let block = pull((p) => targetByPairKey.get(keyFn(p)) === c, 2);
+      if (block.length < 2) block = block.concat(pull(() => true, 2 - block.length));
+      ordered.push(...block);
+    }
+    if (remaining.length) ordered.push(...remaining);
+    return ordered;
+  };
+
+  const buildFixedPairsMexicanoCourtMatches = (orderedPairs) => {
+    const matches = [];
+    const numCourts = Math.floor(orderedPairs.length / 2);
+    for (let c = 0; c < numCourts; c++) {
+      const p1 = orderedPairs[c * 2];
+      const p2 = orderedPairs[c * 2 + 1];
+      if (!p1 || !p2) break;
+      matches.push({
+        court: c + 1,
+        team1: [p1.m, p1.f],
+        team2: [p2.m, p2.f],
+        score1: '',
+        score2: ''
+      });
+    }
+    return matches;
+  };
+
   const countRoundPlayerSlots = (roundsArr) =>
     (Array.isArray(roundsArr) ? roundsArr : []).reduce(
       (sum, r) =>
@@ -852,7 +1000,7 @@
   };
 
   /**
-   * Roster order (round 1) or team point sum (round 2+), then 1st vs 2nd, 3rd vs 4th among active teams.
+   * Roster order (R1) or court ladder + standings (R2+): winners toward court 1; 1st vs 2nd per court.
    */
   const buildFixedPairsMexicanoMatches = (allPairObjs, courts, allRounds, roundNo, tournament) => {
     const maxCourts = Math.min(courts, Math.floor(allPairObjs.length / 2));
@@ -873,23 +1021,31 @@
         safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
       )
     };
+    const board = computeLeaderboardSorted(tSub, 'points');
+    const pt = new Map(board.map((r) => [r.name, r.points]));
+    const teamPts = (p) => (pt.get(resolve(p.m)) || 0) + (pt.get(resolve(p.f)) || 0);
+    const rankByKey = new Map();
+    [...active]
+      .sort((a, b) => {
+        const d = teamPts(b) - teamPts(a);
+        if (d !== 0) return d;
+        return (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0);
+      })
+      .forEach((p, i) => rankByKey.set(tKey(p), i));
+
     let ordered;
     if (rn === 1) {
       ordered = [...active].sort(
         (a, b) => (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0)
       );
+    } else if (maxCourts > 1) {
+      const prevRound = getPreviousRoundDatum(allRounds, roundNo);
+      const targetByPair = getMexicanoTeamTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
+      ordered = orderPairsForMexicanoCourts(active, targetByPair, rankByKey, maxCourts, tKey);
     } else {
-      const board = computeLeaderboardSorted(tSub, 'points');
-      const pt = new Map(board.map((r) => [r.name, r.points]));
-      const teamPts = (p) => (pt.get(resolve(p.m)) || 0) + (pt.get(resolve(p.f)) || 0);
-      ordered = [...active].sort((a, b) => {
-        const d = teamPts(b) - teamPts(a);
-        if (d !== 0) return d;
-        return (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0);
-      });
+      ordered = [...active].sort((a, b) => rankByKey.get(tKey(a)) - rankByKey.get(tKey(b)));
     }
-    const history = buildMixHistory();
-    return buildBestFixedPairMatches(ordered, history) || [];
+    return buildFixedPairsMexicanoCourtMatches(ordered);
   };
 
   /**
@@ -2256,7 +2412,7 @@
   };
 
   /**
-   * Mexicano: players ordered by roster (R1) or standings (R2+), blocks of four per court.
+   * Mexicano: R1 by roster order; R2+ winners move up toward court 1 (top court).
    * Team split in each block minimizes repeat partners/opponents vs classic 1+2 vs 3+4 bias.
    */
   function buildMexicanoMatches (players, courts, rounds, roundNo, tournament) {
@@ -2279,14 +2435,22 @@
     const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
     const levelByName = makeLevelByNameMap(getPlayersFull());
 
+    const board = computeLeaderboardSorted(tSub, 'points');
+    const standingsOrder = board.map((row) => row.name);
+    active.forEach((n) => {
+      if (!standingsOrder.includes(n)) standingsOrder.push(n);
+    });
+
     let ordered = [];
     if (rn === 1) {
       const act = new Set(active);
       ordered = players.filter((n) => act.has(n));
+    } else if (maxCourts > 1) {
+      const targetCourt = getMexicanoTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
+      ordered = orderActiveForMexicanoCourts(active, targetCourt, standingsOrder, maxCourts);
     } else {
-      const board = computeLeaderboardSorted(tSub, 'points');
       const act = new Set(active);
-      ordered = board.map((row) => row.name).filter((n) => act.has(n));
+      ordered = standingsOrder.filter((n) => act.has(n));
       active.forEach((n) => {
         if (!ordered.includes(n)) ordered.push(n);
       });
@@ -2335,6 +2499,12 @@
       )
     };
 
+    const board = computeLeaderboardSorted(tSub, 'points');
+    const standingsOrder = board.map((row) => row.name);
+    const rosterNames = [...malesAll, ...femalesAll];
+    const resolve = makeRosterNameResolve(rosterNames);
+    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
+
     let orderedM;
     let orderedF;
     if (rn === 1) {
@@ -2342,24 +2512,24 @@
       const actF = new Set(activeF);
       orderedM = malesAll.filter((n) => actM.has(n));
       orderedF = femalesAll.filter((n) => actF.has(n));
+    } else if (maxCourts > 1) {
+      const targetCourt = getMexicanoTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
+      orderedM = orderActiveForMexicanoCourts(activeM, targetCourt, standingsOrder, maxCourts);
+      orderedF = orderActiveForMexicanoCourts(activeF, targetCourt, standingsOrder, maxCourts);
     } else {
-      const board = computeLeaderboardSorted(tSub, 'points');
       const actM = new Set(activeM);
       const actF = new Set(activeF);
-      orderedM = board.map((row) => row.name).filter((n) => actM.has(n));
+      orderedM = standingsOrder.filter((n) => actM.has(n));
       activeM.forEach((n) => {
         if (!orderedM.includes(n)) orderedM.push(n);
       });
-      orderedF = board.map((row) => row.name).filter((n) => actF.has(n));
+      orderedF = standingsOrder.filter((n) => actF.has(n));
       activeF.forEach((n) => {
         if (!orderedF.includes(n)) orderedF.push(n);
       });
     }
 
     const history = buildMixHistory();
-    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
-    const rosterNames = [...malesAll, ...femalesAll];
-    const resolve = makeRosterNameResolve(rosterNames);
     const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
     const levelByName = makeLevelByNameMap(playersFull);
 

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en" class="h-full dark">
+<html lang="en" class="h-full">
 
 <head>
-  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='light')document.documentElement.classList.remove('dark');}catch(e){}})();</script>
+  <script>(function(){try{if(localStorage.getItem('padelio-theme')==='dark')document.documentElement.classList.add('dark');}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -21,7 +21,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1a1522">
+  <meta name="theme-color" content="#f4f2ef">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -813,7 +813,7 @@
         </button>
         <h2 class="text-2xl font-extrabold mb-2">Add Players</h2>
         <p id="mexicano-players-hint" class="hidden text-teal-900 dark:text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/55 dark:border-teal-400/25 bg-teal-50/90 dark:bg-teal-500/10 rounded-2xl px-3 py-2">
-          <strong>Mexicano:</strong> list order sets Round 1 (first four = court 1, …). Later rounds order by standings within each active block of four. Teams are formed to match classic Mexicano when possible, or another legal split in that block of four to avoid repeat partners/opponents when your history allows it.
+          <strong>Mexicano:</strong> Round 1 — list order (first four = court 1, …). Later rounds — winners move up toward <strong>court 1</strong> (top court), losers move down; ties stay on the same court. Teams in each court are split to avoid repeat partners when possible.
         </p>
         <p id="mixmex-players-hint" class="hidden text-teal-900 dark:text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-500/35 dark:border-teal-500/20 bg-teal-50/95 dark:bg-cyan-950/40 rounded-2xl px-3 py-2">
           <strong>Mix Mexicano:</strong> same bench and standings as Mexicano (M and F lists separately). Each court picks the lower-penalty pairing between (M1+F1 vs M2+F2) and (M1+F2 vs M2+F1) to reduce repeated partners and rematches when history allows it.

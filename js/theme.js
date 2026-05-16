@@ -38,13 +38,13 @@
     if (persist) setStoredTheme(theme);
   }
 
-  /** First paint: avoid wrong flash (runs before layout; safe if <html> has class="dark" in markup). */
+  /** First paint: default light; dark only when stored as 'dark'. */
   function initThemeFromStorage() {
     var t = getStoredTheme();
-    if (t === 'light') {
-      applyTheme('light', false);
-    } else {
+    if (t === 'dark') {
       applyTheme('dark', false);
+    } else {
+      applyTheme('light', false);
     }
   }
 
