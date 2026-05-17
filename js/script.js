@@ -742,7 +742,33 @@
 
   const TENNIS_PTS_LABEL = ['0', '15', '30', '40'];
 
-  /** Fresh selection logic: never-played first, then benched-last-round first, then low play count. */
+  /**
+   * Fair bench for Normal/Balanced: always prefer people with fewer games played, then bangku minggu lalu,
+   * then who sat out the longest streak. RNG only breaks ties inside an equivalent fairness tier.
+   */
+  /** Sort key only — RNG lives in shuffleFairnessRuns for tied tiers. */
+  const fairnessTierCmp = (a, b) => {
+    if (a.played !== b.played) return a.played - b.played;
+    if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
+    if (a.streak !== b.streak) return b.streak - a.streak;
+    return 0;
+  };
+
+  const shuffleFairnessRuns = (rows) => {
+    const sorted = [...rows].sort(fairnessTierCmp);
+    const out = [];
+    let i = 0;
+    while (i < sorted.length) {
+      let j = i + 1;
+      while (j < sorted.length && fairnessTierCmp(sorted[i], sorted[j]) === 0) j++;
+      const run = sorted.slice(i, j);
+      shuffle(run);
+      out.push(...run);
+      i = j;
+    }
+    return out;
+  };
+
   const pickActivePlayersNormal = (allNames, slots, allRounds, roundNo) => {
     const resolve = makeRosterNameResolve(allNames);
     const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
@@ -765,42 +791,18 @@
       });
     }
 
-    const n = allNames.length;
-    const pos = new Map(allNames.map((name, i) => [name, i]));
-    const rot = ((Number(roundNo) || 1) - 1 + n * 100) % n;
-
     const keyed = allNames.map((name) => ({
       name,
-      played: playCount.get(name) || 0,
+      played: playCount.get(resolve(name)) ?? playCount.get(name) ?? 0,
       streak: consecutiveBenchStreak(name, priorRounds, resolve),
-      tieRot: (pos.get(name) - rot + n) % n,
-      benchedLastRound: lastRound ? !playedLastRound.has(name) : false
+      benchedLastRound: lastRound ? !playedLastRound.has(resolve(name)) : false
     }));
 
     // Round 1 is deterministic: first listed players enter first.
     if (!lastRound) return allNames.slice(0, slots);
 
-    const byPriority = (a, b) => {
-      if (a.benchedLastRound !== b.benchedLastRound) return a.benchedLastRound ? -1 : 1;
-      if (a.played !== b.played) return a.played - b.played;
-      if (a.streak !== b.streak) return b.streak - a.streak;
-      return a.tieRot - b.tieRot;
-    };
-
-    // Hard fairness rule: anyone with zero games must be selected first.
-    const neverPlayed = keyed.filter((x) => x.played === 0).sort(byPriority);
-    const selected = neverPlayed.slice(0, slots);
-    const selectedNames = new Set(selected.map((x) => x.name));
-
-    if (selected.length < slots) {
-      const needed = slots - selected.length;
-      const restPool = keyed
-        .filter((x) => !selectedNames.has(x.name))
-        .sort(byPriority);
-      selected.push(...restPool.slice(0, needed));
-    }
-
-    return selected.slice(0, slots).map((x) => x.name);
+    const ordered = shuffleFairnessRuns(keyed);
+    return ordered.slice(0, slots).map((x) => x.name);
   };
 
   /** Fixed-pair mode: same two players always one team; bench/fairness at team level. */
@@ -1317,7 +1319,7 @@
   };
 
   /** Locked in js/version.js — do not change here. */
-  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.7';
+  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.8';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -1377,6 +1379,99 @@
     const raw = safeJsonParse(state.currentTournament?.players, []);
     const norm = normalizePlayers(raw);
     return norm.map(p => p.name);
+  };
+
+  const getAmericanoScheduleApi = () => {
+    const g = typeof globalThis !== 'undefined' ? globalThis : window;
+    return g.PadelioAmericanoSchedule || null;
+  };
+
+  /** Normal Americano — pre-generated full-session schedule (any courts / player count). */
+  const usesGeneratedAmericanoSchedule = (t, playerCount, courtCount) => {
+    if (!t) return false;
+    if ((t.mode || 'normal') !== 'normal') return false;
+    const n =
+      typeof playerCount === 'number'
+        ? playerCount
+        : safeJsonParse(t.players, []).length;
+    const c =
+      courtCount != null && courtCount !== ''
+        ? Number(courtCount)
+        : Number(t.courts) || 0;
+    if (n < 4 || c < 1) return false;
+    return Math.floor(n / 4) >= 1;
+  };
+
+  const isGeneratedScheduleComplete = (result) =>
+    !!(result?.partnerComplete && result?.opponentComplete);
+
+  const parseStoredSocialSchedule = (t) => {
+    const raw = safeJsonParse(t?.social_schedule_json, null);
+    return Array.isArray(raw) && raw.length > 0 ? raw : null;
+  };
+
+  const buildSocialScheduleForPlayers = (playerNames, courts) => {
+    const api = getAmericanoScheduleApi();
+    if (!api || typeof api.generateAmericanoSchedule !== 'function') return null;
+    const n = playerNames.length;
+    const maxRetries = Math.min(500, Math.max(200, 150 + n * 12));
+    const result = api.generateAmericanoSchedule(playerNames, courts, { maxRetries });
+    if (!result) return null;
+    const storage =
+      typeof api.serializeScheduleRounds === 'function'
+        ? api.serializeScheduleRounds(result)
+        : result.rounds.map((round) => ({
+            round: round.roundNumber,
+            matches: round.matches.map((m) => ({
+              teamA: m.teamA,
+              teamB: m.teamB
+            }))
+          }));
+    return { result, storage };
+  };
+
+  const matchesFromSocialScheduleRound = (roundEntry, rosterNames) => {
+    const list = roundEntry?.matches;
+    if (!Array.isArray(list) || list.length === 0) return [];
+    const out = [];
+    for (let i = 0; i < list.length; i++) {
+      const m = list[i];
+      const ta = m?.teamA;
+      const tb = m?.teamB;
+      if (!Array.isArray(ta) || !Array.isArray(tb) || ta.length !== 2 || tb.length !== 2) continue;
+      for (const ix of [...ta, ...tb]) {
+        if (typeof ix !== 'number' || ix < 0 || ix >= rosterNames.length) return [];
+      }
+      const team1 = [rosterNames[ta[0]], rosterNames[ta[1]]];
+      const team2 = [rosterNames[tb[0]], rosterNames[tb[1]]];
+      if (!team1[0] || !team1[1] || !team2[0] || !team2[1]) return [];
+      out.push({ court: i + 1, team1, team2, score1: '', score2: '' });
+    }
+    return out;
+  };
+
+  const ensureSocialSchedule = async () => {
+    const t = state.currentTournament;
+    if (!usesGeneratedAmericanoSchedule(t)) return null;
+
+    const cached = parseStoredSocialSchedule(t);
+    if (cached) return cached;
+
+    const players = getPlayers();
+    const courts = Number(t.courts) || 1;
+    const built = buildSocialScheduleForPlayers(players, courts);
+    if (!built?.storage?.length) return null;
+
+    if (!isGeneratedScheduleComplete(built.result)) {
+      console.warn('[Padelio] generated schedule incomplete', {
+        partnerMissing: built.result.partnerCoverage?.missing?.length,
+        opponentMissing: built.result.opponentCoverage?.missing?.length
+      });
+    }
+
+    t.social_schedule_json = JSON.stringify(built.storage);
+    await saveCurrentTournament();
+    return built.storage;
   };
 
   const getMaxRoundNumber = () => {
@@ -1511,6 +1606,7 @@
 
     if (page === 'new-players') {
       syncPlayerLevelControls();
+      updateButtonStates();
     }
 
     if (page === 'new-points') {
@@ -1748,6 +1844,7 @@
     syncMexicanoPlayersHint();
     syncFixedPairsHint();
     syncPlayerLevelControls();
+    updateButtonStates();
   };
 
   const readPlayerLevelDraft = () => clampPlayerLevel($('player-level')?.value);
@@ -2087,6 +2184,8 @@
         }
       }
 
+      const plist = normalizePlayers(state.newTournament.players);
+      const names = plist.map((p) => p.name);
       if (!window.dataSdk) return;
 
       if (state.tournaments.length >= 999) {
@@ -2099,6 +2198,40 @@
         btn.dataset.originalText = btn.dataset.originalText || btn.textContent || 'Start Tournament';
         btn.innerHTML = '<span class="animate-pulse">Creating...</span>';
         btn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      let socialScheduleJson = null;
+      if (
+        usesGeneratedAmericanoSchedule(
+          { mode: state.newTournament.mode, courts: state.newTournament.courts },
+          names.length,
+          state.newTournament.courts
+        )
+      ) {
+        if (!getAmericanoScheduleApi()) {
+          toast('Modul jadwal belum termuat — muat ulang halaman.');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = btn.dataset.originalText || 'Start Tournament';
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
+          return;
+        }
+        if (btn) btn.innerHTML = '<span class="animate-pulse">Membuat jadwal...</span>';
+        const built = buildSocialScheduleForPlayers(names, state.newTournament.courts);
+        if (!built?.storage?.length) {
+          toast('Gagal membuat jadwal. Coba lagi.');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = btn.dataset.originalText || 'Start Tournament';
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
+          return;
+        }
+        socialScheduleJson = JSON.stringify(built.storage);
+        if (!isGeneratedScheduleComplete(built.result)) {
+          toast('Jadwal belum 100% lengkap — babak awal pakai jadwal, sisanya pairing otomatis.');
+        }
       }
 
       const mexFam = isMexicanoFamilyMode(state.newTournament.mode);
@@ -2131,7 +2264,8 @@
         created_at: new Date().toISOString(),
         ...(mexFam && mex_score_kind
           ? { mex_score_kind, mex_best_of_games }
-          : {})
+          : {}),
+        ...(socialScheduleJson ? { social_schedule_json: socialScheduleJson } : {})
       };
 
       const result = await window.dataSdk.create(tournament);
@@ -2778,10 +2912,57 @@
       if (maxCourts > 0) {
         const slots = maxCourts * 4;
         const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
-        const history = buildMixHistory();
-        matches = buildBestNormalMatches(
-          active, maxCourts, history, rounds, roundNo, players, levelByName
-        );
+
+        await new Promise((resolveRaf) => {
+          if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => resolveRaf());
+          } else {
+            setTimeout(resolveRaf, 0);
+          }
+        });
+
+        const g = typeof globalThis !== 'undefined' ? globalThis : window;
+
+        let plannerAttempted = false;
+        try {
+          const plannerFn =
+            typeof g.planAmericanoRound === 'function'
+              ? g.planAmericanoRound
+              : typeof g.PadelioAmericanoPlanner?.planAmericanoRound === 'function'
+                ? g.PadelioAmericanoPlanner.planAmericanoRound
+                : null;
+
+          if (typeof plannerFn === 'function') {
+            plannerAttempted = true;
+            const out = plannerFn({
+              players,
+              courtCount: maxCourts,
+              priorRounds: rounds,
+              roundNo,
+              levelByName,
+              opts: { fixedActiveNames: active }
+            });
+            const ok =
+              out &&
+              !out.error &&
+              Array.isArray(out.matches) &&
+              out.matches.length === maxCourts;
+            if (ok) {
+              matches = out.matches;
+            }
+          }
+        } catch (e) {
+          console.warn('[Padelio] balanced round planner failed', e);
+          plannerAttempted = true;
+        }
+
+        if (matches.length === 0) {
+          const history = buildMixHistory();
+          matches = buildBestNormalMatches(
+            active, maxCourts, history, rounds, roundNo, players, levelByName
+          );
+          if (plannerAttempted) toast('Could not optimize round — using classic pairing.');
+        }
       }
 
       roundData = { round: roundNo, matches };
@@ -2799,12 +2980,73 @@
       let matches = [];
 
       if (maxCourts > 0) {
-        const slots = maxCourts * 4;
-        const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
-        const history = buildMixHistory();
-        matches = buildBestNormalMatches(
-          active, maxCourts, history, rounds, roundNo, players, null
-        );
+        let usedGeneratedSchedule = false;
+        if (usesGeneratedAmericanoSchedule(state.currentTournament)) {
+          const schedSoc = await ensureSocialSchedule();
+          const row = schedSoc?.find((r) => Number(r.round) === roundNo);
+          let fromSched = row ? matchesFromSocialScheduleRound(row, players) : [];
+          if (fromSched.length > maxCourts) fromSched = fromSched.slice(0, maxCourts);
+          if (fromSched.length > 0) {
+            matches = fromSched;
+            usedGeneratedSchedule = true;
+          }
+        }
+
+        if (!usedGeneratedSchedule) {
+          const slots = maxCourts * 4;
+          const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
+
+          await new Promise((resolveRaf) => {
+            if (typeof requestAnimationFrame === 'function') {
+              requestAnimationFrame(() => resolveRaf());
+            } else {
+              setTimeout(resolveRaf, 0);
+            }
+          });
+
+          const g = typeof globalThis !== 'undefined' ? globalThis : window;
+
+          let plannerAttempted = false;
+          try {
+            const plannerFn =
+              typeof g.planAmericanoRound === 'function'
+                ? g.planAmericanoRound
+                : typeof g.PadelioAmericanoPlanner?.planAmericanoRound === 'function'
+                  ? g.PadelioAmericanoPlanner.planAmericanoRound
+                  : null;
+
+            if (typeof plannerFn === 'function') {
+              plannerAttempted = true;
+              const out = plannerFn({
+                players,
+                courtCount: maxCourts,
+                priorRounds: rounds,
+                roundNo,
+                levelByName: null,
+                opts: { fixedActiveNames: active }
+              });
+              const ok =
+                out &&
+                !out.error &&
+                Array.isArray(out.matches) &&
+                out.matches.length === maxCourts;
+              if (ok) {
+                matches = out.matches;
+              }
+            }
+          } catch (e) {
+            console.warn('[Padelio] normal round planner failed', e);
+            plannerAttempted = true;
+          }
+
+          if (matches.length === 0) {
+            const history = buildMixHistory();
+            matches = buildBestNormalMatches(
+              active, maxCourts, history, rounds, roundNo, players, null
+            );
+            if (plannerAttempted) toast('Could not optimize round — using classic pairing.');
+          }
+        }
       }
 
       roundData = { round: roundNo, matches };
@@ -4455,7 +4697,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.7');
+        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.8');
 
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;

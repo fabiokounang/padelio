@@ -1,7 +1,7 @@
 // service-worker.js
-const VERSION = "v1.6.7";
+const VERSION = "v1.6.8";
 const CACHE_NAME = `padel-cache-${VERSION}`;
-const STYLES_URL = "/styles.css?v=1.6.7";
+const STYLES_URL = "/styles.css?v=1.6.8";
 
 const URLS_TO_CACHE = [
   "/",
@@ -9,6 +9,8 @@ const URLS_TO_CACHE = [
   "/manifest.json",
   STYLES_URL,
   "/js/script.js",
+  "/js/americano-round-planner.js",
+  "/js/americano-schedule-generator.js",
   "/js/version.js",
   "/js/theme.js",
   "/js/tailwind-padelio-config.js",
