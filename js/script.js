@@ -1319,7 +1319,7 @@
   };
 
   /** Locked in js/version.js — do not change here. */
-  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.8';
+  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.9';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -4697,7 +4697,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.8');
+        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.9');
 
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;
