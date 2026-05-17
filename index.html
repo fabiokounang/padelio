@@ -66,7 +66,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="js/tailwind-padelio-config.js"></script>
   <script src="js/theme.js"></script>
-  <link rel="stylesheet" href="/styles.css?v=1.6.6-lb">
+  <link rel="stylesheet" href="/styles.css?v=1.6.7">
 
   <!-- SDK -->
   <script src="/_sdk/element_sdk.js"></script>
@@ -141,19 +141,19 @@
           <div class="padel-details__body">
             <ul>
               <li>
-                <strong>Mix Mexicano</strong> — Mexicano benching and standings, with every team one male and one female (equal M/F roster).
+                <strong>Mexicano shuffle fixed</strong> — winners move up toward court 1 (top court); losers move down. Works across Mexicano, Mix Mexicano, and Fixed Mexicano when you use multiple courts.
               </li>
               <li>
-                <strong>Balanced Americano</strong> — same rotation as normal Americano, plus power levels (L1–L5) to keep matches competitive across skill spreads.
+                <strong>Light &amp; dark theme</strong> — default is light; toggle anytime. Your choice is remembered on this device.
               </li>
               <li>
-                <strong>Player levels</strong> — set a level per player for Balanced mode; pairing balances teams using strength while rotation stays fair.
+                <strong>Up to 10 courts</strong> — run bigger sessions from a single tournament (minimum 4 players per court). All features stay free.
               </li>
               <li>
-                <strong>Fixed pairs &amp; multiple Mexicano variants</strong> — fixed teams for Americano or Mexicano-style matchups; share links work across modes.
+                <strong>Leaderboard diff</strong> — standings show point difference (diff) for easier ranking ties.
               </li>
               <li>
-                <strong>Organizer guides</strong> — Mexicano-style modes, Mix Mexicano, and Balanced Americano are covered in the guides index (see <em>Free organizer guides</em> on this page or <em>Explore → Guides</em> in the footer).
+                <strong>Mexicano best-of games</strong> — score by games won (e.g. 2–1, 3–0) with optional 0–40 per-game entry; all best-of lengths supported.
               </li>
             </ul>
           </div>
@@ -338,15 +338,19 @@
           <p id="spa-about-version" class="text-slate-600 dark:text-slate-400/90 text-xs font-mono mb-3" aria-label="App version"></p>
           <ul class="text-slate-600/95 dark:text-slate-300/95 text-sm space-y-2 list-disc list-outside pl-4 leading-relaxed">
             <li>
-              <strong>Fixed pairs mode</strong> — the same two players stay on one team; opponents rotate across rounds with fair benching
-              and varied matchups, similar in spirit to classic Americano fairness.
+              <strong>Mexicano shuffle fixed</strong> — winners move up toward court 1; losers move down when you use multiple courts.
             </li>
             <li>
-              <strong>Better guidance for names</strong> — the app now explains that list order defines pairs (names 1+2, 3+4, …), including
-              for paste — handy when you’re in a rush courtside.
+              <strong>Light &amp; dark theme</strong> — default light; toggle anytime. Your choice is saved on this device.
             </li>
             <li>
-              <strong>Share &amp; spectate</strong> — fixed-pair tournaments are included in share links like other formats.
+              <strong>Up to 10 courts</strong> — bigger sessions from one tournament (4 players per court minimum). All features free.
+            </li>
+            <li>
+              <strong>Leaderboard diff</strong> — point difference on standings; cleaner screenshot leaderboard.
+            </li>
+            <li>
+              <strong>Mexicano best-of games</strong> — games-won scoring with optional 0–40 per game (best of 3, 5, 7, …).
             </li>
           </ul>
         </div>
@@ -735,13 +739,17 @@
       <div class="flex-1 flex flex-col">
         <h2 class="text-2xl font-extrabold mb-2">Number of Courts</h2>
         <p class="text-slate-600 dark:text-slate-300 text-sm mb-6">How many courts will be used?</p>
-        <div class="grid grid-cols-3 gap-3 mb-6">
-          <button type="button" onclick="selectCourts(1)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="1">1</button>
-          <button type="button" onclick="selectCourts(2)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="2">2</button>
-          <button type="button" onclick="selectCourts(3)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="3">3</button>
-          <button type="button" onclick="selectCourts(4)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="4">4</button>
-          <button type="button" onclick="selectCourts(5)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="5">5</button>
-          <button type="button" onclick="selectCourts(6)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-6 text-xl font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="6">6</button>
+        <div class="grid grid-cols-5 gap-3 mb-6">
+          <button type="button" onclick="selectCourts(1)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="1">1</button>
+          <button type="button" onclick="selectCourts(2)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="2">2</button>
+          <button type="button" onclick="selectCourts(3)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="3">3</button>
+          <button type="button" onclick="selectCourts(4)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="4">4</button>
+          <button type="button" onclick="selectCourts(5)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="5">5</button>
+          <button type="button" onclick="selectCourts(6)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="6">6</button>
+          <button type="button" onclick="selectCourts(7)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="7">7</button>
+          <button type="button" onclick="selectCourts(8)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="8">8</button>
+          <button type="button" onclick="selectCourts(9)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="9">9</button>
+          <button type="button" onclick="selectCourts(10)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="10">10</button>
         </div>
         <button onclick="goToPoints()" id="btn-to-points" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
       </div>
@@ -827,7 +835,7 @@
         <p id="min-players-text" class="text-slate-600 dark:text-slate-300 text-sm mb-2">
           Minimum 4 players required
         </p>
-        <p class="text-amber-950 dark:text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: If you select 2 courts, minimum players must be 8, if you start without 8 players name. Only 1 court will be generated.</p>
+        <p class="text-amber-950 dark:text-amber-100/85 text-[0.7rem] leading-snug mb-2 font-medium">Hint: minimum players = courts × 4 (e.g. 2 courts → 8 players). You can run up to 10 courts — all free.</p>
 
         <p id="power-level-hint" class="hidden text-teal-900 dark:text-teal-200/90 text-xs leading-relaxed mb-2 border border-teal-400/45 dark:border-teal-400/20 bg-teal-50/95 dark:bg-teal-500/10 rounded-2xl px-3 py-2">
           <strong>Balanced Americano only:</strong> set each player’s <strong>power level</strong> (L1 = lowest … L5 = highest). Pairing uses it to balance teams; partners and opponents still rotate each round like normal Americano.
