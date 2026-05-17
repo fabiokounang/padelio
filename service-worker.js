@@ -11,6 +11,7 @@ const URLS_TO_CACHE = [
   "/js/script.js",
   "/js/americano-round-planner.js",
   "/js/americano-schedule-generator.js",
+  "/js/mix-americano-schedule-generator.js",
   "/js/version.js",
   "/js/theme.js",
   "/js/tailwind-padelio-config.js",

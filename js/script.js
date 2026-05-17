@@ -458,6 +458,93 @@
     );
   };
 
+  /** Fixed Americano: how often two fixed teams already faced each other (partners unchanged). */
+  const fixedPairMatchupScore = (pA, pB, matchupCount) =>
+    matchupCount.get(matchupKey(pA, pB)) || 0;
+
+  const getLastRoundFixedMatchupSet = (lastRound) => {
+    const out = new Set();
+    if (!lastRound) return out;
+    (lastRound.matches || []).forEach((m) => {
+      const t1 = m.team1 || [];
+      const t2 = m.team2 || [];
+      if (t1.length === 2 && t2.length === 2) {
+        out.add(matchupKey({ m: t1[0], f: t1[1] }, { m: t2[0], f: t2[1] }));
+      }
+    });
+    return out;
+  };
+
+  const scoreFixedPairCourtMatch = (p1, p2, matchupCount, opposeCount, lastRoundMatchups) => {
+    let s = fixedPairMatchupScore(p1, p2, matchupCount) * 1000000;
+    s += pairCrossOpposeScore(p1, p2, opposeCount) * 25;
+    if (lastRoundMatchups?.has(matchupKey(p1, p2))) s += 500000;
+    return s;
+  };
+
+  const fixedPairMatchingsToCourts = (pairings) =>
+    pairings.map(([p1, p2], i) => ({
+      court: i + 1,
+      team1: [p1.m, p1.f],
+      team2: [p2.m, p2.f],
+      score1: '',
+      score2: ''
+    }));
+
+  /** Enumerate all ways to split active fixed teams into court matches (small groups only). */
+  const enumerateFixedPairMatchings = (pairs, out) => {
+    if (pairs.length === 0) {
+      out.push([]);
+      return;
+    }
+    if (pairs.length < 2) return;
+    const [p0, ...rest] = pairs;
+    for (let i = 0; i < rest.length; i++) {
+      const p1 = rest[i];
+      const remaining = rest.filter((_, idx) => idx !== i);
+      const sub = [];
+      enumerateFixedPairMatchings(remaining, sub);
+      for (const sm of sub) {
+        out.push([[p0, p1], ...sm]);
+      }
+    }
+  };
+
+  const buildBestFixedPairMatchesExhaustive = (
+    selectedPairs,
+    matchupCount,
+    opposeCount,
+    lastRoundMatchups
+  ) => {
+    const k = selectedPairs.length;
+    const numCourts = k / 2;
+    const all = [];
+    enumerateFixedPairMatchings([...selectedPairs], all);
+    if (!all.length) return null;
+
+    let bestScore = Infinity;
+    const bestPlans = [];
+
+    for (const plan of all) {
+      if (plan.length !== numCourts) continue;
+      let total = 0;
+      for (const [p1, p2] of plan) {
+        total += scoreFixedPairCourtMatch(p1, p2, matchupCount, opposeCount, lastRoundMatchups);
+      }
+      if (total < bestScore) {
+        bestScore = total;
+        bestPlans.length = 0;
+        bestPlans.push(plan);
+      } else if (total === bestScore) {
+        bestPlans.push(plan);
+      }
+    }
+
+    if (!bestPlans.length) return null;
+    const pick = bestPlans[Math.floor(Math.random() * bestPlans.length)];
+    return fixedPairMatchingsToCourts(pick);
+  };
+
   /**
    * Normal mode only: levels 1–5. Map canonical roster name -> level.
    * When all players share one level, spread is 0 and pairing ignores power terms.
@@ -880,7 +967,7 @@
 
   /**
    * Mexicano-style benching for indivisible fixed teams (pair = two players on court or neither).
-   * If too many teams "must play", falls back to Americana-style `pickActiveFixedPairs`.
+   * If too many teams "must play", falls back to Americano-style `pickActiveFixedPairs`.
    */
   const pickActiveFixedPairsMexicano = (allPairs, pairSlots, allRounds, roundNo) => {
     const flatNames = allPairs.flatMap((p) => [p.m, p.f]);
@@ -956,35 +1043,56 @@
   };
 
   /**
-   * Same as normal Americano matching: many shuffled attempts, minimize repeat opponents; teams stay fixed.
+   * Fixed Americano: partners stay fixed; pick opponents to spread team-vs-team matchups.
    */
-  const buildBestFixedPairMatches = (selectedPairs, history) => {
+  const buildBestFixedPairMatches = (selectedPairs, history, lastRoundMatchups) => {
     const { opposeCount, matchupCount } = history;
     const k = selectedPairs.length;
     if (k < 2 || k % 2 !== 0) return [];
     const numCourts = k / 2;
-    const attempts = Math.max(80, Math.min(260, k * 18));
+    const lastMu = lastRoundMatchups || new Set();
+
+    if (k <= 12) {
+      const exact = buildBestFixedPairMatchesExhaustive(
+        selectedPairs,
+        matchupCount,
+        opposeCount,
+        lastMu
+      );
+      if (exact?.length === numCourts) return exact;
+    }
+
+    const attempts = Math.max(120, Math.min(400, k * 28));
     let best = null;
+
     for (let a = 0; a < attempts; a++) {
       const pool = shuffle([...selectedPairs]);
       const matches = [];
       let totalScore = 0;
+
       for (let c = 0; c < numCourts; c++) {
         if (pool.length < 2) break;
         const p1 = pool.shift();
-        let bestJ = -1;
+
         let bestPairScore = Infinity;
+        const candidates = [];
+
         for (let j = 0; j < pool.length; j++) {
           const p2 = pool[j];
-          const sOpp = pairCrossOpposeScore(p1, p2, opposeCount);
-          const sMatch = matchupCount.get(matchupKey(p1, p2)) || 0;
-          const pairScore = sOpp * 10 + sMatch * 200;
+          const pairScore = scoreFixedPairCourtMatch(
+            p1, p2, matchupCount, opposeCount, lastMu
+          );
           if (pairScore < bestPairScore) {
             bestPairScore = pairScore;
-            bestJ = j;
+            candidates.length = 0;
+            candidates.push(j);
+          } else if (pairScore === bestPairScore) {
+            candidates.push(j);
           }
         }
-        if (bestJ < 0) break;
+
+        if (!candidates.length) break;
+        const bestJ = candidates[Math.floor(Math.random() * candidates.length)];
         const p2 = pool.splice(bestJ, 1)[0];
         totalScore += bestPairScore;
         matches.push({
@@ -995,9 +1103,15 @@
           score2: ''
         });
       }
+
       if (matches.length !== numCourts) continue;
-      if (!best || totalScore < best.totalScore) best = { totalScore, matches };
+      if (!best || totalScore < best.totalScore) {
+        best = { totalScore, matches };
+      } else if (totalScore === best.totalScore && Math.random() < 0.35) {
+        best = { totalScore, matches };
+      }
     }
+
     return best?.matches || [];
   };
 
@@ -1470,6 +1584,87 @@
     }
 
     t.social_schedule_json = JSON.stringify(built.storage);
+    await saveCurrentTournament();
+    return built.storage;
+  };
+
+  const getMixAmericanoScheduleApi = () => {
+    const g = typeof globalThis !== 'undefined' ? globalThis : window;
+    return g.PadelioMixAmericanoSchedule || null;
+  };
+
+  /** Mix Americano — equal M/F, pre-generated session schedule (balanced mode unchanged). */
+  const usesGeneratedMixSchedule = (t, playersOrCount, courtCount) => {
+    if (!t) return false;
+    if ((t.mode || '') !== 'mix') return false;
+
+    const players = Array.isArray(playersOrCount)
+      ? playersOrCount
+      : safeJsonParse(t.players, []);
+    const { m, f, total } = countGender(
+      Array.isArray(playersOrCount) ? playersOrCount : players
+    );
+    if (total < 4 || m !== f || m < 2) return false;
+
+    const c =
+      courtCount != null && courtCount !== ''
+        ? Number(courtCount)
+        : Number(t.courts) || 0;
+    if (c < 1) return false;
+
+    return Math.min(c, Math.floor(m / 2), Math.floor(f / 2)) >= 1;
+  };
+
+  const parseStoredMixSchedule = (t) => {
+    const raw = safeJsonParse(t?.mix_schedule_json, null);
+    return Array.isArray(raw) && raw.length > 0 ? raw : null;
+  };
+
+  const buildMixScheduleForPlayers = (playersFull, courts) => {
+    const api = getMixAmericanoScheduleApi();
+    if (!api || typeof api.generateMixAmericanoSchedule !== 'function') return null;
+    const n = playersFull.length;
+    const maxRetries = Math.min(500, Math.max(200, 150 + n * 12));
+    try {
+      const result = api.generateMixAmericanoSchedule(playersFull, courts, { maxRetries });
+      if (!result) return null;
+      const storage =
+        typeof api.serializeScheduleRounds === 'function'
+          ? api.serializeScheduleRounds(result)
+          : result.rounds.map((round) => ({
+              round: round.roundNumber,
+              matches: round.matches.map((m) => ({
+                teamA: m.teamA,
+                teamB: m.teamB
+              }))
+            }));
+      return { result, storage };
+    } catch (e) {
+      console.warn('[Padelio] mix schedule build failed', e);
+      return null;
+    }
+  };
+
+  const ensureMixSchedule = async () => {
+    const t = state.currentTournament;
+    if (!usesGeneratedMixSchedule(t)) return null;
+
+    const cached = parseStoredMixSchedule(t);
+    if (cached) return cached;
+
+    const playersFull = getPlayersFull();
+    const courts = Number(t.courts) || 1;
+    const built = buildMixScheduleForPlayers(playersFull, courts);
+    if (!built?.storage?.length) return null;
+
+    if (!isGeneratedScheduleComplete(built.result)) {
+      console.warn('[Padelio] mix generated schedule incomplete', {
+        partnerMissing: built.result.partnerCoverage?.missing?.length,
+        opponentMissing: built.result.opponentCoverage?.missing?.length
+      });
+    }
+
+    t.mix_schedule_json = JSON.stringify(built.storage);
     await saveCurrentTournament();
     return built.storage;
   };
@@ -2201,6 +2396,16 @@
       }
 
       let socialScheduleJson = null;
+      let mixScheduleJson = null;
+
+      const abortScheduleBuild = () => {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = btn.dataset.originalText || 'Start Tournament';
+          btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      };
+
       if (
         usesGeneratedAmericanoSchedule(
           { mode: state.newTournament.mode, courts: state.newTournament.courts },
@@ -2210,27 +2415,42 @@
       ) {
         if (!getAmericanoScheduleApi()) {
           toast('Modul jadwal belum termuat — muat ulang halaman.');
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = btn.dataset.originalText || 'Start Tournament';
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-          }
+          abortScheduleBuild();
           return;
         }
         if (btn) btn.innerHTML = '<span class="animate-pulse">Membuat jadwal...</span>';
         const built = buildSocialScheduleForPlayers(names, state.newTournament.courts);
         if (!built?.storage?.length) {
           toast('Gagal membuat jadwal. Coba lagi.');
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = btn.dataset.originalText || 'Start Tournament';
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-          }
+          abortScheduleBuild();
           return;
         }
         socialScheduleJson = JSON.stringify(built.storage);
         if (!isGeneratedScheduleComplete(built.result)) {
           toast('Jadwal belum 100% lengkap — babak awal pakai jadwal, sisanya pairing otomatis.');
+        }
+      } else if (
+        usesGeneratedMixSchedule(
+          { mode: state.newTournament.mode, courts: state.newTournament.courts },
+          plist,
+          state.newTournament.courts
+        )
+      ) {
+        if (!getMixAmericanoScheduleApi()) {
+          toast('Modul jadwal Mix belum termuat — muat ulang halaman.');
+          abortScheduleBuild();
+          return;
+        }
+        if (btn) btn.innerHTML = '<span class="animate-pulse">Membuat jadwal Mix...</span>';
+        const built = buildMixScheduleForPlayers(plist, state.newTournament.courts);
+        if (!built?.storage?.length) {
+          toast('Gagal membuat jadwal Mix. Periksa jumlah M/F sama dan coba lagi.');
+          abortScheduleBuild();
+          return;
+        }
+        mixScheduleJson = JSON.stringify(built.storage);
+        if (!isGeneratedScheduleComplete(built.result)) {
+          toast('Jadwal Mix belum 100% lengkap — babak awal pakai jadwal, sisanya pairing otomatis.');
         }
       }
 
@@ -2265,7 +2485,8 @@
         ...(mexFam && mex_score_kind
           ? { mex_score_kind, mex_best_of_games }
           : {}),
-        ...(socialScheduleJson ? { social_schedule_json: socialScheduleJson } : {})
+        ...(socialScheduleJson ? { social_schedule_json: socialScheduleJson } : {}),
+        ...(mixScheduleJson ? { mix_schedule_json: mixScheduleJson } : {})
       };
 
       const result = await window.dataSdk.create(tournament);
@@ -2333,7 +2554,7 @@
               : md === 'fixedmex'
                 ? 'Fixed pairs Mexicano'
                 : md === 'fixed'
-                  ? 'Fixed pairs Americana'
+                  ? 'Fixed pairs Americano'
                   : md === 'balanced'
                     ? 'Balanced Americano'
                     : md === 'mixmex'
@@ -2714,6 +2935,7 @@
     // ---------- MIX MODE (rotation + fairness) ----------
     if (mode === 'mix') {
       const playersFull = getPlayersFull();
+      const rosterNames = playersFull.map((p) => p.name);
       const malesAll = playersFull.filter(p => p.gender === 'M').map(p => p.name);
       const femalesAll = playersFull.filter(p => p.gender === 'F').map(p => p.name);
 
@@ -2731,6 +2953,23 @@
         await saveCurrentTournament();
         renderCourts(roundData);
         return;
+      }
+
+      if (usesGeneratedMixSchedule(state.currentTournament)) {
+        const schedMix = await ensureMixSchedule();
+        const row = schedMix?.find((r) => Number(r.round) === roundNo);
+        let fromSched = row ? matchesFromSocialScheduleRound(row, rosterNames) : [];
+        if (fromSched.length > maxCourtsByGender) {
+          fromSched = fromSched.slice(0, maxCourtsByGender);
+        }
+        if (fromSched.length > 0) {
+          roundData = { round: roundNo, matches: fromSched };
+          rounds.push(roundData);
+          setRounds(rounds);
+          await saveCurrentTournament();
+          renderCourts(roundData);
+          return;
+        }
       }
 
       const neededM = maxCourtsByGender * 2;
@@ -2862,7 +3101,7 @@
       return;
     }
 
-    // ---------- FIXED PAIRS — Americana (shuffle attempts + opponent variety) or Mexicano (bench + standings) ----------
+    // ---------- FIXED PAIRS — Americano (shuffle attempts + opponent variety) or Mexicano (bench + standings) ----------
     if (mode === 'fixed' || mode === 'fixedmex') {
       const playersFull = getPlayersFull();
       if (playersFull.length % 2 !== 0) {
@@ -2890,7 +3129,9 @@
         } else {
           const active = pickActiveFixedPairs(allPairObjs, needPairs, rounds, roundNo);
           const history = buildMixHistory();
-          matches = buildBestFixedPairMatches(active, history);
+          const lastRound = getPreviousRoundDatum(rounds, roundNo);
+          const lastFixedMatchups = getLastRoundFixedMatchupSet(lastRound);
+          matches = buildBestFixedPairMatches(active, history, lastFixedMatchups);
         }
       }
       roundData = { round: roundNo, matches };
@@ -3404,7 +3645,7 @@
             : md === 'fixedmex'
               ? ' · Fixed Mexicano'
               : md === 'fixed'
-                ? ' · Fixed Americana'
+                ? ' · Fixed Americano'
                 : md === 'balanced'
                   ? ' · Balanced Americano'
                   : '';
