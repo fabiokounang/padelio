@@ -1461,7 +1461,7 @@
     );
     if (!fresh) return;
 
-    const curR = safeJsonParse(state.currentTournament.rounds, []);
+    const curR = getRounds(); // uses cache — free if rounds haven't changed
     const freshR = safeJsonParse(fresh.rounds, []);
     const wCur = countRoundPlayerSlots(curR);
     const wFresh = countRoundPlayerSlots(freshR);
@@ -1479,14 +1479,26 @@
     }
 
     state.currentTournament = fresh;
+    _roundsCache = { raw: null, data: [] }; // invalidate cache: tournament object replaced
   };
 
-  const getRounds = () =>
-    safeJsonParse(state.currentTournament?.rounds, []);
+  // Avoid repeated JSON.parse on the same rounds string within a single user action.
+  let _roundsCache = { raw: null, data: [] };
+
+  const getRounds = () => {
+    if (!state.currentTournament) return [];
+    const raw = state.currentTournament.rounds ?? null;
+    if (raw === _roundsCache.raw) return _roundsCache.data;
+    const data = safeJsonParse(raw, []);
+    _roundsCache = { raw, data };
+    return data;
+  };
 
   const setRounds = (roundsArr) => {
     if (!state.currentTournament) return;
-    state.currentTournament.rounds = JSON.stringify(roundsArr);
+    const raw = JSON.stringify(roundsArr);
+    state.currentTournament.rounds = raw;
+    _roundsCache = { raw, data: roundsArr };
   };
 
   const getPlayers = () => {
@@ -3257,63 +3269,16 @@
         }
 
         if (!usedGeneratedSchedule) {
+          // Normal mode has no level balancing — the hill-climbing planner adds ~64ms of
+          // CPU with no meaningful quality gain beyond the faster classic algorithm.
+          // Use buildBestNormalMatches directly (multi-attempt search, ~1ms).
           const slots = maxCourts * 4;
           const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
-
-          await new Promise((resolveRaf) => {
-            if (typeof requestAnimationFrame === 'function') {
-              requestAnimationFrame(() => resolveRaf());
-            } else {
-              setTimeout(resolveRaf, 0);
-            }
-          });
-
-          const g = typeof globalThis !== 'undefined' ? globalThis : window;
-
-          let plannerAttempted = false;
-          try {
-            const plannerFn =
-              typeof g.planAmericanoRound === 'function'
-                ? g.planAmericanoRound
-                : typeof g.PadelioAmericanoPlanner?.planAmericanoRound === 'function'
-                  ? g.PadelioAmericanoPlanner.planAmericanoRound
-                  : null;
-
-            if (typeof plannerFn === 'function') {
-              plannerAttempted = true;
-              const out = plannerFn({
-                players,
-                courtCount: maxCourts,
-                priorRounds: rounds,
-                roundNo,
-                levelByName: null,
-                opts: { fixedActiveNames: active }
-              });
-              const ok =
-                out &&
-                !out.error &&
-                Array.isArray(out.matches) &&
-                out.matches.length === maxCourts;
-              if (ok) {
-                matches = out.matches;
-              }
-            }
-          } catch (e) {
-            console.warn('[Padelio] normal round planner failed', e);
-            plannerAttempted = true;
-          }
-
-          if (matches.length === 0) {
-            const history = buildMixHistory();
-            matches = buildBestNormalMatches(
-              active, maxCourts, history, rounds, roundNo, players, null
-            );
-            if (plannerAttempted) toast('Could not optimize round — using classic pairing.');
-          }
+          const history = buildMixHistory();
+          matches = buildBestNormalMatches(active, maxCourts, history, rounds, roundNo, players, null);
 
           // Hard guarantee: if matches count still differs from maxCourts, force-regenerate.
           if (matches.length !== maxCourts) {
-            const history = buildMixHistory();
             const forceActive = pickActivePlayersNormal(players, maxCourts * 4, rounds, roundNo);
             matches = buildBestNormalMatches(forceActive, maxCourts, history, rounds, roundNo, players, null);
           }
