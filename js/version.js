@@ -2,7 +2,7 @@
   'use strict';
 
   /** Locked release — change only with an explicit product decision. */
-  var PADELIO_VERSION = '1.6.10';
+  var PADELIO_VERSION = '1.6.11';
 
   window.PADELIO_VERSION = PADELIO_VERSION;
 
