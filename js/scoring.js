@@ -77,13 +77,9 @@
     Math.max(1, Math.ceil((Number(bestOf) || 3) / 2));
 
   const gamesOppFromEntered = (entered, profile) => {
-    const W = profile.gamesTarget;
     const max = profile.bestOf;
     const s = clamp(Number(entered), 0, max);
-    if (s === max) return 0;
-    if (s === W) return Math.max(0, W - 1);
-    if (s === 0) return W;
-    return null;
+    return max - s;
   };
 
   const isMexGamesScoreTie = (g1, g2) => {
@@ -109,9 +105,7 @@
   const mexGamesScoreHint = (profile) => {
     const W = profile.gamesTarget;
     const n = profile.bestOf;
-    const ex = [`${W}-0`];
-    if (n > W) ex.push(`${W}-1`, `${n}-0`, `0-${n}`);
-    return `First to ${W} games (best of ${n}) · ${ex.join(', ')} · seri = skor sama (mis. 1-1)`;
+    return `Best of ${n} · isi satu sisi, lawan otomatis (total ${n} game, mis. ${W}-${n - W}, ${Math.floor(n / 2)}-${Math.floor(n / 2)}) · menang = ${W} game`;
   };
 
   const normalizeMexGamesScores = (g1, g2, profile) => {
@@ -123,7 +117,7 @@
     a = Math.min(a, maxTotal);
     b = Math.min(b, maxTotal);
 
-    if (a === b && a > 0 && a < W && a + b <= maxTotal) {
+    if (a === b && a > 0 && a + b <= maxTotal && (a < W || a + b === maxTotal)) {
       return { g1: a, g2: b };
     }
 

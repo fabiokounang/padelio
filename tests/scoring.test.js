@@ -89,6 +89,10 @@ test('bo3: 1-1 tie is kept as-is', () => {
   const r = normalizeMexGamesScores(1, 1, bo3);
   assert.deepStrictEqual(r, { g1: 1, g2: 1 });
 });
+test('bo4: 2-2 tie is kept as-is', () => {
+  const r = normalizeMexGamesScores(2, 2, { gamesTarget: 2, bestOf: 4 });
+  assert.deepStrictEqual(r, { g1: 2, g2: 2 });
+});
 test('bo3: over-capped 5-5 is normalized to fit within bestOf', () => {
   const r = normalizeMexGamesScores(5, 5, bo3);
   assert.ok(r.g1 + r.g2 <= bo3.bestOf, 'sum must not exceed bestOf');
@@ -96,11 +100,12 @@ test('bo3: over-capped 5-5 is normalized to fit within bestOf', () => {
 
 /* ---- gamesOppFromEntered ---- */
 console.log('\ngamesOppFromEntered');
-// When you enter W (gamesTarget=2) the system auto-fills opp as W-1 (giving a 2-1 final).
-// When you enter bestOf (3) the opp gets 0 (a 3-0 sweep).
-test('bo3: entering W (2) auto-fills opp as W-1 (1)', () => assert.strictEqual(gamesOppFromEntered(2, bo3), 1));
-test('bo3: entering 0, opp is W (2)', () => assert.strictEqual(gamesOppFromEntered(0, bo3), 2));
-test('bo3: entering bestOf (3) gives opp 0', () => assert.strictEqual(gamesOppFromEntered(3, bo3), 0));
+const bo4 = { gamesTarget: 2, bestOf: 4 };
+test('bo3: complementary (2 → 1)', () => assert.strictEqual(gamesOppFromEntered(2, bo3), 1));
+test('bo3: complementary (0 → 3)', () => assert.strictEqual(gamesOppFromEntered(0, bo3), 3));
+test('bo3: complementary (3 → 0)', () => assert.strictEqual(gamesOppFromEntered(3, bo3), 0));
+test('bo4: complementary (3 → 1)', () => assert.strictEqual(gamesOppFromEntered(3, bo4), 1));
+test('bo4: complementary (2 → 2)', () => assert.strictEqual(gamesOppFromEntered(2, bo4), 2));
 
 /* ---- getTournamentScoringProfile ---- */
 console.log('\ngetTournamentScoringProfile');

@@ -1179,6 +1179,22 @@
           Win rate
         </button>
       </div>
+      <div id="share-lb-scope-row" class="hidden shrink-0 px-4 pb-2 pt-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
+        <button
+          type="button"
+          id="share-lb-scope-individual"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
+        >
+          Per individu
+        </button>
+        <button
+          type="button"
+          id="share-lb-scope-pair"
+          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
+        >
+          Per pair
+        </button>
+      </div>
       <div
         id="share-leaderboard-scroll"
         tabindex="-1"
@@ -1267,6 +1283,22 @@
             class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
           >
             Win rate
+          </button>
+        </div>
+        <div id="host-lb-scope-row" class="hidden flex gap-2 mt-2">
+          <button
+            type="button"
+            id="host-lb-scope-individual"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
+          >
+            Per individu
+          </button>
+          <button
+            type="button"
+            id="host-lb-scope-pair"
+            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
+          >
+            Per pair
           </button>
         </div>
       </div>
@@ -1381,7 +1413,6 @@
     role="dialog"
     aria-modal="true"
     aria-labelledby="update-cache-reminder-title"
-    onclick="if(event.target===this)hideUpdateReminderModal()"
   >
     <div
       class="max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-amber-400/35 bg-white/95 dark:bg-slate-900/95 p-6 shadow-cozy backdrop-blur-md"

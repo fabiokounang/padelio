@@ -241,6 +241,33 @@
     return ordered;
   };
 
+  /** Swiss-system court ordering for individual players (top of standings -> court 1). */
+  const orderActiveByStandings = (active, standingsOrder, rosterOrder) => {
+    const standRank = new Map();
+    standingsOrder.forEach((name, i) => standRank.set(name, i));
+    const rosterRank = new Map();
+    (rosterOrder || []).forEach((name, i) => rosterRank.set(name, i));
+    return [...active].sort((a, b) => {
+      const ra = standRank.get(a);
+      const rb = standRank.get(b);
+      if (ra != null && rb != null && ra !== rb) return ra - rb;
+      if (ra != null && rb == null) return -1;
+      if (ra == null && rb != null) return 1;
+      const sa = rosterRank.get(a) ?? 9999;
+      const sb = rosterRank.get(b) ?? 9999;
+      return sa - sb;
+    });
+  };
+
+  /** Swiss-system court ordering for fixed pairs (top team -> court 1 1st seat, etc.). */
+  const orderPairsByTeamPoints = (activePairs, rankByKey, keyFn) => {
+    return [...activePairs].sort((a, b) => {
+      const ra = rankByKey.get(keyFn(a)) ?? 9999;
+      const rb = rankByKey.get(keyFn(b)) ?? 9999;
+      return ra - rb;
+    });
+  };
+
   const buildFixedPairsMexicanoCourtMatches = (orderedPairs) => {
     const matches = [];
     const numCourts = Math.floor(orderedPairs.length / 2);
@@ -985,12 +1012,8 @@
       ordered = [...active].sort(
         (a, b) => (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0)
       );
-    } else if (maxCourts > 1) {
-      const prevRound = getPreviousRoundDatum(allRounds, roundNo);
-      const targetByPair = getMexicanoTeamTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
-      ordered = orderPairsForMexicanoCourts(active, targetByPair, rankByKey, maxCourts, tKey);
     } else {
-      ordered = [...active].sort((a, b) => rankByKey.get(tKey(a)) - rankByKey.get(tKey(b)));
+      ordered = orderPairsByTeamPoints(active, rankByKey, tKey);
     }
     return buildFixedPairsMexicanoCourtMatches(ordered);
   };
@@ -1026,21 +1049,13 @@
 
     const board = computeLeaderboardSorted(tSub, 'points');
     const standingsOrder = board.map((row) => row.name);
-    active.forEach((n) => {
-      if (!standingsOrder.includes(n)) standingsOrder.push(n);
-    });
 
     let ordered = [];
     if (rn === 1) {
       const act = new Set(active);
       ordered = players.filter((n) => act.has(n));
-    } else if (maxCourts > 1) {
-      const targetCourt = getMexicanoTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
-      ordered = orderActiveForMexicanoCourts(active, targetCourt, standingsOrder, maxCourts);
     } else {
-      const act = new Set(active);
-      ordered = standingsOrder.filter((n) => act.has(n));
-      active.forEach((n) => { if (!ordered.includes(n)) ordered.push(n); });
+      ordered = orderActiveByStandings(active, standingsOrder, players);
     }
 
     const matches = [];
@@ -1090,17 +1105,9 @@
       const actF = new Set(activeF);
       orderedM = malesAll.filter((n) => actM.has(n));
       orderedF = femalesAll.filter((n) => actF.has(n));
-    } else if (maxCourts > 1) {
-      const targetCourt = getMexicanoTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
-      orderedM = orderActiveForMexicanoCourts(activeM, targetCourt, standingsOrder, maxCourts);
-      orderedF = orderActiveForMexicanoCourts(activeF, targetCourt, standingsOrder, maxCourts);
     } else {
-      const actM = new Set(activeM);
-      const actF = new Set(activeF);
-      orderedM = standingsOrder.filter((n) => actM.has(n));
-      activeM.forEach((n) => { if (!orderedM.includes(n)) orderedM.push(n); });
-      orderedF = standingsOrder.filter((n) => actF.has(n));
-      activeF.forEach((n) => { if (!orderedF.includes(n)) orderedF.push(n); });
+      orderedM = orderActiveByStandings(activeM, standingsOrder, malesAll);
+      orderedF = orderActiveByStandings(activeF, standingsOrder, femalesAll);
     }
 
     const history = buildMixHistory(allRounds);
@@ -1143,6 +1150,8 @@
     getMexicanoTeamTargetCourtsFromPrevRound,
     orderActiveForMexicanoCourts,
     orderPairsForMexicanoCourts,
+    orderActiveByStandings,
+    orderPairsByTeamPoints,
     buildFixedPairsMexicanoCourtMatches,
     pairCrossOpposeScore,
     fixedPairMatchupScore,

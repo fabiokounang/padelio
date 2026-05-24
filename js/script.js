@@ -364,6 +364,40 @@
     return ordered;
   };
 
+  /**
+   * Swiss-system court ordering: rank active players purely by their global standings position.
+   * Top 4 -> court 1, next 4 -> court 2, etc. Players missing from standings (e.g. zero points)
+   * appended in roster order to keep stable behavior.
+   */
+  const orderActiveByStandings = (active, standingsOrder, rosterOrder) => {
+    const standRank = new Map();
+    standingsOrder.forEach((name, i) => standRank.set(name, i));
+    const rosterRank = new Map();
+    (rosterOrder || []).forEach((name, i) => rosterRank.set(name, i));
+    return [...active].sort((a, b) => {
+      const ra = standRank.get(a);
+      const rb = standRank.get(b);
+      if (ra != null && rb != null && ra !== rb) return ra - rb;
+      if (ra != null && rb == null) return -1;
+      if (ra == null && rb != null) return 1;
+      const sa = rosterRank.get(a) ?? 9999;
+      const sb = rosterRank.get(b) ?? 9999;
+      return sa - sb;
+    });
+  };
+
+  /**
+   * Swiss-system court ordering for fixed pairs by combined team points.
+   * Top pair -> court 1 slot 1, second pair -> court 1 slot 2 (1v2), etc.
+   */
+  const orderPairsByTeamPoints = (activePairs, rankByKey, keyFn) => {
+    return [...activePairs].sort((a, b) => {
+      const ra = rankByKey.get(keyFn(a)) ?? 9999;
+      const rb = rankByKey.get(keyFn(b)) ?? 9999;
+      return ra - rb;
+    });
+  };
+
   const buildFixedPairsMexicanoCourtMatches = (orderedPairs) => {
     const matches = [];
     const numCourts = Math.floor(orderedPairs.length / 2);
@@ -636,15 +670,11 @@
   const gamesNeededToWinMatch = (bestOf) =>
     Math.max(1, Math.ceil((Number(bestOf) || 3) / 2));
 
-  /** Mexicano best-of: auto opponent when other field empty (e.g. BO3 → 3|0, 2|1, 0|2). */
+  /** Mexicano best-of: complementary games (BO4 → 3|1, 2|2, 1|3, 0|4). */
   const gamesOppFromEntered = (entered, profile) => {
-    const W = profile.gamesTarget;
     const max = profile.bestOf;
     const s = clamp(Number(entered), 0, max);
-    if (s === max) return 0;
-    if (s === W) return Math.max(0, W - 1);
-    if (s === 0) return W;
-    return null;
+    return max - s;
   };
 
   const isMexGamesScoreTie = (g1, g2) => {
@@ -691,9 +721,7 @@
   const mexGamesScoreHint = (profile) => {
     const W = profile.gamesTarget;
     const n = profile.bestOf;
-    const ex = [`${W}-0`];
-    if (n > W) ex.push(`${W}-1`, `${n}-0`, `0-${n}`);
-    return `First to ${W} games (best of ${n}) · ${ex.join(', ')} · seri = skor sama (mis. 1-1)`;
+    return `Best of ${n} · isi satu sisi, lawan otomatis (total ${n} game, mis. ${W}-${n - W}, ${Math.floor(n / 2)}-${Math.floor(n / 2)}) · menang = ${W} game`;
   };
 
   /** Best-of games: 0..bestOf per side, total ≤ bestOf, seri below win target (e.g. 1-1). */
@@ -706,7 +734,7 @@
     a = Math.min(a, maxTotal);
     b = Math.min(b, maxTotal);
 
-    if (a === b && a > 0 && a < W && a + b <= maxTotal) {
+    if (a === b && a > 0 && a + b <= maxTotal && (a < W || a + b === maxTotal)) {
       return { g1: a, g2: b };
     }
 
@@ -1116,7 +1144,9 @@
   };
 
   /**
-   * Roster order (R1) or court ladder + standings (R2+): winners toward court 1; 1st vs 2nd per court.
+   * Fixed Mexicano (Swiss-system): pairs are fixed; R1 by roster order; R2+ rank active pairs by
+   * combined team points (sum of both partners' individual points). Top pair vs 2nd pair on court 1,
+   * 3rd vs 4th on court 2, etc.
    */
   const buildFixedPairsMexicanoMatches = (allPairObjs, courts, allRounds, roundNo, tournament) => {
     const maxCourts = Math.min(courts, Math.floor(allPairObjs.length / 2));
@@ -1154,12 +1184,8 @@
       ordered = [...active].sort(
         (a, b) => (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0)
       );
-    } else if (maxCourts > 1) {
-      const prevRound = getPreviousRoundDatum(allRounds, roundNo);
-      const targetByPair = getMexicanoTeamTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
-      ordered = orderPairsForMexicanoCourts(active, targetByPair, rankByKey, maxCourts, tKey);
     } else {
-      ordered = [...active].sort((a, b) => rankByKey.get(tKey(a)) - rankByKey.get(tKey(b)));
+      ordered = orderPairsByTeamPoints(active, rankByKey, tKey);
     }
     return buildFixedPairsMexicanoCourtMatches(ordered);
   };
@@ -1429,7 +1455,10 @@
     shareLeaderboardLayout: 'standard',
     /** Ranking: total points (Americano default) vs win rate % for display order. */
     hostLeaderboardSort: 'points',
-    shareLeaderboardSort: 'points'
+    shareLeaderboardSort: 'points',
+    /** Scope: 'individual' (per-player) vs 'pair' (per-fixed-team). Only meaningful for fixed/fixedmex. */
+    hostLeaderboardScope: 'individual',
+    shareLeaderboardScope: 'individual'
   };
 
   /** Locked in js/version.js — do not change here. */
@@ -2802,8 +2831,9 @@
   };
 
   /**
-   * Mexicano: R1 by roster order; R2+ winners move up toward court 1 (top court).
-   * Team split in each block minimizes repeat partners/opponents vs classic 1+2 vs 3+4 bias.
+   * Mexicano (Swiss-system): R1 by roster order; R2+ rank active players by global standings
+   * (computeLeaderboardSorted) and assign top 4 -> court 1, next 4 -> court 2, etc.
+   * Within each court, pick the best 2v2 split that minimizes repeat partners/opponents.
    */
   function buildMexicanoMatches (players, courts, rounds, roundNo, tournament) {
     const maxCourts = Math.min(courts, Math.floor(players.length / 4));
@@ -2827,23 +2857,13 @@
 
     const board = computeLeaderboardSorted(tSub, 'points');
     const standingsOrder = board.map((row) => row.name);
-    active.forEach((n) => {
-      if (!standingsOrder.includes(n)) standingsOrder.push(n);
-    });
 
     let ordered = [];
     if (rn === 1) {
       const act = new Set(active);
       ordered = players.filter((n) => act.has(n));
-    } else if (maxCourts > 1) {
-      const targetCourt = getMexicanoTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
-      ordered = orderActiveForMexicanoCourts(active, targetCourt, standingsOrder, maxCourts);
     } else {
-      const act = new Set(active);
-      ordered = standingsOrder.filter((n) => act.has(n));
-      active.forEach((n) => {
-        if (!ordered.includes(n)) ordered.push(n);
-      });
+      ordered = orderActiveByStandings(active, standingsOrder, players);
     }
 
     const matches = [];
@@ -2866,8 +2886,9 @@
   }
 
   /**
-   * Mix + Mexicano: equal M/F; same benching and per-gender standing order as Mexicano;
-   * each court: pick (M0,F0)/(M1,F1) vs (M0,F1)/(M1,F0) to reduce repeat partners and matchups.
+   * Mix Mexicano (Swiss-system): equal M/F. R1 by roster order per gender; R2+ rank each gender by
+   * individual standings (top M and top F together on court 1, etc.). Within each court, choose
+   * parallel (M0+F0 vs M1+F1) or cross (M0+F1 vs M1+F0) pairing with lower penalty.
    */
   function buildMixMexicanoMatches (playersFull, courts, allRounds, roundNo, tournament) {
     const malesAll = playersFull.filter((p) => p.gender === 'M').map((p) => p.name);
@@ -2902,21 +2923,9 @@
       const actF = new Set(activeF);
       orderedM = malesAll.filter((n) => actM.has(n));
       orderedF = femalesAll.filter((n) => actF.has(n));
-    } else if (maxCourts > 1) {
-      const targetCourt = getMexicanoTargetCourtsFromPrevRound(prevRound, maxCourts, resolve);
-      orderedM = orderActiveForMexicanoCourts(activeM, targetCourt, standingsOrder, maxCourts);
-      orderedF = orderActiveForMexicanoCourts(activeF, targetCourt, standingsOrder, maxCourts);
     } else {
-      const actM = new Set(activeM);
-      const actF = new Set(activeF);
-      orderedM = standingsOrder.filter((n) => actM.has(n));
-      activeM.forEach((n) => {
-        if (!orderedM.includes(n)) orderedM.push(n);
-      });
-      orderedF = standingsOrder.filter((n) => actF.has(n));
-      activeF.forEach((n) => {
-        if (!orderedF.includes(n)) orderedF.push(n);
-      });
+      orderedM = orderActiveByStandings(activeM, standingsOrder, malesAll);
+      orderedF = orderActiveByStandings(activeF, standingsOrder, femalesAll);
     }
 
     const history = buildMixHistory();
@@ -3374,58 +3383,23 @@
       if (!Number.isFinite(s) || s < 0) return;
       s = clamp(s, 0, maxPts);
 
-      const otherRaw = team === 1 ? input2.value.trim() : input1.value.trim();
-      if (otherRaw !== '' && parseInt(otherRaw, 10) === s) {
-        if (s < prof.gamesTarget) {
-          match.score1 = s;
-          match.score2 = s;
-          input1.value = String(s);
-          input2.value = String(s);
-          delete match.mx_game;
-          setRounds(rounds);
-          debouncedSaveTournament();
-          return;
-        }
-        const normTie = applyMexGamesScoresToMatch(match, prof, s, s);
-        input1.value = String(normTie.g1);
-        input2.value = String(normTie.g2);
-        delete match.mx_game;
-        setRounds(rounds);
-        debouncedSaveTournament();
-        return;
-      }
-
       const opp = gamesOppFromEntered(s, prof);
 
       if (team === 1) {
         match.score1 = s;
+        match.score2 = opp;
         input1.value = String(s);
-        if (opp !== null && input2.value.trim() === '') {
-          match.score2 = opp;
-          input2.value = String(opp);
-        }
+        input2.value = String(opp);
       } else {
         match.score2 = s;
+        match.score1 = opp;
         input2.value = String(s);
-        if (opp !== null && input1.value.trim() === '') {
-          match.score1 = opp;
-          input1.value = String(opp);
-        }
+        input1.value = String(opp);
       }
 
-      const r1 = input1.value.trim();
-      const r2 = input2.value.trim();
-      if (r1 !== '' && r2 !== '') {
-        const norm = applyMexGamesScoresToMatch(match, prof, r1, r2);
-        input1.value = String(norm.g1);
-        input2.value = String(norm.g2);
-      } else if (team === 1) {
-        match.score1 = s;
-        input1.value = String(s);
-      } else {
-        match.score2 = s;
-        input2.value = String(s);
-      }
+      const norm = applyMexGamesScoresToMatch(match, prof, match.score1, match.score2);
+      input1.value = String(norm.g1);
+      input2.value = String(norm.g2);
       delete match.mx_game;
       setRounds(rounds);
       debouncedSaveTournament();
@@ -4225,6 +4199,82 @@
     return sortLeaderboardRows(rows, sortMode);
   };
 
+  /**
+   * Pair-level leaderboard for fixed/fixedmex tournaments. Pairs come from roster index 0+1, 2+3, ...
+   * Each pair plays as a unit, so wins/losses/ties/matches are counted at the team level
+   * (not summed individuals — that would double-count). Points/conceded ARE summed from individuals,
+   * since both partners get the team score per match in the individual leaderboard.
+   */
+  const computePairLeaderboardSorted = (tournamentLike, sortMode = 'points') => {
+    const playersArr = normalizePlayers(safeJsonParse(tournamentLike?.players, []));
+    const rounds = safeJsonParse(tournamentLike?.rounds, []);
+    const rosterNames = playersArr.map((p) => p.name);
+    const rosterResolve = makeRosterNameResolve(rosterNames);
+
+    const pairs = [];
+    for (let i = 0; i + 1 < playersArr.length; i += 2) {
+      pairs.push({
+        names: [playersArr[i].name, playersArr[i + 1].name],
+        key: pairKey(rosterResolve(playersArr[i].name), rosterResolve(playersArr[i + 1].name))
+      });
+    }
+
+    const stats = new Map();
+    pairs.forEach((p) => {
+      stats.set(p.key, {
+        names: p.names,
+        points: 0, conceded: 0,
+        wins: 0, losses: 0, ties: 0, matches: 0
+      });
+    });
+
+    rounds.forEach((round) => {
+      (round.matches || []).forEach((match) => {
+        const s1 = match.score1;
+        const s2 = match.score2;
+        const hasScore = (s1 !== '' && s1 != null) || (s2 !== '' && s2 != null);
+        if (!hasScore) return;
+        const score1 = Number(s1) || 0;
+        const score2 = Number(s2) || 0;
+        if (score1 === 0 && score2 === 0) return;
+
+        const t1 = match.team1 || [];
+        const t2 = match.team2 || [];
+        if (t1.length !== 2 || t2.length !== 2) return;
+
+        const k1 = pairKey(rosterResolve(t1[0]), rosterResolve(t1[1]));
+        const k2 = pairKey(rosterResolve(t2[0]), rosterResolve(t2[1]));
+        const r1 = stats.get(k1);
+        const r2 = stats.get(k2);
+        if (!r1 || !r2) return;
+
+        r1.points += score1;
+        r1.conceded += score2;
+        r2.points += score2;
+        r2.conceded += score1;
+        r1.matches++;
+        r2.matches++;
+        if (score1 > score2) { r1.wins++; r2.losses++; }
+        else if (score2 > score1) { r2.wins++; r1.losses++; }
+        else { r1.ties++; r2.ties++; }
+      });
+    });
+
+    const rows = [];
+    stats.forEach((data) => {
+      const winRate = data.matches > 0 ? (data.wins / data.matches) * 100 : 0;
+      const diff = data.points - data.conceded;
+      rows.push({
+        name: data.names.map(fixCommonNameTypos).join(' & '),
+        names: data.names,
+        ...data,
+        winRate,
+        diff
+      });
+    });
+    return sortLeaderboardRows(rows, sortMode);
+  };
+
   const renderLeaderboardHtml = (sorted, sortMode = 'points') => {
     const byWinRate = sortMode === 'winRate';
     return sorted
@@ -4395,11 +4445,47 @@
     if (b2) b2.className = mode === 'winRate' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
   };
 
+  /** Pair vs individual scope is only meaningful for fixed-pair modes. */
+  const tournamentSupportsPairScope = (tournamentLike) => {
+    const m = tournamentLike?.mode || 'normal';
+    return m === 'fixed' || m === 'fixedmex';
+  };
+
+  const applyHostLeaderboardScopeUi = (tournamentLike) => {
+    const wrap = $('host-lb-scope-row');
+    const supports = tournamentSupportsPairScope(tournamentLike);
+    if (wrap) wrap.classList.toggle('hidden', !supports);
+    const scope = state.hostLeaderboardScope === 'pair' ? 'pair' : 'individual';
+    const b1 = $('host-lb-scope-individual');
+    const b2 = $('host-lb-scope-pair');
+    if (b1) b1.className = scope === 'individual' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+    if (b2) b2.className = scope === 'pair' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+  };
+
+  const applyShareLeaderboardScopeUi = (tournamentLike) => {
+    const wrap = $('share-lb-scope-row');
+    const supports = tournamentSupportsPairScope(tournamentLike);
+    if (wrap) wrap.classList.toggle('hidden', !supports);
+    const scope = state.shareLeaderboardScope === 'pair' ? 'pair' : 'individual';
+    const b1 = $('share-lb-scope-individual');
+    const b2 = $('share-lb-scope-pair');
+    if (b1) b1.className = scope === 'individual' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+    if (b2) b2.className = scope === 'pair' ? LB_TAB_ACTIVE : LB_TAB_IDLE;
+  };
+
   const populateLeaderboardPanels = (tournamentLike, title) => {
     const hSort = state.hostLeaderboardSort === 'winRate' ? 'winRate' : 'points';
     const sSort = state.shareLeaderboardSort === 'winRate' ? 'winRate' : 'points';
-    const hostSorted = computeLeaderboardSorted(tournamentLike, hSort);
-    const shareSorted = computeLeaderboardSorted(tournamentLike, sSort);
+    const supportsPair = tournamentSupportsPairScope(tournamentLike);
+    const hostUsePair = supportsPair && state.hostLeaderboardScope === 'pair';
+    const shareUsePair = supportsPair && state.shareLeaderboardScope === 'pair';
+
+    const hostSorted = hostUsePair
+      ? computePairLeaderboardSorted(tournamentLike, hSort)
+      : computeLeaderboardSorted(tournamentLike, hSort);
+    const shareSorted = shareUsePair
+      ? computePairLeaderboardSorted(tournamentLike, sSort)
+      : computeLeaderboardSorted(tournamentLike, sSort);
 
     const hostStd = $('leaderboard-list');
     const hostShot = $('leaderboard-screenshot-panel');
@@ -4415,6 +4501,8 @@
     applyShareLeaderboardLayoutUi();
     applyHostLeaderboardSortUi();
     applyShareLeaderboardSortUi();
+    applyHostLeaderboardScopeUi(tournamentLike);
+    applyShareLeaderboardScopeUi(tournamentLike);
   };
 
   const switchHostLeaderboardLayout = (layout) => {
@@ -4443,11 +4531,31 @@
     }
   };
 
+  const switchHostLeaderboardScope = (scope) => {
+    state.hostLeaderboardScope = scope === 'pair' ? 'pair' : 'individual';
+    if (state.currentTournament) {
+      populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+    } else {
+      applyHostLeaderboardScopeUi(null);
+    }
+  };
+
+  const switchShareLeaderboardScope = (scope) => {
+    state.shareLeaderboardScope = scope === 'pair' ? 'pair' : 'individual';
+    if (state.shareViewerData) {
+      populateLeaderboardPanels(state.shareViewerData, state.shareViewerData.title || '');
+    } else {
+      applyShareLeaderboardScopeUi(null);
+    }
+  };
+
   /** Inline onclick looks up globals; assign early + use listeners so tabs always work. */
   window.switchHostLeaderboardLayout = switchHostLeaderboardLayout;
   window.switchShareLeaderboardLayout = switchShareLeaderboardLayout;
   window.switchHostLeaderboardSort = switchHostLeaderboardSort;
   window.switchShareLeaderboardSort = switchShareLeaderboardSort;
+  window.switchHostLeaderboardScope = switchHostLeaderboardScope;
+  window.switchShareLeaderboardScope = switchShareLeaderboardScope;
 
   /** Text nodes have no .closest — normalize target before delegating. */
   const clickTargetButton = (e) => {
@@ -4479,6 +4587,18 @@
         } else if (id === 'share-lb-sort-winrate') {
           e.preventDefault();
           switchShareLeaderboardSort('winRate');
+        } else if (id === 'host-lb-scope-individual') {
+          e.preventDefault();
+          switchHostLeaderboardScope('individual');
+        } else if (id === 'host-lb-scope-pair') {
+          e.preventDefault();
+          switchHostLeaderboardScope('pair');
+        } else if (id === 'share-lb-scope-individual') {
+          e.preventDefault();
+          switchShareLeaderboardScope('individual');
+        } else if (id === 'share-lb-scope-pair') {
+          e.preventDefault();
+          switchShareLeaderboardScope('pair');
         }
       },
       true
@@ -4879,7 +4999,49 @@
     updateRoundArrowState();
   };
 
+  const ensureUpdateCacheReminderModal = () => {
+    if ($('update-cache-reminder-modal')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'update-cache-reminder-modal';
+    wrap.className =
+      'hidden fixed inset-0 z-[210] flex items-center justify-center bg-black/40 dark:bg-black/75 p-4';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+    wrap.setAttribute('aria-labelledby', 'update-cache-reminder-title');
+    wrap.innerHTML = `
+      <div class="max-w-md w-full max-h-[90vh] overflow-y-auto rounded-3xl border border-amber-400/35 bg-white/95 dark:bg-slate-900/95 p-6 shadow-cozy backdrop-blur-md" onclick="event.stopPropagation()">
+        <h3 id="update-cache-reminder-title" class="text-lg font-extrabold text-amber-950 dark:text-amber-50 mb-3 leading-snug">
+          Selamat datang di Padelio
+        </h3>
+        <p class="text-sm text-slate-700 dark:text-slate-200 mb-3 leading-relaxed">
+          Setiap kali membuka Padelio, kosongkan <strong class="text-amber-950 dark:text-amber-100/95">cache aplikasi</strong> dulu supaya Anda mendapat versi terbaru (fitur &amp; perbaikan). Data turnamen di perangkat ini <span class="text-emerald-800 dark:text-emerald-200/90 font-semibold">tetap aman</span>.
+        </p>
+        <ul class="text-xs text-slate-600/95 dark:text-slate-300/95 space-y-2 mb-5 list-disc list-outside pl-4 leading-relaxed">
+          <li>Disarankan: tap <strong>Clear cache &amp; reload</strong> di bawah.</li>
+          <li>Alternatif: hard refresh
+            <kbd class="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 font-mono text-[0.65rem]">Ctrl+Shift+R</kbd>
+            /
+            <kbd class="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 font-mono text-[0.65rem]">Cmd+Shift+R</kbd>
+          </li>
+        </ul>
+        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+          <button type="button" data-testid="update-tip-dismiss" onclick="hideUpdateReminderModal()"
+            class="order-2 sm:order-1 w-full sm:w-auto rounded-2xl border border-slate-200/90 dark:border-white/15 bg-slate-900/8 dark:bg-white/5 px-4 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10">
+            Mengerti, lanjut
+          </button>
+          <button type="button" onclick="clearAppCacheFromUpdateModal()"
+            class="order-1 sm:order-2 w-full sm:w-auto rounded-2xl border border-amber-500/50 dark:border-amber-400/40 bg-amber-100 dark:bg-amber-500/20 px-4 py-3 text-sm font-bold text-amber-950 dark:text-amber-50 hover:bg-amber-200/90 dark:hover:bg-amber-400/30">
+            Clear cache &amp; reload
+          </button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(wrap);
+  };
+
   const showUpdateReminderModal = () => {
+    ensureUpdateCacheReminderModal();
     const m = $('update-cache-reminder-modal');
     if (!m) return;
     m.classList.remove('hidden');
@@ -4894,21 +5056,17 @@
     m.classList.add('hidden');
     try {
       document.body.style.overflow = '';
-      sessionStorage.setItem('padelio_update_tip_dismissed_session', '1');
     } catch {}
   };
 
+  /** Shown on every full page load (not share links); dismiss only for this visit. */
   const maybeShowUpdateReminderOnLoad = () => {
     if (state.shareViewerMode) return;
-    try {
-      if (sessionStorage.getItem('padelio_update_tip_dismissed_session') === '1') {
-        return;
-      }
-    } catch {}
+    ensureUpdateCacheReminderModal();
     setTimeout(() => {
       if (state.shareViewerMode) return;
       showUpdateReminderModal();
-    }, 700);
+    }, 400);
   };
 
   const clearAppCacheFromUpdateModal = async () => {
