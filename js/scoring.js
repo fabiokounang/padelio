@@ -183,26 +183,100 @@
   };
 
   /* ---------- leaderboard ---------- */
+  /**
+   * Legacy constant exported for backward compatibility. The current +M
+   * compensation is computed dynamically from real completed match data
+   * (see `applyMatchCompensationToLeaderboardRows`), so this is no longer
+   * used to scale points.
+   */
+  const MATCH_COMPENSATION_POINTS_PER_GAP = 0;
+
   const formatLeaderboardDiff = (diff) => {
     const n = Number(diff) || 0;
     return n > 0 ? `+${n}` : String(n);
   };
 
+  /**
+   * +M compensation:
+   *   averagePointsPerPlayerPerMatch = totalIndividualPoints / totalPlayerAppearances
+   *   missedMatchCount = maxGamesPlayed - playerGamesPlayed
+   *   matchComp = round(averagePointsPerPlayerPerMatch × missedMatchCount)
+   *   adjustedPoints = totalPoints + matchComp
+   *
+   * Compensation is 0 when every player has the same match count or no
+   * completed matches exist yet. The function returns new row objects with
+   * `pointsRaw`, `matchComp`, `matchCompGap`, `matchCompAverage` populated and
+   * `points` rewritten to the adjusted value.
+   *
+   * @param {Array<{matches?: number, points?: number}>} rows
+   * @returns {typeof rows}
+   */
+  const applyMatchCompensationToLeaderboardRows = (rows) => {
+    if (!rows?.length) return rows || [];
+    let maxMatches = 0;
+    let totalAppearances = 0;
+    let totalPoints = 0;
+    for (const r of rows) {
+      const m = Number(r.matches) || 0;
+      if (m > maxMatches) maxMatches = m;
+      totalAppearances += m;
+      totalPoints += Number(r.points) || 0;
+    }
+    const average = totalAppearances > 0 ? totalPoints / totalAppearances : 0;
+    return rows.map((r) => {
+      const pointsRaw = Number(r.points) || 0;
+      const matches = Number(r.matches) || 0;
+      const gap = maxMatches > 0 ? Math.max(0, maxMatches - matches) : 0;
+      const matchComp = gap > 0 ? Math.round(average * gap) : 0;
+      return {
+        ...r,
+        pointsRaw,
+        matchComp,
+        matchCompGap: gap,
+        matchCompAverage: average,
+        points: pointsRaw + matchComp
+      };
+    });
+  };
+
+  const annotateLeaderboardRowsWithoutCompensation = (rows) =>
+    (rows || []).map((r) => ({
+      ...r,
+      pointsRaw: Number(r.points) || 0,
+      matchComp: 0,
+      matchCompGap: 0,
+      matchCompAverage: 0
+    }));
+
+  /**
+   * Standings sort:
+   *   points mode  -> adjustedPoints, winRate, diff, pointsRaw, matches asc, name
+   *   winRate mode -> winRate, wins, adjustedPoints, diff, matches, name
+   */
   const sortLeaderboardRows = (rows, sortMode) => {
     const byWinRate = sortMode === 'winRate';
+    const adj = (r) => Number(r.points) || 0;
+    const raw = (r) => (r.pointsRaw != null ? Number(r.pointsRaw) : Number(r.points) || 0);
     return [...rows].sort((a, b) => {
       if (byWinRate) {
         if (b.winRate !== a.winRate) return b.winRate - a.winRate;
         if (b.wins !== a.wins) return b.wins - a.wins;
-        if (b.points !== a.points) return b.points - a.points;
+        const ap = adj(a);
+        const bp = adj(b);
+        if (bp !== ap) return bp - ap;
         if (b.diff !== a.diff) return b.diff - a.diff;
         if (b.matches !== a.matches) return b.matches - a.matches;
         return String(a.name).localeCompare(String(b.name));
       }
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.diff !== a.diff) return b.diff - a.diff;
-      if (b.wins !== a.wins) return b.wins - a.wins;
+      const ap = adj(a);
+      const bp = adj(b);
+      if (bp !== ap) return bp - ap;
       if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      if (b.diff !== a.diff) return b.diff - a.diff;
+      const ar = raw(a);
+      const br = raw(b);
+      if (br !== ar) return br - ar;
+      if (a.matches !== b.matches) return a.matches - b.matches;
       return String(a.name).localeCompare(String(b.name));
     });
   };
@@ -210,8 +284,10 @@
   /**
    * @param {object} tournamentLike  - object with .players (JSON string) and .rounds (JSON string)
    * @param {'points'|'winRate'} [sortMode]
+   * @param {{ applyMatchCompensation?: boolean }} [opts] Default true for standings UI; false for Swiss/pairing order.
    */
-  const computeLeaderboardSorted = (tournamentLike, sortMode = 'points') => {
+  const computeLeaderboardSorted = (tournamentLike, sortMode = 'points', opts = {}) => {
+    const applyComp = opts.applyMatchCompensation !== false;
     const players = normalizePlayers(safeJsonParse(tournamentLike?.players, [])).map((p) => p.name);
     const rounds = safeJsonParse(tournamentLike?.rounds, []);
     const rosterResolve = makeRosterNameResolve(players);
@@ -272,7 +348,10 @@
       const diff = data.points - data.conceded;
       return { name, ...data, winRate, diff };
     });
-    return sortLeaderboardRows(rows, sortMode);
+    const enriched = applyComp
+      ? applyMatchCompensationToLeaderboardRows(rows)
+      : annotateLeaderboardRowsWithoutCompensation(rows);
+    return sortLeaderboardRows(enriched, sortMode);
   };
 
   /* ---------- dual export ---------- */
@@ -287,7 +366,10 @@
     applyMexGamesScoresToMatch,
     canAwardMexGame,
     getTournamentScoringProfile,
+    MATCH_COMPENSATION_POINTS_PER_GAP,
     formatLeaderboardDiff,
+    applyMatchCompensationToLeaderboardRows,
+    annotateLeaderboardRowsWithoutCompensation,
     sortLeaderboardRows,
     computeLeaderboardSorted,
     MIN_PLAYER_LEVEL,

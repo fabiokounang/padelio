@@ -66,7 +66,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="js/tailwind-padelio-config.js"></script>
   <script src="js/theme.js"></script>
-  <link rel="stylesheet" href="/styles.css?v=1.6.9">
+  <link rel="stylesheet" href="/styles.css?v=1.7.11">
 
   <!-- SDK -->
   <script src="/_sdk/element_sdk.js"></script>
@@ -797,6 +797,35 @@
           <button type="button" onclick="selectCourts(9)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="9">9</button>
           <button type="button" onclick="selectCourts(10)" class="court-btn bg-slate-900/8 dark:bg-white/5 border-2 border-slate-200/90 dark:border-white/15 hover:border-lime-400 rounded-2xl py-5 text-lg font-extrabold transition-all shadow-cozy-sm backdrop-blur-sm" data-courts="10">10</button>
         </div>
+
+        <!-- Court naming style -->
+        <div class="court-style-section mb-6">
+          <p class="court-style-section__label">Court label style</p>
+          <p class="court-style-section__hint">How courts appear on match cards during the tournament.</p>
+          <div class="court-style-group" role="group" aria-label="Court label style">
+            <button
+              type="button"
+              onclick="selectCourtStyle('number')"
+              data-court-style="number"
+              class="court-style-btn padelio-chip-selected"
+              aria-pressed="true"
+            >
+              <span class="court-style-btn__preview" aria-hidden="true">1 · 2 · 3</span>
+              <span class="court-style-btn__example">Court 1, Court 2, Court 3</span>
+            </button>
+            <button
+              type="button"
+              onclick="selectCourtStyle('letter')"
+              data-court-style="letter"
+              class="court-style-btn"
+              aria-pressed="false"
+            >
+              <span class="court-style-btn__preview" aria-hidden="true">A · B · C</span>
+              <span class="court-style-btn__example">Court A, Court B, Court C</span>
+            </button>
+          </div>
+        </div>
+
         <button onclick="goToPoints()" id="btn-to-points" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 opacity-50 cursor-not-allowed" disabled> Continue </button>
       </div>
     </div>
@@ -1010,14 +1039,25 @@
     </div>
 
     <!-- Tournament Rounds -->
-    <div id="page-rounds" class="page hidden flex-1 flex flex-col">
+    <div id="page-rounds" class="page hidden flex-1 flex flex-col min-h-0 padel-page-tournament">
       <div class="relative z-[100] bg-slate-200/80 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 flex items-center justify-between rounded-b-3xl shadow-cozy-sm">
         <button onclick="navigateTo('home')" class="text-slate-800 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 id="round-title" class="text-lg font-bold truncate mx-4 text-slate-900 dark:text-white">Tournament</h2>
+        <h2 id="round-title" class="flex-1 text-lg font-bold truncate mx-3 text-center text-slate-900 dark:text-white min-w-0">Tournament</h2>
+        <button
+          type="button"
+          onclick="showLeaderboard()"
+          class="hidden lg:inline-flex shrink-0 items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full border border-teal-400/35 bg-teal-500/15 text-teal-900 dark:text-teal-50 hover:bg-teal-400/25 transition-colors"
+          title="Jump to leaderboard"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Leaderboard
+        </button>
         <div class="relative z-[101] isolate">
           <button onclick="toggleMenu()" class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors p-1">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -1064,35 +1104,45 @@
           <button type="button" onclick="deleteTournament()" class="px-4 py-2.5 rounded-2xl text-sm font-sans font-bold bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:text-white dark:hover:bg-red-500 border border-red-700/30 dark:border-red-400/20 transition-colors shadow-sm">Delete</button>
         </div>
       </div>
-      <div class="relative z-0 min-h-0 flex-1 overflow-auto p-4">
-        <div class="flex items-center justify-center gap-4 mb-4">
-          <!-- LEFT ARROW -->
-          <button onclick="prevRoundView()" id="btn-prev-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/12 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 transition-all">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <!-- ROUND LABEL -->
-          <span class="bg-gradient-to-r from-pink-500/20 to-teal-500/20 border border-slate-200/90 dark:border-white/15 px-6 py-2 rounded-full text-sm font-bold shadow-cozy-sm" id="round-indicator"> Round 1 </span>
-          <!-- RIGHT ARROW -->
-          <button onclick="nextRoundView()" id="btn-next-round" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/12 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 transition-all">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+      <div id="host-tournament-workspace" class="host-tournament-workspace relative z-0 flex-1 min-h-0 flex flex-col lg:flex-row">
+        <div class="host-rounds-column flex-1 min-h-0 flex flex-col min-w-0">
+          <div class="host-rounds-scroll flex-1 min-h-0 overflow-auto p-4 lg:p-5">
+            <div class="host-round-nav flex items-center justify-center gap-4 mb-4">
+              <button onclick="prevRoundView()" id="btn-prev-round" type="button" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/12 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 transition-all" aria-label="Previous round">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span class="bg-gradient-to-r from-pink-500/20 to-teal-500/20 border border-slate-200/90 dark:border-white/15 px-6 py-2 rounded-full text-sm font-bold shadow-cozy-sm" id="round-indicator"> Round 1 </span>
+              <button onclick="nextRoundView()" id="btn-next-round" type="button" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/12 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 transition-all" aria-label="Next round">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+            <div id="courts-container" class="host-courts-container space-y-4"></div>
+          </div>
+          <div class="host-rounds-footer shrink-0 p-4 lg:px-5 bg-slate-100/70 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-white/10 backdrop-blur-sm">
+            <button type="button" onclick="nextRound()" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 flex items-center justify-center gap-2">
+              Next Round
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div id="courts-container" class="space-y-4"></div>
-      </div>
-      <div class="relative z-0 shrink-0 p-4 bg-slate-100/70 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-white/10 backdrop-blur-sm">
-        <button onclick="nextRound()" class="w-full border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/10 hover:bg-slate-200/90 dark:hover:bg-white/15 text-slate-900 dark:text-white font-bold py-4 px-6 rounded-3xl shadow-cozy-sm transition-all duration-200 flex items-center justify-center gap-2"> Next Round <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        <aside id="host-leaderboard-aside" class="host-leaderboard-aside hidden lg:flex lg:flex-col lg:min-h-0 lg:shrink-0" aria-label="Live leaderboard">
+          <div id="host-leaderboard-desktop-heading" class="host-leaderboard-aside__head shrink-0">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">Leaderboard</h3>
+            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Live standings · updates as you score</p>
+          </div>
+          <div id="host-lb-slot-desktop" class="host-lb-slot flex-1 min-h-0 flex flex-col"></div>
+        </aside>
       </div>
     </div>
 
     <!-- Spectator / share-only (opened via #p=… on same index) -->
-    <div id="page-share-view" class="page hidden flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div id="page-share-view" class="page hidden flex-1 flex flex-col min-h-0 overflow-hidden padel-page-tournament">
       <div class="bg-slate-100/90 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 rounded-b-3xl shadow-cozy-sm">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
@@ -1110,7 +1160,7 @@
             Open app
           </button>
         </div>
-        <div class="flex gap-2 mt-4">
+        <div id="share-mobile-tabs" class="flex gap-2 mt-4 lg:hidden">
           <button
             type="button"
             id="share-tab-lb"
@@ -1145,81 +1195,70 @@
           </button>
         </div>
       </div>
-      <div id="share-lb-subtabs" class="shrink-0 px-4 py-2 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
-        <button
-          type="button"
-          id="share-lb-sub-standard"
-          onclick="switchShareLeaderboardLayout('standard')"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
-        >
-          Standard View
-        </button>
-        <button
-          type="button"
-          id="share-lb-sub-screenshot"
-          onclick="switchShareLeaderboardLayout('screenshot')"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
-        >
-          Screenshot View
-        </button>
-      </div>
-      <div id="share-lb-sort-row" class="shrink-0 px-4 pb-2 pt-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
-        <button
-          type="button"
-          id="share-lb-sort-points"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
-        >
-          Total points
-        </button>
-        <button
-          type="button"
-          id="share-lb-sort-winrate"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
-        >
-          Win rate
-        </button>
-      </div>
-      <div id="share-lb-scope-row" class="hidden shrink-0 px-4 pb-2 pt-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
-        <button
-          type="button"
-          id="share-lb-scope-individual"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
-        >
-          Per individu
-        </button>
-        <button
-          type="button"
-          id="share-lb-scope-pair"
-          class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
-        >
-          Per pair
-        </button>
-      </div>
-      <div
-        id="share-leaderboard-scroll"
-        tabindex="-1"
-        class="flex-1 leb-main-scroll p-4 min-h-0 outline-none focus:outline-none"
-      >
-        <div id="share-panel-leaderboard" class="space-y-2">
-          <div id="share-leaderboard-standard-wrap" class="space-y-2">
-            <div id="share-leaderboard-list" class="space-y-2"></div>
+      <div id="share-tournament-workspace" class="share-tournament-workspace flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(300px,26rem)]">
+        <div id="share-rounds-column" class="share-rounds-column min-h-0 flex flex-col lg:border-r lg:border-slate-200/80 lg:dark:border-white/10">
+          <div class="share-rounds-column__head hidden lg:block shrink-0 px-5 py-3 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/70 dark:bg-slate-950/40">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Rounds</h3>
+            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">All courts · read-only</p>
           </div>
-          <div id="share-leaderboard-screenshot-wrap" class="hidden">
-            <div id="share-leaderboard-screenshot-panel"></div>
+          <div id="share-rounds-scroll" class="share-rounds-scroll flex-1 min-h-0 leb-main-scroll p-4 lg:p-5 outline-none">
+            <div id="share-panel-rounds" class="space-y-2">
+              <div id="share-rounds-container" class="share-rounds-container space-y-2"></div>
+            </div>
           </div>
         </div>
-        <div id="share-panel-rounds" class="hidden space-y-2">
-          <div id="share-rounds-container" class="space-y-2"></div>
+        <div id="share-leaderboard-column" class="share-leaderboard-column min-h-0 flex flex-col">
+          <div class="share-leaderboard-column__head hidden lg:block shrink-0 px-4 py-3 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/70 dark:bg-slate-950/40">
+            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">Leaderboard</h3>
+            <p class="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">Live standings</p>
+          </div>
+          <div id="share-lb-subtabs" class="share-lb-controls shrink-0 px-4 py-2 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
+            <button type="button" id="share-lb-sub-standard" onclick="switchShareLeaderboardLayout('standard')" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50">Standard View</button>
+            <button type="button" id="share-lb-sub-screenshot" onclick="switchShareLeaderboardLayout('screenshot')" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors">Screenshot View</button>
+          </div>
+          <div id="share-lb-sort-row" class="share-lb-controls shrink-0 px-4 pb-2 pt-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
+            <button type="button" id="share-lb-sort-points" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50">Total points</button>
+            <button type="button" id="share-lb-sort-winrate" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors">Win rate</button>
+          </div>
+          <div id="share-lb-scope-row" class="share-lb-controls hidden shrink-0 px-4 pb-2 pt-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 flex gap-2">
+            <button type="button" id="share-lb-scope-individual" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50">Per individu</button>
+            <button type="button" id="share-lb-scope-pair" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors">Per pair</button>
+          </div>
+          <div
+            id="share-leaderboard-scroll"
+            tabindex="-1"
+            class="share-leaderboard-scroll flex-1 leb-main-scroll p-4 lg:p-4 min-h-0 outline-none focus:outline-none"
+          >
+            <div id="share-panel-leaderboard" class="space-y-2">
+              <p
+                id="share-leaderboard-comp-note"
+                class="hidden text-xs text-emerald-800/90 dark:text-emerald-200/80 leading-relaxed px-1"
+                title="+M is compensation points for players with fewer matches played. It is calculated from the average points per player per completed match.
++M adalah poin kompensasi untuk pemain yang jumlah mainnya lebih sedikit. Nilainya dihitung dari rata-rata poin per pemain per match yang sudah selesai."
+              >
+                <span class="font-semibold">+M compensation:</span>
+                players who played fewer matches receive
+                <span class="whitespace-nowrap">+M = average points per player per completed match × missed match count</span>.
+                Added to total points only.
+              </p>
+              <div id="share-leaderboard-standard-wrap" class="space-y-2">
+                <div id="share-leaderboard-list" class="space-y-2"></div>
+              </div>
+              <div id="share-leaderboard-screenshot-wrap" class="hidden">
+                <div id="share-leaderboard-screenshot-panel"></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Leaderboard -->
-    <div id="page-leaderboard" class="page hidden flex-1 flex flex-col min-h-0 overflow-hidden">
-      <div class="bg-slate-200/80 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 rounded-b-3xl shrink-0">
+    <!-- Leaderboard (mobile full page; panel docks in sidebar on lg+) -->
+    <div id="page-leaderboard" class="page hidden flex-1 flex flex-col min-h-0 overflow-hidden lg:hidden padel-page-tournament">
+      <div id="host-leaderboard-mobile-header" class="bg-slate-200/80 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 p-4 rounded-b-3xl shrink-0">
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center min-w-0 flex-1">
-            <button type="button" onclick="backToRounds()" class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0">
+            <button type="button" onclick="backToRounds()" class="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0" aria-label="Back to rounds">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
@@ -1227,92 +1266,52 @@
             <h2 class="text-lg font-bold ml-3 truncate">Leaderboard</h2>
           </div>
           <div class="flex shrink-0 gap-1.5">
-            <button
-              type="button"
-              onclick="copySpectatorLinkForHost()"
-              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-teal-400/35 bg-teal-500/15 text-teal-900 dark:text-teal-50 hover:bg-teal-400/25 transition-colors"
-            >
-              Copy link
-            </button>
-            <button
-              type="button"
-              onclick="showSpectatorQrModal()"
-              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-violet-400/35 bg-violet-500/15 text-violet-50 hover:bg-violet-400/25 transition-colors"
-              title="Show QR for spectators"
-            >
-              QR
-            </button>
-            <button
-              type="button"
-              onclick="shareSpectatorLinkForHost()"
-              class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-pink-400/30 bg-pink-500/15 text-pink-900 dark:text-pink-50 hover:bg-pink-400/25 transition-colors"
-            >
-              Share
-            </button>
+            <button type="button" onclick="copySpectatorLinkForHost()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-teal-400/35 bg-teal-500/15 text-teal-900 dark:text-teal-50 hover:bg-teal-400/25 transition-colors">Copy link</button>
+            <button type="button" onclick="showSpectatorQrModal()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-violet-400/35 bg-violet-500/15 text-violet-50 hover:bg-violet-400/25 transition-colors" title="Show QR for spectators">QR</button>
+            <button type="button" onclick="shareSpectatorLinkForHost()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-pink-400/30 bg-pink-500/15 text-pink-900 dark:text-pink-50 hover:bg-pink-400/25 transition-colors">Share</button>
           </div>
         </div>
-        <div class="flex gap-2 mt-3">
-          <button
-            type="button"
-            id="host-lb-tab-standard"
-            onclick="switchHostLeaderboardLayout('standard')"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
-          >
-            Standard
-          </button>
-          <button
-            type="button"
-            id="host-lb-tab-screenshot"
-            onclick="switchHostLeaderboardLayout('screenshot')"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
-          >
-            Screenshot
-          </button>
+      </div>
+      <div id="host-lb-slot-mobile" class="host-lb-slot flex-1 min-h-0 flex flex-col">
+    <!-- Host leaderboard panel (moved between mobile slot & desktop sidebar) -->
+    <div id="host-leaderboard-panel" class="host-leaderboard-panel flex flex-col flex-1 min-h-0">
+      <div id="host-leaderboard-toolbar" class="host-leaderboard-toolbar shrink-0 border-b border-slate-200/80 dark:border-white/10 bg-slate-100/85 dark:bg-slate-950/50 p-3 lg:p-4 space-y-2">
+        <p id="host-lb-rename-hint" class="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
+          Tap <span class="font-semibold text-teal-800 dark:text-teal-200">✎</span> beside a name to rename — scores &amp; rounds update automatically.
+        </p>
+        <div class="flex gap-2">
+          <button type="button" id="host-lb-tab-standard" onclick="switchHostLeaderboardLayout('standard')" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50">Standard</button>
+          <button type="button" id="host-lb-tab-screenshot" onclick="switchHostLeaderboardLayout('screenshot')" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors">Screenshot</button>
         </div>
-        <div class="flex gap-2 mt-2">
-          <button
-            type="button"
-            id="host-lb-sort-points"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
-          >
-            Total points
-          </button>
-          <button
-            type="button"
-            id="host-lb-sort-winrate"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
-          >
-            Win rate
-          </button>
+        <div class="flex gap-2">
+          <button type="button" id="host-lb-sort-points" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50">Total points</button>
+          <button type="button" id="host-lb-sort-winrate" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors">Win rate</button>
         </div>
-        <div id="host-lb-scope-row" class="hidden flex gap-2 mt-2">
-          <button
-            type="button"
-            id="host-lb-scope-individual"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50"
-          >
-            Per individu
-          </button>
-          <button
-            type="button"
-            id="host-lb-scope-pair"
-            class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors"
-          >
-            Per pair
-          </button>
+        <div id="host-lb-scope-row" class="hidden flex gap-2">
+          <button type="button" id="host-lb-scope-individual" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50">Per individu</button>
+          <button type="button" id="host-lb-scope-pair" class="flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-900/8 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors">Per pair</button>
         </div>
       </div>
-      <div
-        id="host-leaderboard-scroll"
-        tabindex="-1"
-        class="flex-1 min-h-0 leb-main-scroll p-4 outline-none focus:outline-none"
-      >
+      <div id="host-leaderboard-scroll" tabindex="-1" class="host-leaderboard-scroll flex-1 min-h-0 leb-main-scroll p-3 lg:p-4 outline-none focus:outline-none">
         <div id="leaderboard-panel-standard" class="space-y-2">
+          <p
+            id="host-leaderboard-comp-note"
+            class="hidden text-xs text-emerald-800/90 dark:text-emerald-200/80 leading-relaxed px-1"
+            title="+M is compensation points for players with fewer matches played. It is calculated from the average points per player per completed match.
++M adalah poin kompensasi untuk pemain yang jumlah mainnya lebih sedikit. Nilainya dihitung dari rata-rata poin per pemain per match yang sudah selesai."
+          >
+            <span class="font-semibold">+M compensation:</span>
+            players who played fewer matches receive
+            <span class="whitespace-nowrap">+M = average points per player per completed match × missed match count</span>.
+            Added to total points only.
+          </p>
           <div id="leaderboard-list" class="space-y-2"></div>
         </div>
         <div id="leaderboard-panel-screenshot" class="hidden">
           <div id="leaderboard-screenshot-panel"></div>
         </div>
+      </div>
+    </div>
       </div>
     </div>
 
@@ -1528,6 +1527,7 @@
   <script src="js/americano-schedule-generator.js"></script>
   <script src="js/mix-americano-schedule-generator.js"></script>
   <script src="js/americano-round-planner.js"></script>
+  <script src="js/normal-americano-planner.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/pairing.js"></script>
   <script src="js/script.js"></script>

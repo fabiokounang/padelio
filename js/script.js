@@ -1167,7 +1167,7 @@
         safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
       )
     };
-    const board = computeLeaderboardSorted(tSub, 'points');
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const pt = new Map(board.map((r) => [r.name, r.points]));
     const teamPts = (p) => (pt.get(resolve(p.m)) || 0) + (pt.get(resolve(p.f)) || 0);
     const rankByKey = new Map();
@@ -1442,6 +1442,8 @@
       mode: 'normal', // 'normal' | 'balanced' | 'mix' | 'mixmex' | 'mexicano' | 'fixed' | 'fixedmex'
       title: '',
       courts: 0,
+      /** 'number' = Court 1/2/3, 'letter' = Court A/B/C */
+      courtStyle: 'number',
       points: 0,
       /** Mexicano-family only: 'rally' | 'games' */
       mexScoreKind: 'rally',
@@ -1458,7 +1460,72 @@
     shareLeaderboardSort: 'points',
     /** Scope: 'individual' (per-player) vs 'pair' (per-fixed-team). Only meaningful for fixed/fixedmex. */
     hostLeaderboardScope: 'individual',
-    shareLeaderboardScope: 'individual'
+    shareLeaderboardScope: 'individual',
+    /** Spectator mobile tab when rounds / leaderboard are not side-by-side. */
+    shareMobileTab: 'leaderboard',
+    /** Canonical player name currently being renamed on the host leaderboard (null = none). */
+    lbRenamingFrom: null
+  };
+
+  const TOURNAMENT_DESKTOP_MQ = '(min-width: 1024px)';
+  const isTournamentDesktopLayout = () => window.matchMedia(TOURNAMENT_DESKTOP_MQ).matches;
+
+  const mountHostLeaderboardPanel = () => {
+    const panel = $('host-leaderboard-panel');
+    if (!panel) return;
+    const slot = isTournamentDesktopLayout() ? $('host-lb-slot-desktop') : $('host-lb-slot-mobile');
+    if (!slot || panel.parentElement === slot) return;
+    slot.appendChild(panel);
+  };
+
+  const maybeRefreshDesktopLeaderboard = () => {
+    if (!isTournamentDesktopLayout() || !state.currentTournament) return;
+    if ($('page-rounds')?.classList.contains('hidden')) return;
+    populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+  };
+
+  const refreshHostTournamentDesktopUi = () => {
+    mountHostLeaderboardPanel();
+    const desktop = isTournamentDesktopLayout();
+    const lbPage = $('page-leaderboard');
+    if (desktop && lbPage && !lbPage.classList.contains('hidden')) {
+      navigateTo('rounds');
+      return;
+    }
+    if (desktop && state.currentTournament && !$('page-rounds')?.classList.contains('hidden')) {
+      populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+      wireLeaderboardLayoutTabs();
+    }
+  };
+
+  const refreshShareTournamentDesktopUi = () => {
+    if (!state.shareViewerMode) return;
+    const desktop = isTournamentDesktopLayout();
+    if (desktop) {
+      switchShareTab(state.shareMobileTab || 'leaderboard');
+      applyShareLeaderboardLayoutUi();
+      applyShareLeaderboardScopeUi(state.shareViewerData);
+    } else {
+      switchShareTab(state.shareMobileTab || 'leaderboard');
+    }
+  };
+
+  let tournamentDesktopMqBound = false;
+  const bindTournamentDesktopLayoutListener = () => {
+    if (tournamentDesktopMqBound) return;
+    tournamentDesktopMqBound = true;
+    const mq = window.matchMedia(TOURNAMENT_DESKTOP_MQ);
+    const onChange = () => {
+      refreshHostTournamentDesktopUi();
+      refreshShareTournamentDesktopUi();
+    };
+    if (typeof mq.addEventListener === 'function') mq.addEventListener('change', onChange);
+    else if (typeof mq.addListener === 'function') mq.addListener(onChange);
+  };
+
+  const initTournamentDesktopLayout = () => {
+    mountHostLeaderboardPanel();
+    bindTournamentDesktopLayoutListener();
   };
 
   /** Locked in js/version.js — do not change here. */
@@ -1530,6 +1597,68 @@
     _roundsCache = { raw, data: roundsArr };
   };
 
+  const formatPlayerDisplayName = (raw) => {
+    const resolved = fixCommonNameTypos(String(raw ?? '').trim());
+    if (!resolved) return '';
+    return resolved.charAt(0).toUpperCase() + resolved.slice(1);
+  };
+
+  const encodeLbPlayerAttr = (name) => encodeURIComponent(fixCommonNameTypos(String(name ?? '')));
+
+  const decodeLbPlayerAttr = (encoded) => {
+    try {
+      return fixCommonNameTypos(decodeURIComponent(String(encoded ?? '')));
+    } catch {
+      return fixCommonNameTypos(String(encoded ?? ''));
+    }
+  };
+
+  const playerNamesMatch = (a, b) =>
+    playerNameDuplicateKey(a) === playerNameDuplicateKey(b);
+
+  /** Update roster + all round team slots after a display-name change. */
+  const renameTournamentPlayer = (oldName, newNameRaw) => {
+    if (!state.currentTournament) {
+      return { ok: false, error: 'No active tournament' };
+    }
+
+    const oldCanonical = fixCommonNameTypos(String(oldName ?? '').trim());
+    if (!oldCanonical) return { ok: false, error: 'Player not found' };
+
+    const formatted = formatPlayerDisplayName(newNameRaw);
+    if (!formatted) return { ok: false, error: 'Name cannot be empty' };
+
+    const players = getPlayersFull();
+    const idx = players.findIndex((p) => playerNamesMatch(p.name, oldCanonical));
+    if (idx < 0) return { ok: false, error: 'Player not found' };
+
+    if (
+      !playerNamesMatch(oldCanonical, formatted) &&
+      players.some((p, i) => i !== idx && playerNamesMatch(p.name, formatted))
+    ) {
+      return { ok: false, error: 'That name is already in the list' };
+    }
+
+    players[idx].name = formatted;
+
+    const oldKey = playerNameDuplicateKey(oldCanonical);
+    const rounds = getRounds();
+    rounds.forEach((round) => {
+      (round.matches || []).forEach((match) => {
+        ['team1', 'team2'].forEach((side) => {
+          match[side] = (match[side] || []).map((raw) => {
+            const fixed = fixCommonNameTypos(raw);
+            return playerNameDuplicateKey(fixed) === oldKey ? formatted : fixed;
+          });
+        });
+      });
+    });
+
+    state.currentTournament.players = JSON.stringify(players);
+    setRounds(rounds);
+    return { ok: true, name: formatted };
+  };
+
   const getPlayers = () => {
     const raw = safeJsonParse(state.currentTournament?.players, []);
     const norm = normalizePlayers(raw);
@@ -1541,21 +1670,14 @@
     return g.PadelioAmericanoSchedule || null;
   };
 
-  /** Normal Americano — pre-generated full-session schedule (any courts / player count). */
-  const usesGeneratedAmericanoSchedule = (t, playerCount, courtCount) => {
-    if (!t) return false;
-    if ((t.mode || 'normal') !== 'normal') return false;
-    const n =
-      typeof playerCount === 'number'
-        ? playerCount
-        : safeJsonParse(t.players, []).length;
-    const c =
-      courtCount != null && courtCount !== ''
-        ? Number(courtCount)
-        : Number(t.courts) || 0;
-    if (n < 4 || c < 1) return false;
-    return Math.floor(n / 4) >= 1;
-  };
+  /**
+   * Normal Americano — used to gate pre-generated full-session schedules.
+   * Disabled: the new rolling fairness planner generates rounds on demand
+   * from history, so we no longer build a pre-baked social schedule.
+   * Kept as a stub so older tournaments that still have `social_schedule_json`
+   * don't crash; the round generator simply doesn't read it for new rounds.
+   */
+  const usesGeneratedAmericanoSchedule = () => false;
 
   const isGeneratedScheduleComplete = (result) =>
     !!(result?.partnerComplete && result?.opponentComplete);
@@ -1771,6 +1893,7 @@
   const debouncedSaveTournament = debounce(() => {
     // fire & forget (no await) to keep typing smooth
     saveCurrentTournament().catch(() => {});
+    maybeRefreshDesktopLeaderboard();
   }, 250);
 
   /* ---------- Data SDK handler ---------- */
@@ -1871,6 +1994,17 @@
       syncNewPointsPage();
     }
 
+    if (page === 'rounds' && state.currentTournament) {
+      requestAnimationFrame(() => {
+        refreshHostTournamentDesktopUi();
+        ensureViewingRoundValid();
+        if (!state.isEditingScore) {
+          renderSpecificRound(state.viewingRound ?? state.currentTournament.current_round);
+          updateRoundArrowState();
+        }
+      });
+    }
+
     updateAdVisibility(page);
   };
 
@@ -1895,6 +2029,7 @@
       mode: 'normal',
       title: '',
       courts: 0,
+      courtStyle: 'number',
       points: 0,
       mexScoreKind: 'rally',
       mexBestOf: null,
@@ -1906,6 +2041,11 @@
     if (t) t.value = '';
 
     $$('.court-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
+    $$('.court-style-btn').forEach((b) => {
+      const on = b.dataset.courtStyle === 'number';
+      b.classList.toggle(CHIP_SELECTED, on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
     $$('.points-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
     $$('.mex-bo-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
     $$('.mex-kind-btn').forEach((b) => b.classList.remove(CHIP_SELECTED));
@@ -1964,6 +2104,30 @@
     }
     state.newTournament.title = title;
     navigateTo('new-courts');
+  };
+
+  /** Returns "Court 1" / "Court A" etc. based on style saved on tournament. */
+  const formatCourtLabel = (courtNum, tournamentOrStyle) => {
+    const style =
+      typeof tournamentOrStyle === 'string'
+        ? tournamentOrStyle
+        : (tournamentOrStyle?.court_style || 'number');
+    const n = Number(courtNum) || 1;
+    if (style === 'letter') {
+      const letter = String.fromCharCode(64 + n);
+      return `Court ${letter}`;
+    }
+    return `Court ${n}`;
+  };
+
+  const selectCourtStyle = (style) => {
+    const s = style === 'letter' ? 'letter' : 'number';
+    state.newTournament.courtStyle = s;
+    $$('.court-style-btn').forEach((b) => {
+      const on = b.dataset.courtStyle === s;
+      b.classList.toggle(CHIP_SELECTED, on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
   };
 
   const selectCourts = (num) => {
@@ -2541,6 +2705,7 @@
         title: state.newTournament.title,
         mode: state.newTournament.mode,
         courts: state.newTournament.courts,
+        court_style: state.newTournament.courtStyle || 'number',
         points_to_win,
         players: JSON.stringify(normalizePlayers(state.newTournament.players)),
         rounds: JSON.stringify([]),
@@ -2703,6 +2868,12 @@
     const container = $('courts-container');
     if (!container) return;
 
+    const matchCount = roundData?.matches?.length || 0;
+    const gridOnDesktop = isTournamentDesktopLayout() && matchCount >= 2;
+    container.className = gridOnDesktop
+      ? 'host-courts-container host-courts-container--grid space-y-4'
+      : 'host-courts-container space-y-4';
+
     const mode = state.currentTournament?.mode || 'normal';
     const sProf = getTournamentScoringProfile(state.currentTournament);
     const numMax = sProf.style === 'games' ? sProf.bestOf : sProf.rallyCap;
@@ -2751,9 +2922,10 @@
           const ptBtnOn =
             'bg-slate-200/90 dark:bg-white/10 hover:bg-slate-300/90 dark:hover:bg-white/15';
           const ptBtnOff = 'bg-slate-100/80 dark:bg-white/5 opacity-50 cursor-not-allowed';
+          const courtLabel = formatCourtLabel(match.court, state.currentTournament);
           return `
         <div class="bg-emerald-50/95 dark:bg-emerald-800/50 rounded-3xl p-4 border border-emerald-300/75 dark:border-emerald-600/45 shadow-cozy-sm">
-          <div class="text-center text-sm text-emerald-700 dark:text-emerald-400 mb-1 font-medium">Court ${match.court}</div>
+          <div class="text-center text-sm text-emerald-700 dark:text-emerald-400 mb-1 font-medium">${escapeHtml(courtLabel)}</div>
           <div class="text-center text-[10px] text-emerald-700/95 dark:text-emerald-500/90 mb-3 leading-snug">${escapeHtml(scoreHint)}</div>
 
           <div class="flex items-center gap-4">
@@ -2855,7 +3027,7 @@
     const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
     const levelByName = makeLevelByNameMap(getPlayersFull());
 
-    const board = computeLeaderboardSorted(tSub, 'points');
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const standingsOrder = board.map((row) => row.name);
 
     let ordered = [];
@@ -2910,7 +3082,7 @@
       )
     };
 
-    const board = computeLeaderboardSorted(tSub, 'points');
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const standingsOrder = board.map((row) => row.name);
     const rosterNames = [...malesAll, ...femalesAll];
     const resolve = makeRosterNameResolve(rosterNames);
@@ -3258,35 +3430,47 @@
       return;
     }
 
-    // ---------- NORMAL MODE (fair bench + partner/opponent variety; no power-level pairing) ----------
+    // ---------- NORMAL MODE (dynamic fairness engine: bye + partner/opponent variety) ----------
     {
       const players = getPlayers();
-      const maxCourts = Math.min(courts, Math.floor(players.length / 4));
       let matches = [];
 
-      if (maxCourts > 0) {
-        let usedGeneratedSchedule = false;
-        if (usesGeneratedAmericanoSchedule(state.currentTournament)) {
-          const schedSoc = await ensureSocialSchedule();
-          const row = schedSoc?.find((r) => Number(r.round) === roundNo);
-          let fromSched = row ? matchesFromSocialScheduleRound(row, players) : [];
-          if (fromSched.length > maxCourts) fromSched = fromSched.slice(0, maxCourts);
-          if (fromSched.length === maxCourts) {
-            matches = fromSched;
-            usedGeneratedSchedule = true;
-          }
-        }
+      const g = typeof globalThis !== 'undefined' ? globalThis : window;
+      const planner =
+        (typeof g.planNormalAmericanoRound === 'function' && g.planNormalAmericanoRound) ||
+        (g.PadelioNormalAmericano && typeof g.PadelioNormalAmericano.planNormalAmericanoRound === 'function'
+          ? g.PadelioNormalAmericano.planNormalAmericanoRound
+          : null);
 
-        if (!usedGeneratedSchedule) {
-          // Normal mode has no level balancing — the hill-climbing planner adds ~64ms of
-          // CPU with no meaningful quality gain beyond the faster classic algorithm.
-          // Use buildBestNormalMatches directly (multi-attempt search, ~1ms).
+      if (typeof planner === 'function' && players.length >= 4 && courts >= 1) {
+        try {
+          const out = planner({
+            players,
+            courts,
+            priorRounds: rounds,
+            roundNo
+          });
+          if (out && Array.isArray(out.matches) && !out.error) {
+            matches = out.matches;
+            if (Array.isArray(out.warnings) && out.warnings.length) {
+              console.warn('[Padelio normal] planner warnings:', out.warnings);
+            }
+          } else if (out?.error) {
+            console.warn('[Padelio normal] planner error:', out.error);
+          }
+        } catch (e) {
+          console.warn('[Padelio normal] planner threw', e);
+        }
+      }
+
+      // Legacy fallback (only used if the new planner is unavailable or failed).
+      if (matches.length === 0) {
+        const maxCourts = Math.min(courts, Math.floor(players.length / 4));
+        if (maxCourts > 0) {
           const slots = maxCourts * 4;
           const active = pickActivePlayersNormal(players, slots, rounds, roundNo);
           const history = buildMixHistory();
           matches = buildBestNormalMatches(active, maxCourts, history, rounds, roundNo, players, null);
-
-          // Hard guarantee: if matches count still differs from maxCourts, force-regenerate.
           if (matches.length !== maxCourts) {
             const forceActive = pickActivePlayersNormal(players, maxCourts * 4, rounds, roundNo);
             matches = buildBestNormalMatches(forceActive, maxCourts, history, rounds, roundNo, players, null);
@@ -3493,6 +3677,7 @@
 
       setRounds(rounds);
       saveCurrentTournament().catch(() => {});
+      maybeRefreshDesktopLeaderboard();
       return;
     }
 
@@ -3529,6 +3714,7 @@
 
     setRounds(rounds);
     saveCurrentTournament().catch(() => {});
+    maybeRefreshDesktopLeaderboard();
   };
 
   /* ---------- Round navigation ---------- */
@@ -4106,29 +4292,114 @@
     return n > 0 ? `+${n}` : String(n);
   };
 
+  const MATCH_COMPENSATION_POINTS_PER_GAP =
+    window.Padelio?.MATCH_COMPENSATION_POINTS_PER_GAP ?? 0;
+
+  /**
+   * Fallback +M compensation (mirrors scoring.js). Browser always prefers
+   * the canonical impl exposed via `window.Padelio`; this copy keeps the UI
+   * working if scoring.js fails to load.
+   */
+  const applyMatchCompensationToLeaderboardRows =
+    window.Padelio?.applyMatchCompensationToLeaderboardRows ||
+    ((rows) => {
+      if (!rows?.length) return rows || [];
+      let maxMatches = 0;
+      let totalAppearances = 0;
+      let totalPoints = 0;
+      for (const r of rows) {
+        const m = Number(r.matches) || 0;
+        if (m > maxMatches) maxMatches = m;
+        totalAppearances += m;
+        totalPoints += Number(r.points) || 0;
+      }
+      const average = totalAppearances > 0 ? totalPoints / totalAppearances : 0;
+      return rows.map((r) => {
+        const pointsRaw = Number(r.points) || 0;
+        const matches = Number(r.matches) || 0;
+        const gap = maxMatches > 0 ? Math.max(0, maxMatches - matches) : 0;
+        const matchComp = gap > 0 ? Math.round(average * gap) : 0;
+        return {
+          ...r,
+          pointsRaw,
+          matchComp,
+          matchCompGap: gap,
+          matchCompAverage: average,
+          points: pointsRaw + matchComp
+        };
+      });
+    });
+
+  const annotateLeaderboardRowsWithoutCompensation =
+    window.Padelio?.annotateLeaderboardRowsWithoutCompensation ||
+    ((rows) =>
+      (rows || []).map((r) => ({
+        ...r,
+        pointsRaw: Number(r.points) || 0,
+        matchComp: 0,
+        matchCompGap: 0,
+        matchCompAverage: 0
+      })));
+
+  /** Format leaderboard points / +M as whole numbers only. */
+  const formatCompNumber = (n) => String(Math.round(Number(n) || 0));
+
+  const formatMatchCompensationNote = (p) => {
+    const comp = Number(p?.matchComp) || 0;
+    if (comp <= 0) return '';
+    const gap = Number(p?.matchCompGap) || 0;
+    const matchWord = gap === 1 ? 'match' : 'matches';
+    return `+M ${formatCompNumber(comp)} (${gap} fewer ${matchWord})`;
+  };
+
+  const matchCompensationTooltip = (p) => {
+    const comp = Number(p?.matchComp) || 0;
+    if (comp <= 0) {
+      return '+M is compensation points for players with fewer matches played. ' +
+        'It is calculated from the average points per player per completed match.';
+    }
+    const gap = Number(p?.matchCompGap) || 0;
+    const avg = Number(p?.matchCompAverage) || 0;
+    return (
+      `+M ${formatCompNumber(comp)} = average ${formatCompNumber(avg)} pts × ${gap} missed match${gap === 1 ? '' : 'es'}. ` +
+      '+M is compensation points for players with fewer matches played; it is calculated from the average points per player per completed match.'
+    );
+  };
+
   const sortLeaderboardRows = (rows, sortMode) => {
     const byWinRate = sortMode === 'winRate';
+    const adj = (r) => Number(r.points) || 0;
+    const raw = (r) => (r.pointsRaw != null ? Number(r.pointsRaw) : Number(r.points) || 0);
     return [...rows].sort((a, b) => {
       if (byWinRate) {
         if (b.winRate !== a.winRate) return b.winRate - a.winRate;
         if (b.wins !== a.wins) return b.wins - a.wins;
-        if (b.points !== a.points) return b.points - a.points;
+        const ap = adj(a);
+        const bp = adj(b);
+        if (bp !== ap) return bp - ap;
         if (b.diff !== a.diff) return b.diff - a.diff;
         if (b.matches !== a.matches) return b.matches - a.matches;
         return String(a.name).localeCompare(String(b.name));
       }
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.diff !== a.diff) return b.diff - a.diff;
-      if (b.wins !== a.wins) return b.wins - a.wins;
+      const ap = adj(a);
+      const bp = adj(b);
+      if (bp !== ap) return bp - ap;
       if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      if (b.diff !== a.diff) return b.diff - a.diff;
+      const ar = raw(a);
+      const br = raw(b);
+      if (br !== ar) return br - ar;
+      if (a.matches !== b.matches) return a.matches - b.matches;
       return String(a.name).localeCompare(String(b.name));
     });
   };
 
   /**
    * @param {'points'|'winRate'} [sortMode] Points = Americano-style total; winRate = rank by W/M % (ties: wins, points, games).
+   * @param {{ applyMatchCompensation?: boolean }} [opts] Default true (standings); false for round pairing order.
    */
-  const computeLeaderboardSorted = (tournamentLike, sortMode = 'points') => {
+  const computeLeaderboardSorted = (tournamentLike, sortMode = 'points', opts = {}) => {
+    const applyComp = opts.applyMatchCompensation !== false;
     const players = normalizePlayers(safeJsonParse(tournamentLike?.players, [])).map((p) => p.name);
     const rounds = safeJsonParse(tournamentLike?.rounds, []);
     const rosterResolve = makeRosterNameResolve(players);
@@ -4196,7 +4467,10 @@
       const diff = data.points - data.conceded;
       return { name, ...data, winRate, diff };
     });
-    return sortLeaderboardRows(rows, sortMode);
+    const enriched = applyComp
+      ? applyMatchCompensationToLeaderboardRows(rows)
+      : annotateLeaderboardRowsWithoutCompensation(rows);
+    return sortLeaderboardRows(enriched, sortMode);
   };
 
   /**
@@ -4205,7 +4479,8 @@
    * (not summed individuals — that would double-count). Points/conceded ARE summed from individuals,
    * since both partners get the team score per match in the individual leaderboard.
    */
-  const computePairLeaderboardSorted = (tournamentLike, sortMode = 'points') => {
+  const computePairLeaderboardSorted = (tournamentLike, sortMode = 'points', opts = {}) => {
+    const applyComp = opts.applyMatchCompensation !== false;
     const playersArr = normalizePlayers(safeJsonParse(tournamentLike?.players, []));
     const rounds = safeJsonParse(tournamentLike?.rounds, []);
     const rosterNames = playersArr.map((p) => p.name);
@@ -4272,59 +4547,164 @@
         diff
       });
     });
-    return sortLeaderboardRows(rows, sortMode);
+    const enriched = applyComp
+      ? applyMatchCompensationToLeaderboardRows(rows)
+      : annotateLeaderboardRowsWithoutCompensation(rows);
+    return sortLeaderboardRows(enriched, sortMode);
   };
 
-  const renderLeaderboardHtml = (sorted, sortMode = 'points') => {
+  const renderLeaderboardPointsBlock = (p, byWinRate) => {
+    const comp = Number(p.matchComp) || 0;
+    const raw = p.pointsRaw != null ? p.pointsRaw : p.points;
+    const adjusted = Number(p.points) || 0;
+    const compTipAttr = comp
+      ? ` title="${escapeHtml(matchCompensationTooltip(p))}"`
+      : '';
+    if (byWinRate) {
+      return `
+        <div class="lb-points-block">
+          <div class="lb-points-block__value lb-points-block__value--winrate">${p.winRate.toFixed(0)}<span class="lb-points-block__suffix">%</span></div>
+          <div class="lb-points-block__label">win rate</div>
+          <div class="lb-points-block__sub tabular-nums"${compTipAttr}>${formatCompNumber(adjusted)} pts${
+            comp ? ` <span class="lb-points-block__comp">incl. +M ${formatCompNumber(comp)}</span>` : ''
+          }</div>
+        </div>
+      `;
+    }
+    return `
+      <div class="lb-points-block">
+        <div class="lb-points-block__value tabular-nums"${compTipAttr}>${formatCompNumber(adjusted)}</div>
+        <div class="lb-points-block__label">points</div>
+        ${
+          comp
+            ? `<div class="lb-points-block__sub tabular-nums"${compTipAttr}>
+                 ${formatCompNumber(raw)} <span class="lb-points-block__plus">+</span>
+                 <span class="lb-points-block__comp">${formatCompNumber(comp)} +M</span>
+               </div>`
+            : ''
+        }
+      </div>
+    `;
+  };
+
+  const renderLeaderboardPlayerNameHtml = (canonicalName, editable) => {
+    const display = fixCommonNameTypos(canonicalName);
+    const attr = encodeLbPlayerAttr(display);
+    const editing =
+      editable &&
+      state.lbRenamingFrom != null &&
+      playerNamesMatch(state.lbRenamingFrom, display);
+
+    if (editing) {
+      return `
+        <div class="lb-rename-row flex items-center gap-1.5 min-w-0 w-full">
+          <input
+            type="text"
+            class="lb-player-rename-input flex-1 min-w-0 rounded-xl border border-teal-400/50 bg-white/95 dark:bg-slate-900/80 px-2.5 py-1.5 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-400/35"
+            value="${escapeHtml(display)}"
+            data-lb-player="${attr}"
+            maxlength="48"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="button" data-lb-action="save" data-lb-player="${attr}" class="lb-rename-btn lb-rename-btn--save" aria-label="Save name" title="Save">✓</button>
+          <button type="button" data-lb-action="cancel" class="lb-rename-btn lb-rename-btn--cancel" aria-label="Cancel" title="Cancel">✕</button>
+        </div>
+      `;
+    }
+
+    if (!editable) {
+      return `<div class="font-semibold truncate">${escapeHtml(display)}</div>`;
+    }
+
+    return `
+      <div class="lb-name-row flex items-center gap-1 min-w-0 w-full">
+        <span class="font-semibold truncate flex-1 min-w-0">${escapeHtml(display)}</span>
+        <button
+          type="button"
+          data-lb-action="edit"
+          data-lb-player="${attr}"
+          class="lb-rename-edit shrink-0 p-1.5 rounded-lg border border-transparent text-slate-500 dark:text-slate-400 hover:text-teal-800 dark:hover:text-teal-200 hover:bg-teal-500/10 hover:border-teal-400/30 transition-colors"
+          aria-label="Edit ${escapeHtml(display)}"
+          title="Edit name"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828 9 16.5v-3.5z" />
+          </svg>
+        </button>
+      </div>
+    `;
+  };
+
+  const renderLeaderboardNamesBlock = (row, editable, isPairRow) => {
+    if (isPairRow && Array.isArray(row.names) && row.names.length === 2) {
+      return `
+        <div class="space-y-1.5 min-w-0">
+          ${row.names.map((n) => renderLeaderboardPlayerNameHtml(n, editable)).join('')}
+        </div>
+      `;
+    }
+    return renderLeaderboardPlayerNameHtml(row.name, editable);
+  };
+
+  const renderLeaderboardHtml = (sorted, sortMode = 'points', opts = {}) => {
     const byWinRate = sortMode === 'winRate';
+    const editable = !!opts.editable;
+    const isPairRow = !!opts.isPairRow;
+
+    const rankClass = (i) => {
+      if (i === 0) return 'lb-card--gold';
+      if (i === 1) return 'lb-card--silver';
+      if (i === 2) return 'lb-card--bronze';
+      return 'lb-card--default';
+    };
+    const rankBadgeClass = (i) => {
+      if (i === 0) return 'lb-rank--gold';
+      if (i === 1) return 'lb-rank--silver';
+      if (i === 2) return 'lb-rank--bronze';
+      return 'lb-rank--default';
+    };
+    const diffClass = (n) => {
+      if (n > 0) return 'lb-stat--pos';
+      if (n < 0) return 'lb-stat--neg';
+      return '';
+    };
+
     return sorted
-      .map(
-        (p, i) => `
-          <div class="flex items-center bg-emerald-50/95 dark:bg-emerald-800/50 rounded-3xl p-4 shadow-cozy-sm ${
-            i === 0 ? 'border-2 border-amber-300'
-            : i === 1 ? 'border-2 border-slate-300'
-            : i === 2 ? 'border-2 border-orange-400/90'
-            : 'border border-emerald-300/75 dark:border-emerald-600/45'
-          }">
-            <div class="w-8 h-8 flex items-center justify-center rounded-full ${
-              i === 0 ? 'bg-gradient-to-br from-amber-200 to-amber-400 text-slate-900'
-              : i === 1 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-slate-900 shadow-sm ring-1 ring-white/30'
-              : i === 2 ? 'bg-gradient-to-br from-orange-300 to-orange-500 text-white'
-              : 'bg-emerald-700 text-white'
-            } text-sm font-extrabold mr-3 shadow-sm">
-              ${i + 1}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="font-semibold">${escapeHtml(fixCommonNameTypos(p.name))}</div>
-              <div class="text-sm text-emerald-700 dark:text-emerald-300">
-                Match: ${p.matches} | W: ${p.wins} | L: ${p.losses} | T: ${p.ties} | Diff: ${formatLeaderboardDiff(p.diff)}
+      .map((p, i) => {
+        const diffText = formatLeaderboardDiff(p.diff);
+        const matchWord = p.matches === 1 ? 'match' : 'matches';
+        return `
+          <div class="lb-card ${rankClass(i)}">
+            <span class="lb-rank ${rankBadgeClass(i)}">${i + 1}</span>
+            <div class="lb-card__main">
+              <div class="lb-card__name">${renderLeaderboardNamesBlock(p, editable, isPairRow)}</div>
+              <div class="lb-card__stats">
+                <span class="lb-stat-pill">
+                  <span class="lb-stat-pill__value tabular-nums">${p.matches}</span>
+                  <span class="lb-stat-pill__label">${matchWord}</span>
+                </span>
+                <span class="lb-stat-record tabular-nums" title="Wins · Losses · Ties">
+                  <span class="lb-stat-record__w">${p.wins}W</span>
+                  <span class="lb-sep">·</span>
+                  <span class="lb-stat-record__l">${p.losses}L</span>
+                  <span class="lb-sep">·</span>
+                  <span class="lb-stat-record__t">${p.ties}T</span>
+                </span>
+                <span class="lb-stat-text ${diffClass(p.diff)} tabular-nums" title="Point difference">${diffText} diff</span>
+                ${
+                  byWinRate
+                    ? ''
+                    : `<span class="lb-stat-text lb-stat-text--muted tabular-nums" title="Win rate">${p.winRate.toFixed(0)}% win</span>`
+                }
               </div>
-              ${
-                byWinRate
-                  ? `<div class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Total points: ${p.points}</div>`
-                  : `<div class="text-xs text-emerald-700 dark:text-emerald-400 mt-1">Win rate: ${p.winRate.toFixed(1)}%</div>`
-              }
             </div>
-            <div class="text-right shrink-0">
-              ${
-                byWinRate
-                  ? `<div class="text-2xl font-bold text-teal-700 dark:text-teal-300">${p.winRate.toFixed(1)}%</div>
-                     <div class="text-xs text-teal-700 dark:text-teal-400/90">win rate</div>`
-                  : `<div class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">${p.points}</div>
-                     <div class="text-xs text-emerald-700 dark:text-emerald-400">points</div>`
-              }
-              <div class="text-sm font-bold tabular-nums mt-1 ${
-                p.diff > 0
-                  ? 'text-teal-700 dark:text-teal-300'
-                  : p.diff < 0
-                    ? 'text-rose-700 dark:text-rose-300'
-                    : 'text-slate-600 dark:text-slate-400'
-              }">${formatLeaderboardDiff(p.diff)}</div>
-              <div class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">diff</div>
+            <div class="lb-card__points">
+              ${renderLeaderboardPointsBlock(p, byWinRate)}
             </div>
           </div>
-        `
-      )
+        `;
+      })
       .join('');
   };
 
@@ -4349,6 +4729,18 @@
     return 'lb-shot__diff--zero';
   };
 
+  const renderLeaderboardScreenshotPrimaryCell = (p, byWinRate) => {
+    const comp = Number(p.matchComp) || 0;
+    const adjusted = Number(p.points) || 0;
+    const main = byWinRate
+      ? `${p.winRate.toFixed(0)}%`
+      : formatCompNumber(adjusted);
+    const badge = comp > 0
+      ? `<span class="lb-shot__primary-badge" aria-label="includes ${formatCompNumber(comp)} match compensation">+${formatCompNumber(comp)} M</span>`
+      : '';
+    return `<span class="lb-shot__primary-val">${main}</span>${badge}`;
+  };
+
   /** Standings card for screenshots — single clean table. */
   const renderLeaderboardScreenshotHtml = (sorted, title, sortMode = 'points') => {
     const byWinRate = sortMode === 'winRate';
@@ -4365,18 +4757,20 @@
 
     const rows = sorted
       .map((p, i) => {
-        const primaryVal = byWinRate ? `${p.winRate.toFixed(0)}%` : String(p.points);
+        const comp = Number(p.matchComp) || 0;
         const tier = leaderboardShotTierClass(i);
-        const tip = `${p.matches} matches · ${p.points} pts · ${p.winRate.toFixed(0)}% win rate`;
+        const compTipAttr = comp
+          ? ` title="${escapeHtml(matchCompensationTooltip(p))}"`
+          : '';
         return `
-        <div class="lb-shot__tr ${tier}" role="row" title="${escapeHtml(tip)}">
+        <div class="lb-shot__tr ${tier}" role="row">
           <span class="lb-shot__rank ${leaderboardShotRankClass(i)}" role="cell">${i + 1}</span>
           <span class="lb-shot__player" role="cell">
             <span class="lb-shot__name">${escapeHtml(fixCommonNameTypos(p.name))}</span>
             <span class="lb-shot__matches">${p.matches} match${p.matches === 1 ? '' : 'es'}</span>
           </span>
           <span class="lb-shot__record" role="cell">${p.wins}-${p.losses}-${p.ties}</span>
-          <span class="lb-shot__primary" role="cell">${primaryVal}</span>
+          <span class="lb-shot__primary" role="cell"${compTipAttr}>${renderLeaderboardScreenshotPrimaryCell(p, byWinRate)}</span>
           <span class="lb-shot__diff ${leaderboardShotDiffClass(p.diff)}" role="cell">${formatLeaderboardDiff(p.diff)}</span>
         </div>`;
       })
@@ -4487,15 +4881,36 @@
       ? computePairLeaderboardSorted(tournamentLike, sSort)
       : computeLeaderboardSorted(tournamentLike, sSort);
 
+    const hostEditable =
+      !state.shareViewerMode &&
+      !!state.currentTournament &&
+      state.currentTournament.__backendId === tournamentLike?.__backendId;
+
     const hostStd = $('leaderboard-list');
     const hostShot = $('leaderboard-screenshot-panel');
-    if (hostStd) hostStd.innerHTML = renderLeaderboardHtml(hostSorted, hSort);
+    if (hostStd) {
+      hostStd.innerHTML = renderLeaderboardHtml(hostSorted, hSort, {
+        editable: hostEditable,
+        isPairRow: hostUsePair
+      });
+    }
     if (hostShot) hostShot.innerHTML = renderLeaderboardScreenshotHtml(hostSorted, title, hSort);
 
     const shareStd = $('share-leaderboard-list');
     const shareShot = $('share-leaderboard-screenshot-panel');
-    if (shareStd) shareStd.innerHTML = renderLeaderboardHtml(shareSorted, sSort);
+    if (shareStd) {
+      shareStd.innerHTML = renderLeaderboardHtml(shareSorted, sSort, {
+        editable: false,
+        isPairRow: shareUsePair
+      });
+    }
     if (shareShot) shareShot.innerHTML = renderLeaderboardScreenshotHtml(shareSorted, title, sSort);
+
+    const anyComp = hostSorted.some((r) => (Number(r.matchComp) || 0) > 0);
+    const hostNote = $('host-leaderboard-comp-note');
+    const shareNote = $('share-leaderboard-comp-note');
+    if (hostNote) hostNote.classList.toggle('hidden', !anyComp);
+    if (shareNote) shareNote.classList.toggle('hidden', !anyComp);
 
     applyHostLeaderboardLayoutUi();
     applyShareLeaderboardLayoutUi();
@@ -4503,6 +4918,87 @@
     applyShareLeaderboardSortUi();
     applyHostLeaderboardScopeUi(tournamentLike);
     applyShareLeaderboardScopeUi(tournamentLike);
+
+    if (hostEditable && state.lbRenamingFrom != null) {
+      requestAnimationFrame(() => {
+        const input = hostStd?.querySelector('.lb-player-rename-input');
+        input?.focus();
+        input?.select();
+      });
+    }
+  };
+
+  const startLeaderboardPlayerRename = (canonicalName) => {
+    if (state.shareViewerMode || !state.currentTournament) return;
+    state.lbRenamingFrom = fixCommonNameTypos(canonicalName);
+    populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+  };
+
+  const cancelLeaderboardPlayerRename = () => {
+    if (state.lbRenamingFrom == null) return;
+    state.lbRenamingFrom = null;
+    if (state.currentTournament) {
+      populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+    }
+  };
+
+  const commitLeaderboardPlayerRename = async (fromName) => {
+    if (state.shareViewerMode || !state.currentTournament) return;
+    const list = $('leaderboard-list');
+    const attr = encodeLbPlayerAttr(fromName);
+    const input =
+      list?.querySelector(`.lb-player-rename-input[data-lb-player="${attr}"]`) ||
+      list?.querySelector('.lb-player-rename-input');
+    const result = renameTournamentPlayer(fromName, input?.value ?? '');
+    if (!result.ok) {
+      toast(result.error || 'Could not rename player');
+      return;
+    }
+    state.lbRenamingFrom = null;
+    try {
+      await saveCurrentTournament();
+    } catch {
+      toast('Saved locally; sync may retry');
+    }
+    toast(`Name updated to ${result.name}`);
+    populateLeaderboardPanels(state.currentTournament, state.currentTournament.title || '');
+    if (!$('page-rounds')?.classList.contains('hidden')) {
+      ensureViewingRoundValid();
+      renderSpecificRound(state.viewingRound ?? state.currentTournament.current_round);
+      updateRoundArrowState();
+    }
+  };
+
+  const wireLeaderboardRenameEvents = () => {
+    const panel = $('host-leaderboard-panel');
+    if (!panel || panel.dataset.lbRenameDelegate) return;
+    panel.dataset.lbRenameDelegate = '1';
+
+    panel.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-lb-action]');
+      if (!btn || !panel.contains(btn)) return;
+      e.preventDefault();
+      const action = btn.dataset.lbAction;
+      if (action === 'edit') {
+        startLeaderboardPlayerRename(decodeLbPlayerAttr(btn.dataset.lbPlayer));
+      } else if (action === 'cancel') {
+        cancelLeaderboardPlayerRename();
+      } else if (action === 'save') {
+        void commitLeaderboardPlayerRename(decodeLbPlayerAttr(btn.dataset.lbPlayer));
+      }
+    });
+
+    panel.addEventListener('keydown', (e) => {
+      if (!e.target.classList?.contains('lb-player-rename-input')) return;
+      const from = decodeLbPlayerAttr(e.target.dataset.lbPlayer);
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        void commitLeaderboardPlayerRename(from);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelLeaderboardPlayerRename();
+      }
+    });
   };
 
   const switchHostLeaderboardLayout = (layout) => {
@@ -4607,10 +5103,10 @@
 
   /** Delegation + tabs live outside scroll on host / share to avoid touch stacking bugs. */
   const wireLeaderboardLayoutTabs = () => {
-    const hostPage = $('page-leaderboard');
-    if (hostPage && !hostPage.dataset.lbTabDelegate) {
-      hostPage.dataset.lbTabDelegate = '1';
-      hostPage.addEventListener('click', (e) => {
+    const hostPanel = $('host-leaderboard-panel');
+    if (hostPanel && !hostPanel.dataset.lbTabDelegate) {
+      hostPanel.dataset.lbTabDelegate = '1';
+      hostPanel.addEventListener('click', (e) => {
         const id = clickTargetButton(e)?.id;
         if (id === 'host-lb-tab-standard') {
           e.preventDefault();
@@ -4808,14 +5304,17 @@
       el.innerHTML = '<p class="text-slate-400 text-sm text-center py-8">No rounds yet.</p>';
       return;
     }
+    const shareData = state.shareViewerData || state.currentTournament;
     el.innerHTML = list
       .sort((a, b) => Number(a.round) - Number(b.round))
       .map((round) => {
         const matches = (round.matches || [])
           .map(
-            (match) => `
+            (match) => {
+              const courtLabel = formatCourtLabel(match.court, shareData);
+              return `
           <div class="bg-emerald-50/95 dark:bg-emerald-900/40 rounded-2xl p-3 border border-emerald-300/75 dark:border-emerald-700/40 mb-3">
-            <div class="text-center text-xs text-emerald-700 dark:text-emerald-400 mb-2 font-medium">Court ${match.court}</div>
+            <div class="text-center text-xs text-emerald-700 dark:text-emerald-400 mb-2 font-medium">${escapeHtml(courtLabel)}</div>
             <div class="flex items-center gap-3 text-sm">
               <div class="flex-1 text-center space-y-1">
                 <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[0]))}</div>
@@ -4830,7 +5329,8 @@
               </div>
             </div>
           </div>
-        `
+        `;
+            }
           )
           .join('');
         return `
@@ -4841,31 +5341,63 @@
         `;
       })
       .join('');
+    const maxMatchesInRound = list.reduce(
+      (max, round) => Math.max(max, (round.matches || []).length),
+      0
+    );
+    const gridOnDesktop = isTournamentDesktopLayout() && maxMatchesInRound >= 2;
+    el.className = gridOnDesktop
+      ? 'share-rounds-container host-courts-container--grid space-y-2'
+      : 'share-rounds-container space-y-2';
   };
 
   const switchShareTab = (tab) => {
-    const lb = $('share-panel-leaderboard');
-    const rd = $('share-panel-rounds');
+    const onLb = tab === 'leaderboard';
+    state.shareMobileTab = onLb ? 'leaderboard' : 'rounds';
+    const roundsCol = $('share-rounds-column');
+    const lbCol = $('share-leaderboard-column');
     const t1 = $('share-tab-lb');
     const t2 = $('share-tab-rd');
     const subBar = $('share-lb-subtabs');
-    if (!lb || !rd) return;
-    const onLb = tab === 'leaderboard';
-    lb.classList.toggle('hidden', !onLb);
-    rd.classList.toggle('hidden', onLb);
-    if (subBar) subBar.classList.toggle('hidden', !onLb);
     const sortRow = $('share-lb-sort-row');
-    if (sortRow) sortRow.classList.toggle('hidden', !onLb);
+    const scopeRow = $('share-lb-scope-row');
+    const desktop = isTournamentDesktopLayout();
+
+    if (desktop) {
+      roundsCol?.classList.remove('hidden');
+      lbCol?.classList.remove('hidden');
+      subBar?.classList.remove('hidden');
+      sortRow?.classList.remove('hidden');
+      if (scopeRow && state.shareViewerData && tournamentSupportsPairScope(state.shareViewerData)) {
+        scopeRow.classList.remove('hidden');
+      }
+    } else {
+      roundsCol?.classList.toggle('hidden', onLb);
+      lbCol?.classList.toggle('hidden', !onLb);
+      subBar?.classList.toggle('hidden', !onLb);
+      sortRow?.classList.toggle('hidden', !onLb);
+      if (scopeRow) {
+        const showScope =
+          onLb && state.shareViewerData && tournamentSupportsPairScope(state.shareViewerData);
+        scopeRow.classList.toggle('hidden', !showScope);
+      }
+    }
+
     const active =
       'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-teal-500/45 dark:border-teal-400/40 bg-teal-500/15 text-teal-900 dark:text-teal-50';
     const idle =
       'flex-1 text-xs font-bold py-2.5 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-100/90 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:bg-slate-200/90 dark:hover:bg-white/10 transition-colors';
     if (t1) t1.className = onLb ? active : idle;
     if (t2) t2.className = !onLb ? active : idle;
+
     if (onLb) {
       applyShareLeaderboardLayoutUi();
       requestAnimationFrame(() => {
         $('share-leaderboard-scroll')?.focus({ preventScroll: true });
+      });
+    } else {
+      requestAnimationFrame(() => {
+        $('share-rounds-scroll')?.focus({ preventScroll: true });
       });
     }
   };
@@ -4912,6 +5444,7 @@
 
     switchShareTab('leaderboard');
     wireLeaderboardLayoutTabs();
+    refreshShareTournamentDesktopUi();
 
     document.title = `${data.title || 'Padelio'} | Padelio (view)`;
   };
@@ -4977,9 +5510,18 @@
 
     const title = state.currentTournament.title || '';
     populateLeaderboardPanels(state.currentTournament, title);
+    wireLeaderboardLayoutTabs();
+
+    if (isTournamentDesktopLayout()) {
+      refreshHostTournamentDesktopUi();
+      requestAnimationFrame(() => {
+        $('host-leaderboard-aside')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        $('host-leaderboard-scroll')?.focus({ preventScroll: true });
+      });
+      return;
+    }
 
     navigateTo('leaderboard');
-    wireLeaderboardLayoutTabs();
     requestAnimationFrame(() => {
       $('host-leaderboard-scroll')?.focus({ preventScroll: true });
     });
@@ -5173,6 +5715,7 @@
   window.resetNewTournament = resetNewTournament;
   window.goToCourts = goToCourts;
   window.selectCourts = selectCourts;
+  window.selectCourtStyle = selectCourtStyle;
   window.goToPoints = goToPoints;
   window.selectPoints = selectPoints;
   window.selectMexScoreKind = selectMexScoreKind;
@@ -5224,6 +5767,9 @@
   window.exitShareViewer = exitShareViewer;
   window.copyCurrentSpectatorUrl = copyCurrentSpectatorUrl;
   window.shareCurrentSpectatorUrl = shareCurrentSpectatorUrl;
+
+  initTournamentDesktopLayout();
+  wireLeaderboardRenameEvents();
 
   void (async () => {
     if (await tryOpenShareFromHash()) {

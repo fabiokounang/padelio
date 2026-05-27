@@ -890,9 +890,372 @@ html.dark button.padelio-chip-selected {
   color: #042f2e !important;
 }
 
+/* ---------- Leaderboard cards (host + share standard layout) ---------- */
+.lb-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--padel-surface) 94%, transparent);
+  border: 1px solid var(--padel-border);
+}
+
+html.dark .lb-card {
+  background: color-mix(in srgb, var(--padel-surface-2) 60%, transparent);
+}
+
+.lb-card--gold {
+  border-color: color-mix(in srgb, #f59e0b 50%, var(--padel-border));
+}
+
+.lb-card--silver {
+  border-color: color-mix(in srgb, #94a3b8 55%, var(--padel-border));
+}
+
+.lb-card--bronze {
+  border-color: color-mix(in srgb, #f97316 55%, var(--padel-border));
+}
+
+.lb-rank {
+  flex: 0 0 auto;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  color: #fff;
+  background: var(--padel-accent);
+}
+
+.lb-rank--gold {
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
+  color: #422006;
+}
+
+.lb-rank--silver {
+  background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+  color: #1f2937;
+}
+
+.lb-rank--bronze {
+  background: linear-gradient(135deg, #fdba74 0%, #ea580c 100%);
+  color: #ffffff;
+}
+
+.lb-rank--default {
+  background: color-mix(in srgb, var(--padel-accent) 90%, #fff 10%);
+}
+
+.lb-card__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lb-card__name {
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--padel-text);
+  line-height: 1.2;
+}
+
+.lb-card__name .font-semibold {
+  font-weight: 700;
+}
+
+.lb-card__stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--padel-text) 68%, transparent);
+  line-height: 1.2;
+}
+
+.lb-stat-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--padel-surface-2) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--padel-border) 70%, transparent);
+  font-weight: 600;
+}
+
+html.dark .lb-stat-pill {
+  background: color-mix(in srgb, var(--padel-surface) 40%, transparent);
+}
+
+.lb-stat-pill__value {
+  color: var(--padel-text);
+  font-weight: 700;
+}
+
+.lb-stat-pill__label {
+  font-size: 0.6875rem;
+  opacity: 0.75;
+}
+
+.lb-stat-record {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  font-weight: 700;
+}
+
+.lb-stat-record__w {
+  color: #047857;
+}
+
+html.dark .lb-stat-record__w {
+  color: #6ee7b7;
+}
+
+.lb-stat-record__l {
+  color: #b91c1c;
+}
+
+html.dark .lb-stat-record__l {
+  color: #fca5a5;
+}
+
+.lb-stat-record__t {
+  color: color-mix(in srgb, var(--padel-text) 70%, transparent);
+}
+
+.lb-sep {
+  opacity: 0.45;
+  font-weight: 600;
+}
+
+.lb-stat-text {
+  font-weight: 600;
+}
+
+.lb-stat-text--muted {
+  color: color-mix(in srgb, var(--padel-text) 60%, transparent);
+}
+
+.lb-stat-text.lb-stat--pos {
+  color: #0f766e;
+}
+
+html.dark .lb-stat-text.lb-stat--pos {
+  color: #5eead4;
+}
+
+.lb-stat-text.lb-stat--neg {
+  color: #be123c;
+}
+
+html.dark .lb-stat-text.lb-stat--neg {
+  color: #fda4af;
+}
+
+.lb-card__points {
+  flex: 0 0 auto;
+  text-align: right;
+  padding-left: 0.25rem;
+  border-left: 1px solid color-mix(in srgb, var(--padel-border) 70%, transparent);
+  padding-left: 0.75rem;
+  min-width: 4rem;
+}
+
+.lb-points-block {
+  text-align: right;
+  line-height: 1.05;
+}
+
+.lb-points-block__value {
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--padel-accent);
+  font-family: 'Outfit', sans-serif;
+}
+
+.lb-points-block__value--winrate {
+  color: #0f766e;
+}
+
+html.dark .lb-points-block__value--winrate {
+  color: #5eead4;
+}
+
+.lb-points-block__suffix {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-left: 0.05rem;
+}
+
+.lb-points-block__label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--padel-text) 55%, transparent);
+  margin-top: 0.05rem;
+}
+
+.lb-points-block__sub {
+  margin-top: 0.2rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: color-mix(in srgb, #92400e 90%, transparent);
+  cursor: help;
+}
+
+html.dark .lb-points-block__sub {
+  color: #fcd34d;
+}
+
+.lb-points-block__plus {
+  opacity: 0.6;
+  margin: 0 0.05rem;
+}
+
+.lb-points-block__comp {
+  font-weight: 700;
+}
+
+/* Desktop tweaks */
+@media (min-width: 1024px) {
+  .lb-card {
+    padding: 0.875rem 1.125rem;
+    gap: 0.875rem;
+  }
+
+  .lb-card__name {
+    font-size: 1rem;
+  }
+
+  .lb-card__stats {
+    font-size: 0.8125rem;
+    gap: 0.4rem 0.75rem;
+  }
+
+  .lb-points-block__value {
+    font-size: 1.875rem;
+  }
+
+  .lb-card__points {
+    min-width: 4.75rem;
+  }
+}
+
+/* ---------- Court label style (setup) ---------- */
+.court-style-section__label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--padel-text);
+  margin: 0 0 0.25rem;
+}
+
+.court-style-section__hint {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--padel-text-muted, #64748b);
+  margin: 0 0 0.875rem;
+}
+
+html.dark .court-style-section__hint {
+  color: color-mix(in srgb, var(--padel-text) 65%, transparent);
+}
+
+.court-style-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.court-style-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 5.25rem;
+  width: 100%;
+  padding: 1rem 0.75rem;
+  border-radius: 1.25rem;
+  border: 2px solid var(--padel-border);
+  background: color-mix(in srgb, var(--padel-surface) 88%, transparent);
+  box-shadow: var(--padel-shadow-sm, 0 1px 2px rgb(0 0 0 / 0.06));
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.court-style-btn:hover {
+  border-color: color-mix(in srgb, var(--padel-accent) 55%, var(--padel-border));
+}
+
+.court-style-btn:focus-visible {
+  outline: 2px solid var(--padel-accent);
+  outline-offset: 2px;
+}
+
+.court-style-btn__preview {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: var(--padel-text);
+}
+
+.court-style-btn__example {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--padel-text-muted, #64748b);
+  max-width: 100%;
+  padding: 0 0.25rem;
+}
+
+.court-style-btn.padelio-chip-selected {
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--padel-accent) 35%, transparent);
+}
+
+.court-style-btn.padelio-chip-selected .court-style-btn__preview,
+.court-style-btn.padelio-chip-selected .court-style-btn__example {
+  color: inherit;
+  opacity: 1;
+}
+
+.court-style-btn.padelio-chip-selected .court-style-btn__example {
+  opacity: 0.92;
+}
+
+html.dark .court-style-btn {
+  background: color-mix(in srgb, var(--padel-surface-2) 70%, transparent);
+}
+
+html.dark .court-style-btn__preview {
+  color: var(--padel-text);
+}
+
+html.dark .court-style-btn.padelio-chip-selected .court-style-btn__preview,
+html.dark .court-style-btn.padelio-chip-selected .court-style-btn__example {
+  color: #042f2e;
+}
+
 /* Leaderboard — screenshot / share card (clean table) */
 .lb-shot {
-  --lb-shot-cols: 1.75rem minmax(0, 1fr) 2.75rem 2.5rem 2.75rem;
+  --lb-shot-cols: 1.75rem minmax(0, 1fr) 2.75rem minmax(3.5rem, 5rem) 2.5rem;
   border-radius: 1.125rem;
   border: 1px solid var(--padel-border);
   background: var(--padel-surface);
@@ -1060,16 +1423,43 @@ html.dark .lb-shot__tr--bronze {
 }
 
 .lb-shot__primary {
-  font-size: 0.9375rem;
-  font-weight: 800;
-  color: var(--padel-accent);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.3rem;
+  min-width: 0;
   text-align: right;
-  line-height: 1;
+  line-height: 1.1;
 }
 
-.lb-shot__tr--head .lb-shot__primary {
-  color: var(--padel-muted);
+.lb-shot__primary-val {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--padel-accent);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-shot__primary-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 9999px;
+  background: rgba(20, 184, 166, 0.13);
+  color: var(--padel-accent);
   font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+html.dark .lb-shot__primary-badge {
+  background: rgba(94, 234, 212, 0.16);
+  color: #5eead4;
 }
 
 .lb-shot__diff {
@@ -1109,4 +1499,236 @@ html.dark .lb-shot__diff--neg {
   color: var(--padel-muted);
   border-top: 1px solid var(--padel-border);
   background: var(--padel-surface-2);
+}
+
+/* ---------- Leaderboard inline rename ---------- */
+.lb-rename-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1;
+  border: 1px solid var(--padel-border);
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.lb-rename-btn--save {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.12);
+  border-color: rgba(15, 118, 110, 0.35);
+}
+
+.lb-rename-btn--save:hover {
+  background: rgba(15, 118, 110, 0.2);
+}
+
+.lb-rename-btn--cancel {
+  color: var(--padel-muted);
+  background: var(--padel-surface);
+}
+
+.lb-rename-btn--cancel:hover {
+  background: var(--padel-surface-2);
+  color: var(--padel-text);
+}
+
+html.dark .lb-rename-btn--save {
+  color: #5eead4;
+  background: rgba(45, 212, 191, 0.12);
+  border-color: rgba(45, 212, 191, 0.35);
+}
+
+.lb-name-row .lb-rename-edit {
+  opacity: 0.55;
+}
+
+.lb-name-row:hover .lb-rename-edit,
+.lb-name-row:focus-within .lb-rename-edit {
+  opacity: 1;
+}
+
+@media (min-width: 1024px) {
+  .lb-name-row .lb-rename-edit {
+    opacity: 0.75;
+  }
+}
+
+/* ---------- Desktop tournament workspace (host + spectator) ---------- */
+@media (min-width: 1024px) {
+  body:has(.padel-page-tournament:not(.hidden)) {
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  body:has(.padel-page-tournament:not(.hidden)) .padel-footer {
+    display: none;
+  }
+
+  #app:has(.padel-page-tournament:not(.hidden)) {
+    min-height: 100dvh;
+    height: 100dvh;
+    max-width: none;
+  }
+
+  .padel-page-tournament.page:not(.hidden) {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    height: 100dvh;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--padel-bg);
+  }
+
+  .host-tournament-workspace {
+    overflow: hidden;
+  }
+
+  .host-rounds-column {
+    min-width: 0;
+    flex: 1 1 50%;
+  }
+
+  .host-rounds-scroll {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .host-round-nav {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .host-courts-container {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .host-courts-container--grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .host-courts-container:not(.host-courts-container--grid) {
+    max-width: 26rem;
+  }
+
+  .host-courts-container--grid > *,
+  .host-courts-container:not(.host-courts-container--grid) > * {
+    margin: 0;
+    width: 100%;
+  }
+
+  /* Odd last child (e.g. 3rd, 5th court) spans both columns — full width. */
+  .host-courts-container--grid > *:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .host-rounds-footer {
+    display: flex;
+    justify-content: center;
+  }
+
+  .host-rounds-footer > button {
+    max-width: 26rem;
+    width: 100%;
+  }
+
+  .host-leaderboard-aside {
+    flex: 0 0 50%;
+    border-left: 1px solid var(--padel-border);
+    background: color-mix(in srgb, var(--padel-surface-2) 55%, transparent);
+  }
+
+  .host-leaderboard-aside__head {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--padel-border);
+    background: color-mix(in srgb, var(--padel-surface) 80%, transparent);
+  }
+
+  .host-lb-slot {
+    min-height: 0;
+  }
+
+  .host-leaderboard-panel {
+    min-height: 0;
+  }
+
+  .host-leaderboard-toolbar {
+    padding-top: 0.75rem;
+  }
+
+  .share-tournament-workspace {
+    overflow: hidden;
+  }
+
+  .share-rounds-column,
+  .share-leaderboard-column {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .share-rounds-column {
+    background: color-mix(in srgb, var(--padel-surface) 40%, transparent);
+  }
+
+  .share-leaderboard-column {
+    background: color-mix(in srgb, var(--padel-surface-2) 50%, transparent);
+  }
+
+  .share-rounds-scroll {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .share-rounds-container.host-courts-container--grid,
+  .share-rounds-container {
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .share-rounds-container:not(.host-courts-container--grid) {
+    grid-template-columns: minmax(0, 26rem);
+    max-width: 26rem;
+  }
+
+  .share-rounds-container > * {
+    margin: 0;
+    width: 100%;
+  }
+
+  /* Odd last child (e.g. 3rd, 5th court) spans both columns — full width. */
+  .share-rounds-container.host-courts-container--grid > *:last-child:nth-child(odd),
+  .share-rounds-container > *:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  #page-home {
+    max-width: 48rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .host-courts-container--grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

@@ -13,7 +13,9 @@ const {
   isMexMatchComplete,
   normalizeMexGamesScores,
   getTournamentScoringProfile,
+  MATCH_COMPENSATION_POINTS_PER_GAP,
   formatLeaderboardDiff,
+  applyMatchCompensationToLeaderboardRows,
   sortLeaderboardRows,
   computeLeaderboardSorted,
   MIN_PLAYER_LEVEL,
@@ -164,6 +166,110 @@ test('sortLeaderboardRows does not mutate input', () => {
   assert.deepStrictEqual(sampleRows.map(r => r.name), copy.map(r => r.name));
 });
 
+/* ---- match compensation (+M) ---- */
+console.log('\n+M match compensation');
+
+test('MATCH_COMPENSATION_POINTS_PER_GAP legacy constant is 0', () =>
+  assert.strictEqual(MATCH_COMPENSATION_POINTS_PER_GAP, 0));
+
+test('+M user example: 70/66/55/50 with 5/5/4/4 matches → comp 0/0/12/12', () => {
+  const base = { conceded: 0, wins: 0, losses: 0, ties: 0, winRate: 0, diff: 0 };
+  const rows = [
+    { name: 'Fabio',  matches: 5, points: 70, ...base },
+    { name: 'Pingky', matches: 5, points: 66, ...base },
+    { name: 'Filia',  matches: 4, points: 55, ...base },
+    { name: 'Ridel',  matches: 4, points: 50, ...base },
+  ];
+  const out = applyMatchCompensationToLeaderboardRows(rows);
+  const byName = (n) => out.find((r) => r.name === n);
+  // total points = 241, total appearances = 18, average ≈ 13.3888... → +M rounded to 13
+  const avg = byName('Fabio').matchCompAverage;
+  assert.ok(Math.abs(avg - 241 / 18) < 1e-9, 'average uses real data');
+  assert.strictEqual(byName('Fabio').matchComp, 0);
+  assert.strictEqual(byName('Pingky').matchComp, 0);
+  assert.strictEqual(byName('Filia').matchComp, Math.round(avg));
+  assert.strictEqual(byName('Ridel').matchComp, Math.round(avg));
+  assert.strictEqual(byName('Fabio').points, 70);
+  assert.strictEqual(byName('Filia').points, 55 + Math.round(avg));
+});
+
+test('+M spec literal: average pinned to 12 → comp 0/0/12/12', () => {
+  // Construct rows so totalPoints / totalAppearances == 12 exactly.
+  // Pick raw: A=72, B=72, C=60, D=60. matches 5,5,4,4 → total 264 pts / 18 apps ≈ 14.66 (no).
+  // Use 60,60,48,48 over 5,5,4,4 → 216 / 18 = 12 exactly.
+  const base = { conceded: 0, wins: 0, losses: 0, ties: 0, winRate: 0, diff: 0 };
+  const rows = [
+    { name: 'A', matches: 5, points: 60, ...base },
+    { name: 'B', matches: 5, points: 60, ...base },
+    { name: 'C', matches: 4, points: 48, ...base },
+    { name: 'D', matches: 4, points: 48, ...base },
+  ];
+  const out = applyMatchCompensationToLeaderboardRows(rows);
+  assert.strictEqual(out.find((r) => r.name === 'A').matchCompAverage, 12);
+  assert.strictEqual(out.find((r) => r.name === 'A').matchComp, 0);
+  assert.strictEqual(out.find((r) => r.name === 'B').matchComp, 0);
+  assert.strictEqual(out.find((r) => r.name === 'C').matchComp, 12);
+  assert.strictEqual(out.find((r) => r.name === 'D').matchComp, 12);
+  assert.strictEqual(out.find((r) => r.name === 'C').points, 60);
+  assert.strictEqual(out.find((r) => r.name === 'D').points, 60);
+});
+
+test('+M is 0 for everyone when all match counts are equal', () => {
+  const base = { conceded: 0, wins: 0, losses: 0, ties: 0, winRate: 0, diff: 0 };
+  const rows = [
+    { name: 'A', matches: 5, points: 70, ...base },
+    { name: 'B', matches: 5, points: 60, ...base },
+    { name: 'C', matches: 5, points: 50, ...base },
+  ];
+  const out = applyMatchCompensationToLeaderboardRows(rows);
+  out.forEach((r) => assert.strictEqual(r.matchComp, 0));
+  out.forEach((r) => assert.strictEqual(r.points, r.pointsRaw));
+});
+
+test('+M handles empty / no-completed-match rosters without crashing', () => {
+  const base = { conceded: 0, wins: 0, losses: 0, ties: 0, winRate: 0, diff: 0 };
+  const rows = [
+    { name: 'A', matches: 0, points: 0, ...base },
+    { name: 'B', matches: 0, points: 0, ...base },
+  ];
+  const out = applyMatchCompensationToLeaderboardRows(rows);
+  out.forEach((r) => {
+    assert.strictEqual(r.matchComp, 0);
+    assert.strictEqual(r.matchCompGap, 0);
+    assert.strictEqual(r.matchCompAverage, 0);
+  });
+});
+
+test('+M with fractional average rounds to whole numbers', () => {
+  // total 241 pts / 18 apps = 13.388... → +M = 13 per missed match
+  const base = { conceded: 0, wins: 0, losses: 0, ties: 0, winRate: 0, diff: 0 };
+  const rows = [
+    { name: 'A', matches: 5, points: 70, ...base },
+    { name: 'B', matches: 5, points: 66, ...base },
+    { name: 'C', matches: 4, points: 55, ...base },
+    { name: 'D', matches: 4, points: 50, ...base },
+  ];
+  const out = applyMatchCompensationToLeaderboardRows(rows);
+  const c = out.find((r) => r.name === 'C');
+  assert.strictEqual(c.matchComp, 13);
+  assert.strictEqual(c.points, 68);
+  assert.strictEqual(Number.isInteger(c.matchComp), true);
+  assert.strictEqual(Number.isInteger(c.points), true);
+});
+
+test('+M leaderboard sorts adjusted Filia above Pingky in user example', () => {
+  const base = { conceded: 0, wins: 0, losses: 0, ties: 0, winRate: 0, diff: 0 };
+  const rows = [
+    { name: 'Fabio',  matches: 5, points: 70, ...base },
+    { name: 'Pingky', matches: 5, points: 66, ...base },
+    { name: 'Filia',  matches: 4, points: 55, ...base },
+    { name: 'Ridel',  matches: 4, points: 50, ...base },
+  ];
+  const enriched = applyMatchCompensationToLeaderboardRows(rows);
+  const sorted = sortLeaderboardRows(enriched, 'points');
+  // Average ≈ 13.39 → +M rounded to 13; Filia 68 (> Pingky 66), Ridel 63 (< Pingky 66).
+  assert.deepStrictEqual(sorted.map((r) => r.name), ['Fabio', 'Filia', 'Pingky', 'Ridel']);
+});
 /* ---- computeLeaderboardSorted ---- */
 console.log('\ncomputeLeaderboardSorted');
 
@@ -236,6 +342,17 @@ test('multi-round accumulation: points sum across rounds', () => {
   assert.strictEqual(alice.wins, 1);
   assert.strictEqual(alice.losses, 1);
   assert.strictEqual(alice.matches, 2);
+});
+
+test('computeLeaderboardSorted skips comp when opts.applyMatchCompensation is false', () => {
+  const t = makeTournament(['A', 'B', 'C', 'D'], [
+    {
+      round: 1,
+      matches: [{ team1: ['A', 'B'], team2: ['C', 'D'], score1: 21, score2: 10 }],
+    },
+  ]);
+  const rows = computeLeaderboardSorted(t, 'points', { applyMatchCompensation: false });
+  rows.forEach((r) => assert.strictEqual(r.matchComp, 0));
 });
 
 test('leaderboard sorted by points descending', () => {

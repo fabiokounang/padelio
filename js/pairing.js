@@ -995,7 +995,7 @@
         safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
       )
     };
-    const board = computeLeaderboardSorted(tSub, 'points');
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const pt = new Map(board.map((r) => [r.name, r.points]));
     const teamPts = (p) => (pt.get(resolve(p.m)) || 0) + (pt.get(resolve(p.f)) || 0);
     const rankByKey = new Map();
@@ -1047,7 +1047,7 @@
     const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
     const levelByName = makeLevelByNameMap(playersFull || []);
 
-    const board = computeLeaderboardSorted(tSub, 'points');
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const standingsOrder = board.map((row) => row.name);
 
     let ordered = [];
@@ -1092,7 +1092,7 @@
       )
     };
 
-    const board = computeLeaderboardSorted(tSub, 'points');
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const standingsOrder = board.map((row) => row.name);
     const rosterNames = [...malesAll, ...femalesAll];
     const resolve = makeRosterNameResolve(rosterNames);
