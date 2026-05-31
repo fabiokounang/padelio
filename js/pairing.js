@@ -80,6 +80,10 @@
     return x < y ? `${x}__${y}` : `${y}__${x}`;
   };
 
+  /** Order-independent 4-player set key (a "match group of four"). */
+  const groupKeyOf4 = (a, b, c, d) =>
+    [a, b, c, d].map(String).sort().join('|');
+
   const makeRosterNameResolve = (allNames) => {
     const map = new Map();
     (allNames || []).forEach((n) => {
@@ -334,6 +338,143 @@
     return { partnerCount, opposeCount, matchupCount };
   };
 
+  /**
+   * Build a richer Mix Americano history that the round-level optimizer needs:
+   *
+   *   partnerCount   Map<pairKey,         count>   (only counts M-F partner pairs)
+   *   opposeCount    Map<pairKey,         count>   (any cross-team opponent pair)
+   *   meetingCount   Map<pairKey,         count>   (partner + opponent)
+   *   groupCount     Map<groupKeyOf4,     count>   (same 4-player match group repeats)
+   *   gamesPlayed    Map<name,            count>
+   *   byeCount       Map<name,            count>
+   *   partners       Map<name,            Set<partnerName>>
+   *   opponents      Map<name,            Set<opponentName>>
+   *   meetings       Map<name,            Set<otherName>>      (partner ∪ opponent)
+   *   playedLastRound Set<name>
+   *
+   * @param {Array}    allRounds   - prior rounds (already parsed)
+   * @param {string[]} maleRoster  - full male roster (for keying sets)
+   * @param {string[]} femaleRoster - full female roster
+   * @param {number}  [upToRoundNo] - if provided, only rounds with round < upToRoundNo are counted
+   */
+  const buildMixFairnessHistory = (allRounds, maleRoster, femaleRoster, upToRoundNo) => {
+    const males = Array.isArray(maleRoster) ? maleRoster : [];
+    const females = Array.isArray(femaleRoster) ? femaleRoster : [];
+    const allNames = [...males, ...females];
+    const isM = new Set(males);
+    const isF = new Set(females);
+
+    const partnerCount = new Map();
+    const opposeCount = new Map();
+    const meetingCount = new Map();
+    const groupCount = new Map();
+    const gamesPlayed = new Map();
+    const byeCount = new Map();
+    const partners = new Map();
+    const opponents = new Map();
+    const meetings = new Map();
+    const courtUsage = new Map(); // name -> Map<courtNo,count>
+    const playedLastRound = new Set();
+
+    allNames.forEach((n) => {
+      gamesPlayed.set(n, 0);
+      byeCount.set(n, 0);
+      partners.set(n, new Set());
+      opponents.set(n, new Set());
+      meetings.set(n, new Set());
+      courtUsage.set(n, new Map());
+    });
+
+    const priorRounds = (Array.isArray(allRounds) ? allRounds : [])
+      .filter((r) =>
+        upToRoundNo == null ? true : Number(r.round) < Number(upToRoundNo)
+      )
+      .sort((a, b) => Number(a.round) - Number(b.round));
+
+    let lastRoundPlayers = null;
+
+    priorRounds.forEach((r, idx) => {
+      const onCourt = new Set();
+      (r.matches || []).forEach((m) => {
+        const t1 = m.team1 || [];
+        const t2 = m.team2 || [];
+        if (t1.length !== 2 || t2.length !== 2) return;
+
+        [...t1, ...t2].forEach((p) => {
+          if (gamesPlayed.has(p)) {
+            gamesPlayed.set(p, gamesPlayed.get(p) + 1);
+            onCourt.add(p);
+            const cu = courtUsage.get(p);
+            const cNum = Number(m.court) || 0;
+            if (cNum > 0) cu.set(cNum, (cu.get(cNum) || 0) + 1);
+          }
+        });
+
+        [t1, t2].forEach((team) => {
+          const [a, b] = team;
+          const k = pairKey(a, b);
+          partnerCount.set(k, (partnerCount.get(k) || 0) + 1);
+          if (partners.has(a)) partners.get(a).add(b);
+          if (partners.has(b)) partners.get(b).add(a);
+        });
+
+        t1.forEach((a) =>
+          t2.forEach((b) => {
+            const k = pairKey(a, b);
+            opposeCount.set(k, (opposeCount.get(k) || 0) + 1);
+            if (opponents.has(a)) opponents.get(a).add(b);
+            if (opponents.has(b)) opponents.get(b).add(a);
+          })
+        );
+
+        const all4 = [...t1, ...t2];
+        for (let i = 0; i < 4; i++) {
+          for (let j = i + 1; j < 4; j++) {
+            const a = all4[i];
+            const b = all4[j];
+            const k = pairKey(a, b);
+            meetingCount.set(k, (meetingCount.get(k) || 0) + 1);
+            if (meetings.has(a)) meetings.get(a).add(b);
+            if (meetings.has(b)) meetings.get(b).add(a);
+          }
+        }
+
+        const gk = groupKeyOf4(t1[0], t1[1], t2[0], t2[1]);
+        groupCount.set(gk, (groupCount.get(gk) || 0) + 1);
+      });
+
+      allNames.forEach((n) => {
+        if (!onCourt.has(n)) byeCount.set(n, (byeCount.get(n) || 0) + 1);
+      });
+
+      if (idx === priorRounds.length - 1) lastRoundPlayers = onCourt;
+    });
+
+    if (lastRoundPlayers) {
+      lastRoundPlayers.forEach((n) => playedLastRound.add(n));
+    }
+
+    return {
+      partnerCount,
+      opposeCount,
+      meetingCount,
+      groupCount,
+      gamesPlayed,
+      byeCount,
+      partners,
+      opponents,
+      meetings,
+      courtUsage,
+      playedLastRound,
+      allNames,
+      males: [...males],
+      females: [...females],
+      isMale: (n) => isM.has(n),
+      isFemale: (n) => isF.has(n),
+      priorRoundCount: priorRounds.length
+    };
+  };
+
   /* ---------- pair scoring helpers ---------- */
   /** Cross-team opposition score for two pairs {m,f}. */
   const pairCrossOpposeScore = (pA, pB, opposeCount) => {
@@ -344,6 +485,12 @@
       (opposeCount.get(pairKey(a2, b1)) || 0) +
       (opposeCount.get(pairKey(a2, b2)) || 0)
     );
+  };
+
+  /** Iterate the 4 cross-team opponent pairs for Mexicano pair objects {m,f}. */
+  const forEachMexOpponentPair = (pairA, pairB, cb) => {
+    const a1 = pairA.m, a2 = pairA.f, b1 = pairB.m, b2 = pairB.f;
+    cb(a1, b1); cb(a1, b2); cb(a2, b1); cb(a2, b2);
   };
 
   const fixedPairMatchupScore = (pA, pB, matchupCount) =>
@@ -771,6 +918,1419 @@
     return selected.slice(0, slots);
   };
 
+  /* ---------- Normal Mexicano: dynamic capacity & fairness-first active/bye ---------- */
+
+  const mexLexLess = (a, b) => {
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) {
+      if (a[i] < b[i]) return true;
+      if (a[i] > b[i]) return false;
+    }
+    return false;
+  };
+
+  const computeMexicanoRoundCapacity = (totalPlayers, courts) => {
+    const n = Math.max(0, Math.floor(Number(totalPlayers) || 0));
+    const c = Math.max(0, Math.floor(Number(courts) || 0));
+    const maxPlayersPerRound = c * 4;
+    const rawPlaying = Math.min(n, maxPlayersPerRound);
+    const playingPlayersPerRound = Math.floor(rawPlaying / 4) * 4;
+    const usedCourtsPerRound = playingPlayersPerRound / 4;
+    const byePlayersPerRound = n - playingPlayersPerRound;
+    return {
+      playingPlayersPerRound,
+      byePlayersPerRound,
+      usedCourtsPerRound,
+      maxPlayersPerRound
+    };
+  };
+
+  const computeMexicanoSessionTargets = (totalPlayers, courts, roundCount) => {
+    const cap = computeMexicanoRoundCapacity(totalPlayers, courts);
+    const rounds = Math.max(0, Math.floor(Number(roundCount) || 0));
+    const n = Math.max(0, Math.floor(Number(totalPlayers) || 0));
+    const totalPlayingSlots = rounds * cap.playingPlayersPerRound;
+    const totalByeSlots = rounds * cap.byePlayersPerRound;
+    const idealGamesPerPlayer = n > 0 ? totalPlayingSlots / n : 0;
+    const idealByesPerPlayer = n > 0 ? totalByeSlots / n : 0;
+    return {
+      ...cap,
+      roundCount: rounds,
+      totalPlayingSlots,
+      totalByeSlots,
+      idealGamesPerPlayer,
+      idealByesPerPlayer,
+      minExpectedGames: Math.floor(idealGamesPerPlayer),
+      maxExpectedGames: Math.ceil(idealGamesPerPlayer),
+      minExpectedByes: Math.floor(idealByesPerPlayer),
+      maxExpectedByes: Math.ceil(idealByesPerPlayer)
+    };
+  };
+
+  const tallyMexicanoPlayerStats = (allNames, allRounds, roundNo) => {
+    const resolve = makeRosterNameResolve(allNames);
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
+    const gamesPlayed = new Map();
+    const byeCount = new Map();
+    allNames.forEach((n) => {
+      gamesPlayed.set(n, 0);
+      byeCount.set(n, 0);
+    });
+    priorRounds.forEach((r) => {
+      const onCourt = new Set();
+      (r.matches || []).forEach((m) => {
+        [...(m.team1 || []), ...(m.team2 || [])].forEach((raw) => {
+          const c = resolve(raw);
+          if (gamesPlayed.has(c)) {
+            gamesPlayed.set(c, (gamesPlayed.get(c) || 0) + 1);
+            onCourt.add(c);
+          }
+        });
+      });
+      allNames.forEach((n) => {
+        if (!onCourt.has(n)) byeCount.set(n, (byeCount.get(n) || 0) + 1);
+      });
+    });
+    const playedLastRound = new Set();
+    if (lastRound) {
+      (lastRound.matches || []).forEach((m) => {
+        [...(m.team1 || []), ...(m.team2 || [])].forEach((raw) => {
+          playedLastRound.add(resolve(raw));
+        });
+      });
+    }
+    const mustPlay = lastRound
+      ? allNames.filter((n) => !playedLastRound.has(resolve(n)))
+      : [];
+    return { gamesPlayed, byeCount, mustPlay, playedLastRound, priorRounds, lastRound, resolve };
+  };
+
+  const projectMexicanoFairnessAfterRound = (allNames, gamesPlayed, byeCount, activeSet) => {
+    const active = new Set(activeSet);
+    const gamesAfter = allNames.map((n) =>
+      (gamesPlayed.get(n) || 0) + (active.has(n) ? 1 : 0)
+    );
+    const byesAfter = allNames.map((n) =>
+      (byeCount.get(n) || 0) + (active.has(n) ? 0 : 1)
+    );
+    const gamesDiff = Math.max(...gamesAfter) - Math.min(...gamesAfter);
+    const byeDiff = Math.max(...byesAfter) - Math.min(...byesAfter);
+    return { gamesDiff, byeDiff, gamesAfter, byesAfter };
+  };
+
+  /**
+   * Enumerate fair active sets for Normal Mexicano. Uses games/bye balance
+   * first; must-play-last-round players are always included when capacity allows.
+   */
+  const enumerateNormalMexicanoFairActiveSets = (
+    allNames,
+    courts,
+    allRounds,
+    roundNo,
+    maxCandidates = 16
+  ) => {
+    const arr = Array.isArray(allNames) ? allNames : [];
+    const cap = computeMexicanoRoundCapacity(arr.length, courts);
+    const want = cap.playingPlayersPerRound;
+    if (want <= 0) return [[]];
+    if (want >= arr.length) return [arr.slice()];
+
+    const { gamesPlayed, byeCount, mustPlay, lastRound, resolve, priorRounds } =
+      tallyMexicanoPlayerStats(arr, allRounds, roundNo);
+    const pos = new Map(arr.map((name, i) => [name, i]));
+
+    if (!lastRound) {
+      const indexed = arr.map((name) => ({
+        name,
+        games: gamesPlayed.get(name) || 0,
+        byes: byeCount.get(name) || 0,
+        streak: consecutiveBenchStreak(name, priorRounds, resolve),
+        idx: pos.get(name)
+      }));
+      indexed.sort((a, b) =>
+        a.games - b.games ||
+        a.byes - b.byes ||
+        b.streak - a.streak ||
+        a.idx - b.idx
+      );
+      return enumerateFairActiveSets(arr, want, allRounds, roundNo, maxCandidates);
+    }
+
+    let forced = [];
+    if (mustPlay.length > want) {
+      const sortedMust = [...mustPlay].sort((a, b) =>
+        (gamesPlayed.get(a) || 0) - (gamesPlayed.get(b) || 0) ||
+        (byeCount.get(b) || 0) - (byeCount.get(a) || 0) ||
+        (pos.get(a) ?? 0) - (pos.get(b) ?? 0)
+      );
+      return [sortedMust.slice(0, want)];
+    }
+    forced = mustPlay.slice();
+    const forcedSet = new Set(forced);
+    const remaining = want - forced.length;
+    const pool = arr.filter((n) => !forcedSet.has(n));
+
+    const keyed = pool.map((name) => ({
+      name,
+      games: gamesPlayed.get(name) || 0,
+      byes: byeCount.get(name) || 0,
+      benchedLast: false,
+      idx: pos.get(name)
+    }));
+    keyed.sort((a, b) =>
+      a.games - b.games ||
+      a.byes - b.byes ||
+      a.idx - b.idx
+    );
+
+    if (remaining >= pool.length) {
+      return [[...forced, ...pool]];
+    }
+
+    const capN = Math.max(1, Math.floor(Number(maxCandidates) || 1));
+    const combos = [];
+    const combo = [];
+    const dfs = (start) => {
+      if (combos.length >= capN) return;
+      if (combo.length === remaining) {
+        combos.push([...forced, ...combo]);
+        return;
+      }
+      for (let k = start; k < keyed.length; k++) {
+        if (keyed.length - k < remaining - combo.length) break;
+        combo.push(keyed[k].name);
+        dfs(k + 1);
+        combo.pop();
+        if (combos.length >= capN) return;
+      }
+    };
+    dfs(0);
+    if (combos.length === 0) combos.push([...forced, ...keyed.slice(0, remaining).map((x) => x.name)]);
+    return combos;
+  };
+
+  const pickNormalMexicanoActivePlayers = (allNames, courts, allRounds, roundNo) => {
+    const candidates = enumerateNormalMexicanoFairActiveSets(
+      allNames, courts, allRounds, roundNo, 16
+    );
+    if (!candidates.length) return [];
+    const { gamesPlayed, byeCount } = tallyMexicanoPlayerStats(allNames, allRounds, roundNo);
+    const targets = computeMexicanoSessionTargets(
+      allNames.length, courts,
+      Math.max(roundNo, getPriorRoundsCompleted(allRounds, roundNo).length + 1)
+    );
+    const idealGamesInt = Number.isInteger(targets.idealGamesPerPlayer);
+    const idealByesInt = Number.isInteger(targets.idealByesPerPlayer);
+
+    let best = candidates[0];
+    let bestTuple = null;
+    for (const active of candidates) {
+      const proj = projectMexicanoFairnessAfterRound(allNames, gamesPlayed, byeCount, active);
+      let exactPenalty = 0;
+      if (idealGamesInt) {
+        exactPenalty += proj.gamesAfter.reduce((s, g) =>
+          s + Math.abs(g - targets.idealGamesPerPlayer), 0
+        );
+      }
+      if (idealByesInt) {
+        exactPenalty += proj.byesAfter.reduce((s, b) =>
+          s + Math.abs(b - targets.idealByesPerPlayer), 0
+        );
+      }
+      const tuple = [proj.gamesDiff, proj.byeDiff, exactPenalty, -active.length];
+      if (!bestTuple || mexLexLess(tuple, bestTuple)) {
+        bestTuple = tuple;
+        best = active;
+      }
+    }
+    return best;
+  };
+
+  /**
+   * Mix Americano active selector: runs the Normal fairness selector
+   * SEPARATELY for males and females so the bench/games balance follows the
+   * same rules as Normal Americano while preserving the Mix invariant that
+   * every match is exactly 2 males + 2 females.
+   *
+   * @param {string[]} maleNames    - full male roster (display order)
+   * @param {string[]} femaleNames  - full female roster (display order)
+   * @param {number}   courtCount   - courts available for this round
+   * @param {Array}    allRounds    - tournament rounds JSON (already parsed)
+   * @param {number}   roundNo      - current round number (1-indexed)
+   * @returns {{ activeM: string[], activeF: string[], effectiveCourts: number, active: string[] }}
+   *   Empty arrays if the gender pools cannot fill even a single court.
+   */
+  const pickActivePlayersMixBalancedGender = (
+    maleNames,
+    femaleNames,
+    courtCount,
+    allRounds,
+    roundNo
+  ) => {
+    const males = Array.isArray(maleNames) ? maleNames : [];
+    const females = Array.isArray(femaleNames) ? femaleNames : [];
+    const requestedCourts = Math.max(0, Math.floor(Number(courtCount) || 0));
+
+    const effectiveCourts = Math.min(
+      requestedCourts,
+      Math.floor(males.length / 2),
+      Math.floor(females.length / 2)
+    );
+
+    if (effectiveCourts <= 0) {
+      return { activeM: [], activeF: [], effectiveCourts: 0, active: [] };
+    }
+
+    const need = effectiveCourts * 2;
+    const activeM = pickActivePlayersNormal(males, need, allRounds, roundNo);
+    const activeF = pickActivePlayersNormal(females, need, allRounds, roundNo);
+
+    return {
+      activeM,
+      activeF,
+      effectiveCourts,
+      active: [...activeM, ...activeF]
+    };
+  };
+
+  /**
+   * Enumerate fair active-player candidate sets for one gender pool.
+   *
+   * "Fair" means the choice preserves the same games-played fairness invariant
+   * as `pickActivePlayersNormal`: players in a lower fairness tier (fewer
+   * games, longer bench streak, benched last round) are ALWAYS active; only
+   * the boundary tier (players tied on tier with the cutoff) has the freedom
+   * to be swapped in or out of the active set. Any combination within that
+   * boundary tier produces an equally fair round.
+   *
+   * The first candidate emitted is the deterministic "default" (boundary
+   * picked in roster index order), which matches what
+   * `pickActivePlayersMixBalancedGender` would deterministically return when
+   * no within-tier shuffle is applied. Callers can rely on this ordering for
+   * stable behavior when multiple alternatives produce the same partner-gap.
+   *
+   * @param {string[]} pool          - full single-gender roster
+   * @param {number}   need          - active slots required
+   * @param {Array}    allRounds     - tournament rounds (already parsed)
+   * @param {number}   roundNo       - current round number (1-indexed)
+   * @param {number}  [maxCandidates] - hard cap on returned candidates (default 16)
+   * @returns {string[][]} array of fair active sets, each of size `need`
+   */
+  const enumerateFairActiveSets = (pool, need, allRounds, roundNo, maxCandidates = 16) => {
+    const arr = Array.isArray(pool) ? pool : [];
+    const want = Math.max(0, Math.floor(Number(need) || 0));
+    if (want <= 0) return [[]];
+    if (want >= arr.length) return [arr.slice()];
+
+    const resolve = makeRosterNameResolve(arr);
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
+    const playCount = new Map();
+    const playedLastRound = new Set();
+    priorRounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        for (const n of [...(m.team1 || []), ...(m.team2 || [])]) {
+          const c = resolve(n);
+          playCount.set(c, (playCount.get(c) || 0) + 1);
+        }
+      });
+    });
+    if (lastRound) {
+      (lastRound.matches || []).forEach((m) => {
+        for (const n of [...(m.team1 || []), ...(m.team2 || [])]) {
+          playedLastRound.add(resolve(n));
+        }
+      });
+    }
+
+    // Fairness tier (lower = higher priority to play): [played, !benchedLast, -streak].
+    const tierOf = (name) => {
+      const c = resolve(name);
+      const played = playCount.get(c) || 0;
+      const benchedLast = lastRound ? !playedLastRound.has(c) : false;
+      const streak = consecutiveBenchStreak(name, priorRounds, resolve);
+      return [played, benchedLast ? 0 : 1, -streak];
+    };
+    const tierCmp = (a, b) => {
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return a[i] - b[i];
+      }
+      return 0;
+    };
+
+    const indexed = arr.map((name, idx) => ({ name, idx, tier: tierOf(name) }));
+    indexed.sort((a, b) => tierCmp(a.tier, b.tier) || a.idx - b.idx);
+
+    // Group consecutive equal tiers and walk in order: fully fitting tiers
+    // become forced; the first tier that overflows the remaining slot count
+    // is the boundary where we choose `pick` of `members.length`.
+    const forced = [];
+    let remaining = want;
+    let boundary = null;
+    let i = 0;
+    while (i < indexed.length && remaining > 0) {
+      let j = i + 1;
+      while (j < indexed.length && tierCmp(indexed[i].tier, indexed[j].tier) === 0) j++;
+      const tierMembers = indexed.slice(i, j).map((x) => x.name);
+      if (tierMembers.length <= remaining) {
+        forced.push(...tierMembers);
+        remaining -= tierMembers.length;
+      } else {
+        boundary = { members: tierMembers, pick: remaining };
+        remaining = 0;
+      }
+      i = j;
+    }
+
+    if (!boundary) return [forced];
+
+    const cap = Math.max(1, Math.floor(Number(maxCandidates) || 1));
+    const combos = [];
+    const pickN = boundary.pick;
+    const combo = [];
+    const dfs = (start) => {
+      if (combos.length >= cap) return;
+      if (combo.length === pickN) {
+        combos.push([...forced, ...combo]);
+        return;
+      }
+      for (let k = start; k < boundary.members.length; k++) {
+        if (boundary.members.length - k < pickN - combo.length) break;
+        combo.push(boundary.members[k]);
+        dfs(k + 1);
+        combo.pop();
+        if (combos.length >= cap) return;
+      }
+    };
+    dfs(0);
+
+    return combos;
+  };
+
+  /* ---------- Mix Americano fairness optimizer ---------- */
+
+  // Scoring weights for individual Mix match candidates (pair-level).
+  // Partner repeats are an order of magnitude more expensive than opponent /
+  // meeting / group penalties so the optimizer treats them as a near-hard
+  // constraint: a repeated M+F partner pair is only accepted when no candidate
+  // round avoids it while still respecting games / bye fairness.
+  const MIX_W_PARTNER = 100000;
+  // Opponent repeats are the next most expensive after partner repeats. They
+  // dwarf meeting/group penalties but stay an order of magnitude below partner
+  // priority so a partner repeat is never accepted to "fix" an opponent
+  // repeat. Repeating an opponent pair once costs 50000; twice costs 100000.
+  const MIX_W_OPPONENT = 50000;
+  const MIX_W_MEETING = 500;
+  const MIX_W_GROUP = 5000;
+  const MIX_B_NEW_PARTNER = 5000;
+  const MIX_B_NEW_OPPONENT = 5000;
+  const MIX_B_NEW_MEETING = 500;
+
+  // Round-level (re-rank) weights for the unique partner/opponent/meeting
+  // deficit per player. Squared to push the optimizer hardest on the players
+  // with the largest gaps. Partner deficit dominates so unique-partner
+  // coverage stays the primary key; opponent deficit comes next and clearly
+  // beats meeting / spread tie-breakers.
+  const MIX_W_DEFICIT_PARTNER = 20000;
+  const MIX_W_DEFICIT_OPPONENT = 5000;
+  const MIX_W_DEFICIT_MEETING = 100;
+  const MIX_W_SPREAD_MEETING = 50;
+
+  const MIX_BB_TOP_K = 128;
+  const MIX_BB_MAX_NODES = 400000;
+
+  /**
+   * Return the two possible team splits for a Mix quad: two males [m1,m2]
+   * partnered with two females [f1,f2].
+   *   1) (m1+f1) vs (m2+f2)
+   *   2) (m1+f2) vs (m2+f1)
+   */
+  const splitMixQuad = (males, females) => {
+    const [m1, m2] = males;
+    const [f1, f2] = females;
+    return [
+      { teamA: [m1, f1], teamB: [m2, f2] },
+      { teamA: [m1, f2], teamB: [m2, f1] }
+    ];
+  };
+
+  /**
+   * Pair-level score for a Mix match candidate. Lower is better.
+   * Captures repeated partner/opponent/meeting/group penalties plus
+   * "first time" bonuses.
+   */
+  const scoreMixMatchPair = (teamA, teamB, history) => {
+    const mA = teamA[0], fA = teamA[1];
+    const mB = teamB[0], fB = teamB[1];
+
+    let partnerPenalty = 0;
+    let partnerNew = 0;
+    [pairKey(mA, fA), pairKey(mB, fB)].forEach((k) => {
+      const c = history.partnerCount.get(k) || 0;
+      partnerPenalty += c * MIX_W_PARTNER;
+      if (c === 0) partnerNew++;
+    });
+
+    let oppPenalty = 0;
+    let oppNew = 0;
+    [
+      pairKey(mA, mB), pairKey(mA, fB),
+      pairKey(fA, mB), pairKey(fA, fB)
+    ].forEach((k) => {
+      const c = history.opposeCount.get(k) || 0;
+      oppPenalty += c * MIX_W_OPPONENT;
+      if (c === 0) oppNew++;
+    });
+
+    let meetingPenalty = 0;
+    let meetingNew = 0;
+    [
+      pairKey(mA, fA), pairKey(mA, mB), pairKey(mA, fB),
+      pairKey(fA, mB), pairKey(fA, fB), pairKey(mB, fB)
+    ].forEach((k) => {
+      const c = history.meetingCount.get(k) || 0;
+      meetingPenalty += c * MIX_W_MEETING;
+      if (c === 0) meetingNew++;
+    });
+
+    const gk = groupKeyOf4(mA, fA, mB, fB);
+    const groupPenalty = (history.groupCount.get(gk) || 0) * MIX_W_GROUP;
+
+    const bonus =
+      partnerNew * MIX_B_NEW_PARTNER +
+      oppNew * MIX_B_NEW_OPPONENT +
+      meetingNew * MIX_B_NEW_MEETING;
+
+    return partnerPenalty + oppPenalty + meetingPenalty + groupPenalty - bonus;
+  };
+
+  /**
+   * Max possible unique partners for one Mix player given games played.
+   *   capped at the number of opposite-gender players available.
+   */
+  const maxPossibleUniqueMixPartners = (oppositeCount, gamesAfter) =>
+    Math.max(0, Math.min(oppositeCount, gamesAfter));
+
+  /** Max possible unique opponents: every game gives 2 opponents, capped at totalOthers. */
+  const maxPossibleUniqueMixOpponents = (totalOthers, gamesAfter) =>
+    Math.max(0, Math.min(totalOthers, gamesAfter * 2));
+
+  /** Max possible unique meetings: every game gives 3 meetings (1 partner + 2 opponents). */
+  const maxPossibleUniqueMixMeetings = (totalOthers, gamesAfter) =>
+    Math.max(0, Math.min(totalOthers, gamesAfter * 3));
+
+  /* ---------- Mix opponent metric helpers ---------- */
+
+  /**
+   * Lexicographic "less than" for fixed-length numeric tuples. Returns true
+   * iff `a < b` in lex order. Used as the universal ranker for round and
+   * schedule candidates.
+   */
+  const lexLess = (a, b) => {
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) {
+      if (a[i] < b[i]) return true;
+      if (a[i] > b[i]) return false;
+    }
+    return false;
+  };
+
+  /**
+   * Iterate the 4 opponent pairs (A-C, A-D, B-C, B-D) of one Mix match and
+   * invoke `cb(keyA, keyB)` for each.
+   */
+  const forEachOpponentPair = (team1, team2, cb) => {
+    const a = team1[0], b = team1[1];
+    const c = team2[0], d = team2[1];
+    cb(a, c); cb(a, d); cb(b, c); cb(b, d);
+  };
+
+  /**
+   * Count repeated opponent pairs in a proposed Mix round vs `opposeCount`
+   * (prior history, exclusive of the proposed round). A pair counts as
+   * "repeated" if `opposeCount(A, B) > 0` even though both pairings are still
+   * mutually disjoint matches.
+   */
+  const countMixOpponentRepeatsInRound = (matches, opposeCount) => {
+    if (!Array.isArray(matches) || !opposeCount) return 0;
+    let r = 0;
+    for (const m of matches) {
+      forEachOpponentPair(m.team1 || [], m.team2 || [], (a, b) => {
+        if ((opposeCount.get(pairKey(a, b)) || 0) > 0) r++;
+      });
+    }
+    return r;
+  };
+
+  /**
+   * Count opponent pairs in the proposed Mix round that have never occurred
+   * before in `opposeCount`. The "fresh opponent" complement of
+   * `countMixOpponentRepeatsInRound`.
+   */
+  const countMixNewOpponentPairsInRound = (matches, opposeCount) => {
+    if (!Array.isArray(matches) || !opposeCount) return 0;
+    let n = 0;
+    for (const m of matches) {
+      forEachOpponentPair(m.team1 || [], m.team2 || [], (a, b) => {
+        if ((opposeCount.get(pairKey(a, b)) || 0) === 0) n++;
+      });
+    }
+    return n;
+  };
+
+  /**
+   * Project per-player unique opponent counts after `matches` is appended to
+   * the prior `history.opponents` map. Returns the aggregate statistics
+   * needed for round / schedule lex-ranking.
+   */
+  const projectMixUniqueOpponentStats = (matches, history) => {
+    const arr = Array.isArray(matches) ? matches : [];
+    const males = history.males || [];
+    const females = history.females || [];
+    const all = [...males, ...females];
+    if (all.length === 0) {
+      return {
+        minUniqueOpponents: 0,
+        avgUniqueOpponents: 0,
+        totalUniqueOpponents: 0,
+        totalOpponentDeficit: 0
+      };
+    }
+
+    const playedThisRound = new Set();
+    const newOpponents = new Map();
+    const addPair = (a, b) => {
+      if (!newOpponents.has(a)) newOpponents.set(a, new Set());
+      if (!newOpponents.has(b)) newOpponents.set(b, new Set());
+      newOpponents.get(a).add(b);
+      newOpponents.get(b).add(a);
+    };
+    for (const m of arr) {
+      [...(m.team1 || []), ...(m.team2 || [])].forEach((n) => playedThisRound.add(n));
+      forEachOpponentPair(m.team1 || [], m.team2 || [], addPair);
+    }
+
+    const totalOthers = males.length + females.length - 1;
+    let total = 0;
+    let min = Infinity;
+    let totalDeficit = 0;
+    for (const name of all) {
+      const before = history.opponents.get(name) || new Set();
+      const added = newOpponents.get(name);
+      let uniq = before.size;
+      if (added) added.forEach((q) => { if (!before.has(q)) uniq++; });
+      total += uniq;
+      if (uniq < min) min = uniq;
+      const gamesAfter = (history.gamesPlayed.get(name) || 0) +
+        (playedThisRound.has(name) ? 1 : 0);
+      const maxO = maxPossibleUniqueMixOpponents(totalOthers, gamesAfter);
+      totalDeficit += Math.max(0, maxO - uniq);
+    }
+    return {
+      minUniqueOpponents: Number.isFinite(min) ? min : 0,
+      avgUniqueOpponents: total / all.length,
+      totalUniqueOpponents: total,
+      totalOpponentDeficit: totalDeficit
+    };
+  };
+
+  /**
+   * Summary of opponent quality for a fully completed Mix schedule (or for a
+   * report rebuilt from history). Returns:
+   *   repeatedOpponentPairs   number of unordered pairs with opposeCount > 1
+   *   totalOpponentRepeats    sum of (opposeCount - 1) across all such pairs
+   *   repeatedOpponentPairsByPair  Map<pairKey, count> for pairs with count > 1
+   *   minUniqueOpponents      lowest unique opponent count among all players
+   *   avgUniqueOpponents      average unique opponent count
+   */
+  const summarizeMixOpponentQuality = (history) => {
+    let repeatedPairs = 0;
+    let totalRepeats = 0;
+    const repeatedDetail = new Map();
+    history.opposeCount.forEach((c, k) => {
+      if (c > 1) {
+        repeatedPairs++;
+        totalRepeats += c - 1;
+        repeatedDetail.set(k, c);
+      }
+    });
+    const males = history.males || [];
+    const females = history.females || [];
+    const all = [...males, ...females];
+    let min = Infinity;
+    let total = 0;
+    all.forEach((n) => {
+      const s = (history.opponents.get(n) || new Set()).size;
+      total += s;
+      if (s < min) min = s;
+    });
+    return {
+      repeatedOpponentPairs: repeatedPairs,
+      totalOpponentRepeats: totalRepeats,
+      repeatedOpponentPairsByPair: repeatedDetail,
+      minUniqueOpponents: Number.isFinite(min) ? min : 0,
+      avgUniqueOpponents: all.length ? total / all.length : 0
+    };
+  };
+
+  /**
+   * Count repeated M-F partner pairs in `matches` vs prior `partnerCount`.
+   * Centralized so the round-level and schedule-level rankers share one
+   * implementation.
+   */
+  const countMixPartnerRepeatsInRound = (matches, partnerCount) => {
+    if (!Array.isArray(matches) || !partnerCount) return 0;
+    let r = 0;
+    for (const m of matches) {
+      if ((partnerCount.get(pairKey(m.team1[0], m.team1[1])) || 0) > 0) r++;
+      if ((partnerCount.get(pairKey(m.team2[0], m.team2[1])) || 0) > 0) r++;
+    }
+    return r;
+  };
+
+  /**
+   * Round-level re-rank penalty. Lower is better.
+   * Sums squared deficits in unique-partner / unique-opponent / unique-meeting
+   * counts after the round, plus a small spread penalty so meetings stay
+   * balanced across players (not just maximized for some and ignored for others).
+   *
+   * The pair-level new/repeat bonuses are already baked into match scores,
+   * so this layer only adds the per-player gap penalty.
+   */
+  const computeMixRoundBalance = (picks, history) => {
+    const males = history.males;
+    const females = history.females;
+    const playedThisRound = new Set();
+    const newPartners = new Map();
+    const newOpponents = new Map();
+    const newMeetings = new Map();
+
+    const incSet = (mp, name, other) => {
+      let s = mp.get(name);
+      if (!s) { s = new Set(); mp.set(name, s); }
+      s.add(other);
+    };
+
+    for (const p of picks) {
+      const t1 = p.teamA;
+      const t2 = p.teamB;
+      [...t1, ...t2].forEach((n) => playedThisRound.add(n));
+
+      const [mA, fA] = t1;
+      const [mB, fB] = t2;
+      incSet(newPartners, mA, fA);
+      incSet(newPartners, fA, mA);
+      incSet(newPartners, mB, fB);
+      incSet(newPartners, fB, mB);
+
+      [[mA, mB], [mA, fB], [fA, mB], [fA, fB]].forEach(([a, b]) => {
+        incSet(newOpponents, a, b);
+        incSet(newOpponents, b, a);
+      });
+
+      const all4 = [mA, fA, mB, fB];
+      for (let i = 0; i < 4; i++) {
+        for (let j = i + 1; j < 4; j++) {
+          incSet(newMeetings, all4[i], all4[j]);
+          incSet(newMeetings, all4[j], all4[i]);
+        }
+      }
+    }
+
+    const totalOthers = males.length + females.length - 1;
+    let partnerSqSum = 0;
+    let opponentSqSum = 0;
+    let meetingSqSum = 0;
+    let minMeetings = Infinity;
+    let maxMeetings = -Infinity;
+
+    const evalGender = (name, oppositeCount) => {
+      const gamesBefore = history.gamesPlayed.get(name) || 0;
+      const gamesAfter = gamesBefore + (playedThisRound.has(name) ? 1 : 0);
+
+      const partnersBefore = history.partners.get(name) || new Set();
+      const opponentsBefore = history.opponents.get(name) || new Set();
+      const meetingsBefore = history.meetings.get(name) || new Set();
+
+      const addedP = newPartners.get(name);
+      const addedO = newOpponents.get(name);
+      const addedM = newMeetings.get(name);
+
+      let uniqP = partnersBefore.size;
+      if (addedP) addedP.forEach((q) => { if (!partnersBefore.has(q)) uniqP++; });
+      let uniqO = opponentsBefore.size;
+      if (addedO) addedO.forEach((q) => { if (!opponentsBefore.has(q)) uniqO++; });
+      let uniqM = meetingsBefore.size;
+      if (addedM) addedM.forEach((q) => { if (!meetingsBefore.has(q)) uniqM++; });
+
+      const maxP = maxPossibleUniqueMixPartners(oppositeCount, gamesAfter);
+      const maxO = maxPossibleUniqueMixOpponents(totalOthers, gamesAfter);
+      const maxM = maxPossibleUniqueMixMeetings(totalOthers, gamesAfter);
+
+      const dP = Math.max(0, maxP - uniqP);
+      const dO = Math.max(0, maxO - uniqO);
+      const dM = Math.max(0, maxM - uniqM);
+
+      partnerSqSum += dP * dP;
+      opponentSqSum += dO * dO;
+      meetingSqSum += dM * dM;
+      if (uniqM < minMeetings) minMeetings = uniqM;
+      if (uniqM > maxMeetings) maxMeetings = uniqM;
+    };
+
+    males.forEach((n) => evalGender(n, females.length));
+    females.forEach((n) => evalGender(n, males.length));
+
+    const spread =
+      Number.isFinite(minMeetings) && Number.isFinite(maxMeetings)
+        ? (maxMeetings - minMeetings) * MIX_W_SPREAD_MEETING
+        : 0;
+
+    return (
+      partnerSqSum * MIX_W_DEFICIT_PARTNER +
+      opponentSqSum * MIX_W_DEFICIT_OPPONENT +
+      meetingSqSum * MIX_W_DEFICIT_MEETING +
+      spread
+    );
+  };
+
+  /**
+   * Partition active males/females into `usedCourts` disjoint Mix matches that
+   * minimize the total fairness penalty. Branch-and-bound with a top-K beam so
+   * we can re-rank by per-player deficit balance at the round level.
+   *
+   * Randomness is only used as a tiny tie-breaker.
+   */
+  const buildMatchesForActiveMix = (activeM, activeF, usedCourts, history, opts = {}) => {
+    const random = opts.random || Math.random;
+    if (!Number.isInteger(usedCourts) || usedCourts <= 0) return null;
+    if (!Array.isArray(activeM) || activeM.length !== usedCourts * 2) return null;
+    if (!Array.isArray(activeF) || activeF.length !== usedCourts * 2) return null;
+
+    const nM = activeM.length;
+    const nF = activeF.length;
+
+    // 1) Enumerate every valid 2M+2F match candidate and its best split.
+    const candidates = [];
+    for (let i = 0; i < nM; i++) {
+      for (let j = i + 1; j < nM; j++) {
+        for (let k = 0; k < nF; k++) {
+          for (let l = k + 1; l < nF; l++) {
+            const mA = activeM[i], mB = activeM[j];
+            const fA = activeF[k], fB = activeF[l];
+            const splits = splitMixQuad([mA, mB], [fA, fB]);
+            let bestSc = Infinity;
+            let bestSplit = null;
+            for (const sp of splits) {
+              const sc = scoreMixMatchPair(sp.teamA, sp.teamB, history);
+              if (sc < bestSc) {
+                bestSc = sc;
+                bestSplit = sp;
+              }
+            }
+            candidates.push({
+              score: bestSc,
+              jitter: random() * 0.0001,
+              teamA: bestSplit.teamA,
+              teamB: bestSplit.teamB,
+              maleMask: (1 << i) | (1 << j),
+              femaleMask: (1 << k) | (1 << l),
+              anchorM: i
+            });
+          }
+        }
+      }
+    }
+    if (candidates.length === 0) return null;
+
+    // 2) Group by smallest-male anchor and sort ascending by score+jitter.
+    const byAnchorM = Array.from({ length: nM }, () => []);
+    for (const c of candidates) byAnchorM[c.anchorM].push(c);
+    for (const arr of byAnchorM) {
+      arr.sort((a, b) => (a.score - b.score) || (a.jitter - b.jitter));
+    }
+
+    // 3) Branch-and-bound: keep top MIX_BB_TOP_K complete rounds.
+    const topRounds = [];
+    let acceptThreshold = Infinity;
+    let nodes = 0;
+
+    const insertCandidate = (score, picks) => {
+      if (topRounds.length < MIX_BB_TOP_K) {
+        let i = topRounds.length;
+        while (i > 0 && topRounds[i - 1].score > score) i--;
+        topRounds.splice(i, 0, { score, picks: picks.slice() });
+        if (topRounds.length === MIX_BB_TOP_K) {
+          acceptThreshold = topRounds[MIX_BB_TOP_K - 1].score;
+        }
+      } else if (score < acceptThreshold) {
+        topRounds.pop();
+        let i = topRounds.length;
+        while (i > 0 && topRounds[i - 1].score > score) i--;
+        topRounds.splice(i, 0, { score, picks: picks.slice() });
+        acceptThreshold = topRounds[MIX_BB_TOP_K - 1].score;
+      }
+    };
+
+    const dfs = (mMask, fMask, partial, picks) => {
+      if (nodes >= MIX_BB_MAX_NODES) return;
+      nodes++;
+
+      if (picks.length === usedCourts) {
+        insertCandidate(partial, picks);
+        return;
+      }
+      if (partial >= acceptThreshold) return;
+
+      let anchor = -1;
+      for (let i = 0; i < nM; i++) {
+        if (!(mMask & (1 << i))) { anchor = i; break; }
+      }
+      if (anchor < 0) return;
+
+      const list = byAnchorM[anchor];
+      for (const c of list) {
+        if (c.maleMask & mMask) continue;
+        if (c.femaleMask & fMask) continue;
+        if (partial + c.score >= acceptThreshold) break;
+        picks.push(c);
+        dfs(mMask | c.maleMask, fMask | c.femaleMask, partial + c.score, picks);
+        picks.pop();
+        if (nodes >= MIX_BB_MAX_NODES) return;
+      }
+    };
+
+    dfs(0, 0, 0, []);
+
+    // Fallback: pure greedy when BB couldn't complete a round under the budget.
+    if (topRounds.length === 0) {
+      let mMask = 0, fMask = 0;
+      const picks = [];
+      for (let step = 0; step < usedCourts; step++) {
+        let anchor = -1;
+        for (let i = 0; i < nM; i++) {
+          if (!(mMask & (1 << i))) { anchor = i; break; }
+        }
+        if (anchor < 0) return null;
+        const pick = (byAnchorM[anchor] || []).find(
+          (c) => !(c.maleMask & mMask) && !(c.femaleMask & fMask)
+        );
+        if (!pick) return null;
+        picks.push(pick);
+        mMask |= pick.maleMask;
+        fMask |= pick.femaleMask;
+      }
+      topRounds.push({
+        score: picks.reduce((s, p) => s + p.score, 0),
+        picks
+      });
+    }
+
+    // 4) Re-rank by a lexicographic tuple. The pair-level penalties already
+    //    bake the partner / opponent priority into `cand.score`, but the
+    //    combined score can let opponent quality slip when many candidates
+    //    tie. Explicit lex-ranking guarantees opponent rotation wins over
+    //    meeting / group / spread tie-breakers inside one active set:
+    //      1) repeatedPartnerPairs ASC  (always 0 unless structurally forced)
+    //      2) repeatedOpponentPairs ASC (next strongest fairness layer)
+    //      3) projected unique-opponent deficit ASC
+    //      4) -minUniqueOpponents DESC (push the worst-served player up)
+    //      5) round-level deficit balance ASC (meeting/spread tie-breakers)
+    //      6) combined score ASC, then base score ASC for stability.
+    const candidateAsMatches = (picks) => picks.map((p) => ({
+      team1: p.teamA, team2: p.teamB
+    }));
+    let bestCandidate = topRounds[0];
+    let bestLex = null;
+    for (const cand of topRounds) {
+      const matchesView = candidateAsMatches(cand.picks);
+      const balance = computeMixRoundBalance(cand.picks, history);
+      const combined = cand.score + balance;
+      const partnerRepeats = countMixPartnerRepeatsInRound(matchesView, history.partnerCount);
+      const oppRepeats = countMixOpponentRepeatsInRound(matchesView, history.opposeCount);
+      const proj = projectMixUniqueOpponentStats(matchesView, history);
+      const tuple = [
+        partnerRepeats,
+        oppRepeats,
+        proj.totalOpponentDeficit,
+        -proj.minUniqueOpponents,
+        balance,
+        combined,
+        cand.score
+      ];
+      if (!bestLex || lexLess(tuple, bestLex)) {
+        bestLex = tuple;
+        bestCandidate = cand;
+      }
+    }
+
+    // 5) Court numbering — assign 1..usedCourts in order. Could be extended to
+    //    rotate by per-player court usage, but Mix sessions are usually short
+    //    so the simple assignment keeps the UI predictable.
+    const matches = bestCandidate.picks.map((p, i) => ({
+      court: i + 1,
+      team1: p.teamA,
+      team2: p.teamB,
+      score1: '',
+      score2: ''
+    }));
+
+    return {
+      matches,
+      baseScore: bestCandidate.score,
+      combinedScore: bestLex ? bestLex[5] : bestCandidate.score
+    };
+  };
+
+  /**
+   * Build a full Mix Americano round dynamically (per-round fair optimizer).
+   *
+   * Pipeline:
+   *  1. Pick `2 * effectiveCourts` males and `2 * effectiveCourts` females via
+   *     the Normal Americano fairness selector (applied separately per gender).
+   *  2. Enumerate every valid 2M+2F match candidate over the active pool.
+   *  3. Branch-and-bound for the lowest-penalty disjoint set covering all
+   *     courts; keep a top-K beam.
+   *  4. Re-rank by per-player partner/opponent/meeting deficit balance and pick
+   *     the lowest combined score.
+   *  5. Assign court numbers.
+   *
+   * Mix hard invariants enforced by construction:
+   *  - exactly 2M + 2F per court,
+   *  - every team is M + F,
+   *  - effective courts capped at min(courts, floor(M/2), floor(F/2)).
+   *
+   * @param {string[]} maleNames    - full male roster (display order)
+   * @param {string[]} femaleNames  - full female roster (display order)
+   * @param {number}   courtCount   - courts available for this round
+   * @param {Array}    allRounds    - tournament rounds JSON (already parsed)
+   * @param {number}   roundNo      - current round number (1-indexed)
+   * @param {object}  [opts]        - { random } - inject deterministic RNG for tests
+   * @returns {{ matches, activeM, activeF, effectiveCourts, baseScore?, combinedScore? }}
+   */
+  const buildMixDynamicMatches = (
+    maleNames,
+    femaleNames,
+    courtCount,
+    allRounds,
+    roundNo,
+    opts = {}
+  ) => {
+    const males = Array.isArray(maleNames) ? maleNames : [];
+    const females = Array.isArray(femaleNames) ? femaleNames : [];
+    const requestedCourts = Math.max(0, Math.floor(Number(courtCount) || 0));
+    const effectiveCourts = Math.min(
+      requestedCourts,
+      Math.floor(males.length / 2),
+      Math.floor(females.length / 2)
+    );
+
+    if (effectiveCourts <= 0) {
+      return { matches: [], activeM: [], activeF: [], effectiveCourts: 0 };
+    }
+
+    const need = effectiveCourts * 2;
+    const history = buildMixFairnessHistory(allRounds, males, females, roundNo);
+
+    // Enumerate fair active candidate sets per gender. The first emitted
+    // candidate is the deterministic default (boundary-tier picks in roster
+    // index order). We do NOT early-exit on the first zero partner-repeat
+    // round: alternative active sets with the same partner safety may yield
+    // fewer opponent repeats or a stronger projected unique-opponent floor.
+    const ACTIVE_CAP_PER_GENDER = opts.activeCapPerGender || 12;
+    const maleCandidates = enumerateFairActiveSets(
+      males, need, allRounds, roundNo, ACTIVE_CAP_PER_GENDER
+    );
+    const femaleCandidates = enumerateFairActiveSets(
+      females, need, allRounds, roundNo, ACTIVE_CAP_PER_GENDER
+    );
+
+    // Lex rank candidate rounds by:
+    //   1) repeatedPartnerPairs ASC   (never accept a repeat if any candidate avoids it)
+    //   2) repeatedOpponentPairs ASC  (next priority — the new requirement)
+    //   3) -minUniqueOpponents        (push the worst-served player up)
+    //   4) -avgUniqueOpponents        (overall opponent breadth)
+    //   5) combinedScore ASC          (existing meeting / group / spread quality)
+    //
+    // Early-exit when (0 partner repeats, 0 opponent repeats) is reached:
+    // those are the primary fairness keys and nothing later can beat them.
+    // The remaining tie-breakers (min/avg unique opps, combined score) are
+    // already optimized inside the BB for the chosen active set, so the
+    // exit keeps the slow stress matrix tractable without sacrificing the
+    // user-visible fairness rules.
+    let best = null;
+    let bestTuple = null;
+    outer: for (const activeM of maleCandidates) {
+      for (const activeF of femaleCandidates) {
+        const built = buildMatchesForActiveMix(
+          activeM, activeF, effectiveCourts, history, opts
+        );
+        if (!built || !Array.isArray(built.matches) || built.matches.length !== effectiveCourts) {
+          continue;
+        }
+        const partnerRepeats = countMixPartnerRepeatsInRound(built.matches, history.partnerCount);
+        const oppRepeats = countMixOpponentRepeatsInRound(built.matches, history.opposeCount);
+        const proj = projectMixUniqueOpponentStats(built.matches, history);
+        const combined = built.combinedScore != null
+          ? built.combinedScore
+          : (built.baseScore || 0);
+        const tuple = [
+          partnerRepeats,
+          oppRepeats,
+          -proj.minUniqueOpponents,
+          -proj.avgUniqueOpponents,
+          combined
+        ];
+
+        if (!bestTuple || lexLess(tuple, bestTuple)) {
+          bestTuple = tuple;
+          best = {
+            activeM: activeM.slice(),
+            activeF: activeF.slice(),
+            matches: built.matches,
+            baseScore: built.baseScore,
+            combinedScore: built.combinedScore,
+            partnerRepeats,
+            opponentRepeats: oppRepeats,
+            minUniqueOpponents: proj.minUniqueOpponents,
+            avgUniqueOpponents: proj.avgUniqueOpponents
+          };
+        }
+
+        if (best.partnerRepeats === 0 && best.opponentRepeats === 0) break outer;
+      }
+    }
+
+    if (!best) {
+      return { matches: [], activeM: [], activeF: [], effectiveCourts };
+    }
+
+    return {
+      matches: best.matches,
+      activeM: best.activeM,
+      activeF: best.activeF,
+      effectiveCourts,
+      baseScore: best.baseScore,
+      combinedScore: best.combinedScore,
+      repeatedPartnerPairs: best.partnerRepeats,
+      repeatedOpponentPairs: best.opponentRepeats,
+      minUniqueOpponents: best.minUniqueOpponents,
+      avgUniqueOpponents: best.avgUniqueOpponents
+    };
+  };
+
+  /**
+   * Build a fairness report describing the Mix session as it stands after all
+   * `allRounds` have been played. Useful for tests and the dev console.
+   *
+   * Returns games/byes per player (overall and per gender), repeated partner
+   * pair counts, unique partner/opponent/meeting counts per player, repeated
+   * group counts, and warnings when full coverage is mathematically impossible.
+   */
+  const buildMixFairnessReport = (maleRoster, femaleRoster, allRounds, courts) => {
+    const males = Array.isArray(maleRoster) ? maleRoster : [];
+    const females = Array.isArray(femaleRoster) ? femaleRoster : [];
+    const allNames = [...males, ...females];
+    const totalPlayers = allNames.length;
+    const totalRounds = (Array.isArray(allRounds) ? allRounds : []).length;
+
+    const history = buildMixFairnessHistory(allRounds, males, females, totalRounds + 1);
+
+    const gamesByPlayer = {};
+    const byesByPlayer = {};
+    allNames.forEach((n) => {
+      gamesByPlayer[n] = history.gamesPlayed.get(n) || 0;
+      byesByPlayer[n] = history.byeCount.get(n) || 0;
+    });
+
+    const gamesArr = Object.values(gamesByPlayer);
+    const byesArr = Object.values(byesByPlayer);
+    const gamesM = males.map((n) => gamesByPlayer[n]);
+    const gamesF = females.map((n) => gamesByPlayer[n]);
+    const byesM = males.map((n) => byesByPlayer[n]);
+    const byesF = females.map((n) => byesByPlayer[n]);
+
+    const minMax = (arr) => arr.length
+      ? { min: Math.min(...arr), max: Math.max(...arr), diff: Math.max(...arr) - Math.min(...arr) }
+      : { min: 0, max: 0, diff: 0 };
+
+    let repeatedPartnerPairs = 0;
+    let totalPartnerRepeats = 0;
+    history.partnerCount.forEach((c) => {
+      if (c > 1) {
+        repeatedPartnerPairs++;
+        totalPartnerRepeats += c - 1;
+      }
+    });
+
+    const oppQuality = summarizeMixOpponentQuality(history);
+    const repeatedOpponentPairCount = oppQuality.repeatedOpponentPairs;
+    const totalOpponentRepeats = oppQuality.totalOpponentRepeats;
+    // Legacy field: total extra partner occurrences (same as totalPartnerRepeats).
+    const repeatedPartnerPairOccurrences = totalPartnerRepeats;
+    // Legacy field: total extra opponent occurrences.
+    const repeatedOpponentPairOccurrences = totalOpponentRepeats;
+
+    let repeatedGroups = 0;
+    history.groupCount.forEach((c) => { if (c > 1) repeatedGroups += c - 1; });
+
+    const uniquePartnersByPlayer = {};
+    const uniqueOpponentsByPlayer = {};
+    const uniqueMeetingsByPlayer = {};
+    const partnerListByPlayer = {};
+    const opponentListByPlayer = {};
+    const meetingListByPlayer = {};
+    allNames.forEach((n) => {
+      const pSet = history.partners.get(n) || new Set();
+      const oSet = history.opponents.get(n) || new Set();
+      const mSet = history.meetings.get(n) || new Set();
+      uniquePartnersByPlayer[n] = pSet.size;
+      uniqueOpponentsByPlayer[n] = oSet.size;
+      uniqueMeetingsByPlayer[n] = mSet.size;
+      partnerListByPlayer[n] = [...pSet];
+      opponentListByPlayer[n] = [...oSet];
+      meetingListByPlayer[n] = [...mSet];
+    });
+
+    const warnings = [];
+    if (males.length !== females.length) {
+      warnings.push(
+        `Male and female player counts are not equal (${males.length}M / ${females.length}F).` +
+        ' Bye distribution is balanced within each gender as much as possible.'
+      );
+    }
+    const overallGamesDiff = minMax(gamesArr).diff;
+    const overallByeDiff = minMax(byesArr).diff;
+    const maleByeDiff = minMax(byesM).diff;
+    const femaleByeDiff = minMax(byesF).diff;
+    if (overallByeDiff > 1 && males.length === females.length) {
+      warnings.push(`byeDifference ${overallByeDiff} > 1`);
+    }
+    if (overallGamesDiff > 1 && males.length === females.length) {
+      warnings.push(`gamesPlayedDifference ${overallGamesDiff} > 1`);
+    }
+    if (maleByeDiff > 1) warnings.push(`male bye difference ${maleByeDiff} > 1`);
+    if (femaleByeDiff > 1) warnings.push(`female bye difference ${femaleByeDiff} > 1`);
+
+    // Full-meeting coverage feasibility (each player should ideally meet every
+    // other player at least once).
+    const matchesPerRound = Math.min(
+      Math.max(0, Number(courts) || 0),
+      Math.floor(males.length / 2),
+      Math.floor(females.length / 2)
+    );
+    const meetingsPerPlayerMax = totalRounds * 3; // 1 partner + 2 opponents per game (best case)
+    const fullMeetingFeasible = meetingsPerPlayerMax >= totalPlayers - 1;
+    if (!fullMeetingFeasible && totalPlayers > 1) {
+      warnings.push(
+        `Full meeting coverage infeasible: each player has at most ${meetingsPerPlayerMax} ` +
+        `meetings across ${totalRounds} rounds vs ${totalPlayers - 1} other players.`
+      );
+    }
+
+    const minimumUniqueOpponentCount = oppQuality.minUniqueOpponents;
+    const averageUniqueOpponentCount = oppQuality.avgUniqueOpponents;
+    const totalOthers = totalPlayers - 1;
+    const repeatedOpponentPairsDetail = [];
+    oppQuality.repeatedOpponentPairsByPair.forEach((count, key) => {
+      const sep = key.indexOf('\0');
+      const a = sep >= 0 ? key.slice(0, sep) : key;
+      const b = sep >= 0 ? key.slice(sep + 1) : '';
+      repeatedOpponentPairsDetail.push({ playerA: a, playerB: b, count });
+    });
+    repeatedOpponentPairsDetail.sort((x, y) =>
+      (y.count - x.count) || x.playerA.localeCompare(y.playerA) || x.playerB.localeCompare(y.playerB)
+    );
+
+    allNames.forEach((n) => {
+      const games = gamesByPlayer[n] || 0;
+      const uniqO = uniqueOpponentsByPlayer[n] || 0;
+      const maxO = maxPossibleUniqueMixOpponents(totalOthers, games);
+      if (games > 0 && uniqO < maxO && maxO - uniqO >= 2) {
+        warnings.push(
+          `${n} has ${uniqO} unique opponents vs ${maxO} possible after ${games} games.`
+        );
+      }
+    });
+    if (
+      repeatedOpponentPairCount > 0 &&
+      males.length === females.length &&
+      overallGamesDiff <= 1
+    ) {
+      warnings.push(
+        `${repeatedOpponentPairCount} repeated opponent pair(s) ` +
+        `(${totalOpponentRepeats} extra occurrence(s)); a better schedule may exist.`
+      );
+    }
+
+    return {
+      totalPlayers,
+      totalMales: males.length,
+      totalFemales: females.length,
+      courts: Math.max(0, Number(courts) || 0),
+      rounds: totalRounds,
+      matchesPerRound,
+      usedCourtsPerRound: matchesPerRound,
+      maleByePerRound: Math.max(0, males.length - matchesPerRound * 2),
+      femaleByePerRound: Math.max(0, females.length - matchesPerRound * 2),
+      gamesByPlayer,
+      byesByPlayer,
+      gamesRange: minMax(gamesArr),
+      byesRange: minMax(byesArr),
+      gamesRangeMale: minMax(gamesM),
+      gamesRangeFemale: minMax(gamesF),
+      byesRangeMale: minMax(byesM),
+      byesRangeFemale: minMax(byesF),
+      repeatedPartnerPairs: repeatedPartnerPairOccurrences,
+      repeatedPartnerPairCount: repeatedPartnerPairs,
+      totalPartnerRepeats,
+      repeatedOpponentPairs: repeatedOpponentPairOccurrences,
+      repeatedOpponentPairCount,
+      totalOpponentRepeats,
+      repeatedOpponentPairsDetail,
+      minimumUniqueOpponentCount,
+      averageUniqueOpponentCount,
+      repeatedGroups,
+      uniquePartnersByPlayer,
+      uniqueOpponentsByPlayer,
+      uniqueMeetingsByPlayer,
+      partnerListByPlayer,
+      opponentListByPlayer,
+      meetingListByPlayer,
+      warnings
+    };
+  };
+
+  /** Deterministic PRNG for Mix candidate-schedule generation (tests / simulations). */
+  const makeMixSeededRandom = (seed) => {
+    let state = (seed >>> 0) || 1;
+    return () => {
+      state = (state * 1664525 + 1013904223) >>> 0;
+      return state / 0x100000000;
+    };
+  };
+
+  /**
+   * Lex-rank a fully completed Mix schedule. Lower tuple is better.
+   * Priority mirrors the user-facing fairness order: partner safety first,
+   * then opponent rotation breadth, then meeting coverage.
+   */
+  const rankMixScheduleQuality = (history, males, females) => {
+    let partnerRepeatPairs = 0;
+    let totalPartnerRepeats = 0;
+    history.partnerCount.forEach((c) => {
+      if (c > 1) {
+        partnerRepeatPairs++;
+        totalPartnerRepeats += c - 1;
+      }
+    });
+    const opp = summarizeMixOpponentQuality(history);
+    const all = [...males, ...females];
+    let minMeetings = Infinity;
+    let totalMeetings = 0;
+    all.forEach((n) => {
+      const s = (history.meetings.get(n) || new Set()).size;
+      totalMeetings += s;
+      if (s < minMeetings) minMeetings = s;
+    });
+    const tuple = [
+      partnerRepeatPairs,
+      totalPartnerRepeats,
+      opp.repeatedOpponentPairs,
+      opp.totalOpponentRepeats,
+      -opp.minUniqueOpponents,
+      -opp.avgUniqueOpponents,
+      Number.isFinite(minMeetings) ? -minMeetings : 0
+    ];
+    return {
+      tuple,
+      partnerRepeatPairs,
+      totalPartnerRepeats,
+      repeatedOpponentPairs: opp.repeatedOpponentPairs,
+      totalOpponentRepeats: opp.totalOpponentRepeats,
+      minUniqueOpponents: opp.minUniqueOpponents,
+      avgUniqueOpponents: opp.avgUniqueOpponents,
+      minUniqueMeetings: Number.isFinite(minMeetings) ? minMeetings : 0,
+      totalUniqueMeetings: totalMeetings
+    };
+  };
+
+  /**
+   * Generate many candidate Mix schedules for a known horizon (round count)
+   * and return the lex-best one. Intended for tests and offline simulations;
+   * the live UI keeps generating rounds on demand via `buildMixDynamicMatches`.
+   *
+   * @param {string[]} maleRoster
+   * @param {string[]} femaleRoster
+   * @param {number}   courtCount
+   * @param {number}   totalRounds
+   * @param {object}  [opts] - { candidateCount, baseSeed, seeds, activeCapPerGender }
+   * @returns {{ rounds, report, seed, quality, candidatesTried }}
+   */
+  const buildBestMixCandidateSchedule = (
+    maleRoster,
+    femaleRoster,
+    courtCount,
+    totalRounds,
+    opts = {}
+  ) => {
+    const males = Array.isArray(maleRoster) ? maleRoster : [];
+    const females = Array.isArray(femaleRoster) ? femaleRoster : [];
+    const courts = Math.max(0, Math.floor(Number(courtCount) || 0));
+    const rounds = Math.max(0, Math.floor(Number(totalRounds) || 0));
+    const candidateCount = Math.max(
+      1,
+      Math.floor(Number(opts.candidateCount) || 100)
+    );
+    const baseSeed = opts.baseSeed != null ? (opts.baseSeed >>> 0) : 1;
+    const seedList = Array.isArray(opts.seeds) ? opts.seeds : null;
+    const activeCap = opts.activeCapPerGender;
+
+    let bestRounds = null;
+    let bestTuple = null;
+    let bestSeed = baseSeed;
+    let bestQuality = null;
+
+    for (let i = 0; i < candidateCount; i++) {
+      const seed = seedList ? (seedList[i] >>> 0) : ((baseSeed + i * 9973) >>> 0);
+      const random = makeMixSeededRandom(seed);
+      const allRounds = [];
+      for (let r = 1; r <= rounds; r++) {
+        const built = buildMixDynamicMatches(
+          males,
+          females,
+          courts,
+          allRounds,
+          r,
+          {
+            random,
+            activeCapPerGender: activeCap
+          }
+        );
+        allRounds.push({ round: r, matches: built.matches });
+      }
+
+      const history = buildMixFairnessHistory(allRounds, males, females, rounds + 1);
+      const quality = rankMixScheduleQuality(history, males, females);
+      if (!bestTuple || lexLess(quality.tuple, bestTuple)) {
+        bestTuple = quality.tuple;
+        bestRounds = allRounds;
+        bestSeed = seed;
+        bestQuality = quality;
+      }
+    }
+
+    const report = buildMixFairnessReport(males, females, bestRounds || [], courts);
+    return {
+      rounds: bestRounds || [],
+      report,
+      seed: bestSeed,
+      quality: bestQuality,
+      candidatesTried: candidateCount
+    };
+  };
+
   /* ---------- match building ---------- */
   const buildNormalPairs = (activeNames, partnerCount, lastRoundPartnerSet, levelByName, rosterNames) => {
     const resolve = makeRosterNameResolve(rosterNames || activeNames);
@@ -936,6 +2496,60 @@
 
   /* ---------- Mexicano scoring (team-split selection) ---------- */
   const MEXICANO_CLASSIC_SPLIT_BIAS = 38;
+  const MEX_W_OPPONENT = 10000;
+  const MEX_W_OPPONENT_REPEAT2 = 50000;
+  const MEX_B_NEW_OPPONENT = 2000;
+  const MEX_W_MEETING = 300;
+
+  const scoreMexOpponentPairs = (pairA, pairB, opposeCount) => {
+    let s = 0;
+    forEachMexOpponentPair(pairA, pairB, (a, b) => {
+      const c = opposeCount.get(pairKey(a, b)) || 0;
+      s += c * MEX_W_OPPONENT;
+      if (c >= 2) s += MEX_W_OPPONENT_REPEAT2;
+      if (c === 0) s -= MEX_B_NEW_OPPONENT;
+    });
+    return s;
+  };
+
+  const scoreMexMeetingPairs = (pairA, pairB, partnerCount, opposeCount) => {
+    let s = 0;
+    forEachMexOpponentPair(pairA, pairB, (a, b) => {
+      const meetings =
+        (partnerCount.get(pairKey(a, b)) || 0) +
+        (opposeCount.get(pairKey(a, b)) || 0);
+      if (meetings > 0) s += meetings * MEX_W_MEETING;
+    });
+    return s;
+  };
+
+  const mexSplitOpponentLexMetrics = (pairA, pairB, history) => {
+    const { partnerCount, opposeCount } = history;
+    let wouldBecome3x = 0;
+    let wouldBecome2x = 0;
+    let newOpponentPairs = 0;
+    let meetingRepeatCount = 0;
+    let sumOpponentCount = 0;
+    let maxOpponentCount = 0;
+    forEachMexOpponentPair(pairA, pairB, (a, b) => {
+      const oc = opposeCount.get(pairKey(a, b)) || 0;
+      sumOpponentCount += oc;
+      if (oc > maxOpponentCount) maxOpponentCount = oc;
+      if (oc >= 2) wouldBecome3x++;
+      if (oc >= 1) wouldBecome2x++;
+      if (oc === 0) newOpponentPairs++;
+      const meetings = (partnerCount.get(pairKey(a, b)) || 0) + oc;
+      if (meetings > 0) meetingRepeatCount++;
+    });
+    return {
+      wouldBecome3x,
+      wouldBecome2x,
+      sumOpponentCount,
+      maxOpponentCount,
+      newOpponentPairs,
+      meetingRepeatCount
+    };
+  };
 
   const scoreMexicanoTwoTeams = (team1, team2, history, lastRoundPartnerSet, resolve, levelByName) => {
     const { partnerCount, opposeCount, matchupCount } = history;
@@ -950,7 +2564,8 @@
     s += (partnerCount.get(pairKey(b1, b2)) || 0) * 50;
     s += (lastRoundPartnerSet.has(pairKey(a1, a2)) ? 80000 : 0);
     s += (lastRoundPartnerSet.has(pairKey(b1, b2)) ? 80000 : 0);
-    s += pairCrossOpposeScore(pairA, pairB, opposeCount) * 10;
+    s += scoreMexOpponentPairs(pairA, pairB, opposeCount);
+    s += scoreMexMeetingPairs(pairA, pairB, partnerCount, opposeCount);
     s += (matchupCount.get(matchupKey(pairA, pairB)) || 0) * 200;
     if (levelByName && levelByName.size) {
       const sum = (x, y) =>
@@ -969,12 +2584,252 @@
       { classic: false, t1: [a, d], t2: [b, c] }
     ];
     let best = null;
+    let bestLex = null;
     for (const sp of splits) {
       let sc = scoreMexicanoTwoTeams(sp.t1, sp.t2, history, lastRoundPartnerSet, resolve, levelByName);
       if (!sp.classic) sc += MEXICANO_CLASSIC_SPLIT_BIAS;
-      if (!best || sc < best.sc) best = { sc, t1: sp.t1, t2: sp.t2 };
+      const pairA = {
+        m: resolve(sp.t1[0]),
+        f: resolve(sp.t1[1])
+      };
+      const pairB = {
+        m: resolve(sp.t2[0]),
+        f: resolve(sp.t2[1])
+      };
+      const metrics = mexSplitOpponentLexMetrics(pairA, pairB, history);
+      const tuple = [
+        metrics.wouldBecome3x,
+        metrics.wouldBecome2x,
+        metrics.sumOpponentCount,
+        metrics.maxOpponentCount,
+        -metrics.newOpponentPairs,
+        metrics.meetingRepeatCount,
+        sc
+      ];
+      if (!bestLex || lexLess(tuple, bestLex)) {
+        bestLex = tuple;
+        best = { sc, t1: sp.t1, t2: sp.t2 };
+      }
     }
     return { team1: best.t1, team2: best.t2 };
+  };
+
+  /* ---------- Normal Mexicano match scoring (isolated from Mix Mexicano) ---------- */
+  const NM_W_EXACT_MATCH = 100000;
+  const NM_W_CONSECUTIVE_EXACT = 500000;
+  const NM_W_GROUP = 50000;
+  const NM_W_PARTNER = 20000;
+  const NM_W_PARTNER_REPEAT2 = 100000;
+  const NM_W_MEETING = 3000;
+  const NM_B_NEW_MEETING = 1000;
+  const NM_W_FAIRNESS_HARD = 1000000;
+  const NORMAL_MEX_CLASSIC_SPLIT_BIAS = 38;
+
+  const buildMexicanoHistory = (rounds) => {
+    const base = buildMixHistory(rounds);
+    const groupCount = new Map();
+    (Array.isArray(rounds) ? rounds : []).forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        const t1 = m.team1 || [];
+        const t2 = m.team2 || [];
+        if (t1.length === 2 && t2.length === 2) {
+          const gk = groupKeyOf4(t1[0], t1[1], t2[0], t2[1]);
+          groupCount.set(gk, (groupCount.get(gk) || 0) + 1);
+        }
+      });
+    });
+    return { ...base, groupCount };
+  };
+
+  const getLastRoundMatchupSet = (lastRound, resolve) => {
+    const out = new Set();
+    if (!lastRound) return out;
+    (lastRound.matches || []).forEach((m) => {
+      const t1 = m.team1 || [];
+      const t2 = m.team2 || [];
+      if (t1.length === 2 && t2.length === 2) {
+        out.add(matchupKey(
+          { m: resolve(t1[0]), f: resolve(t1[1]) },
+          { m: resolve(t2[0]), f: resolve(t2[1]) }
+        ));
+      }
+    });
+    return out;
+  };
+
+  const scoreNormalMexicanoMatch = (
+    team1,
+    team2,
+    history,
+    lastRoundPartnerSet,
+    lastRoundMatchupSet,
+    resolve,
+    levelByName
+  ) => {
+    const { partnerCount, opposeCount, matchupCount, groupCount } = history;
+    const a1 = resolve(team1[0]);
+    const a2 = resolve(team1[1]);
+    const b1 = resolve(team2[0]);
+    const b2 = resolve(team2[1]);
+    const pairA = { m: a1, f: a2 };
+    const pairB = { m: b1, f: b2 };
+    const mk = matchupKey(pairA, pairB);
+    const gk = groupKeyOf4(a1, a2, b1, b2);
+    let s = 0;
+    const pA = partnerCount.get(pairKey(a1, a2)) || 0;
+    const pB = partnerCount.get(pairKey(b1, b2)) || 0;
+    s += pA * NM_W_PARTNER + (pA >= 2 ? NM_W_PARTNER_REPEAT2 : 0);
+    s += pB * NM_W_PARTNER + (pB >= 2 ? NM_W_PARTNER_REPEAT2 : 0);
+    s += (lastRoundPartnerSet.has(pairKey(a1, a2)) ? 80000 : 0);
+    s += (lastRoundPartnerSet.has(pairKey(b1, b2)) ? 80000 : 0);
+    s += scoreMexOpponentPairs(pairA, pairB, opposeCount);
+    const all4 = [a1, a2, b1, b2];
+    for (let i = 0; i < 4; i++) {
+      for (let j = i + 1; j < 4; j++) {
+        const meetings =
+          (partnerCount.get(pairKey(all4[i], all4[j])) || 0) +
+          (opposeCount.get(pairKey(all4[i], all4[j])) || 0);
+        if (meetings > 0) s += meetings * NM_W_MEETING;
+        else s -= NM_B_NEW_MEETING;
+      }
+    }
+    const exactCount = matchupCount.get(mk) || 0;
+    s += exactCount * NM_W_EXACT_MATCH;
+    if (lastRoundMatchupSet.has(mk)) s += NM_W_CONSECUTIVE_EXACT;
+    s += (groupCount.get(gk) || 0) * NM_W_GROUP;
+    if (levelByName && levelByName.size) {
+      const sum = (x, y) =>
+        getLevelForPairing(levelByName, resolve, x) +
+        getLevelForPairing(levelByName, resolve, y);
+      s += POWER_LEVEL_MATCH_BETA * Math.abs(sum(a1, a2) - sum(b1, b2));
+    }
+    return s;
+  };
+
+  const mexNormalSplitLexMetrics = (team1, team2, history, lastRoundMatchupSet, resolve) => {
+    const { partnerCount, opposeCount, matchupCount, groupCount } = history;
+    const a1 = resolve(team1[0]);
+    const a2 = resolve(team1[1]);
+    const b1 = resolve(team2[0]);
+    const b2 = resolve(team2[1]);
+    const pairA = { m: a1, f: a2 };
+    const pairB = { m: b1, f: b2 };
+    const mk = matchupKey(pairA, pairB);
+    const gk = groupKeyOf4(a1, a2, b1, b2);
+    const exactCount = matchupCount.get(mk) || 0;
+    const wouldExactRepeat = exactCount > 0 ? 1 : 0;
+    const wouldConsecutiveExact = lastRoundMatchupSet.has(mk) ? 1 : 0;
+    const wouldGroup3x = (groupCount.get(gk) || 0) >= 2 ? 1 : 0;
+    const pRep =
+      ((partnerCount.get(pairKey(a1, a2)) || 0) >= 2 ? 1 : 0) +
+      ((partnerCount.get(pairKey(b1, b2)) || 0) >= 2 ? 1 : 0);
+    const opp = mexSplitOpponentLexMetrics(pairA, pairB, history);
+    return {
+      wouldExactRepeat,
+      wouldConsecutiveExact,
+      wouldGroup3x,
+      partnerWould3x: pRep,
+      ...opp
+    };
+  };
+
+  const pickBestNormalMexicanoQuadSplit = (
+    quadNames,
+    history,
+    lastRoundPartnerSet,
+    lastRoundMatchupSet,
+    resolve,
+    levelByName
+  ) => {
+    const [a, b, c, d] = quadNames;
+    const splits = [
+      { classic: true, t1: [a, b], t2: [c, d] },
+      { classic: false, t1: [a, c], t2: [b, d] },
+      { classic: false, t1: [a, d], t2: [b, c] }
+    ];
+    let best = null;
+    let bestLex = null;
+    for (const sp of splits) {
+      let sc = scoreNormalMexicanoMatch(
+        sp.t1, sp.t2, history, lastRoundPartnerSet, lastRoundMatchupSet, resolve, levelByName
+      );
+      if (!sp.classic) sc += NORMAL_MEX_CLASSIC_SPLIT_BIAS;
+      const pairA = { m: resolve(sp.t1[0]), f: resolve(sp.t1[1]) };
+      const pairB = { m: resolve(sp.t2[0]), f: resolve(sp.t2[1]) };
+      const m = mexNormalSplitLexMetrics(
+        sp.t1, sp.t2, history, lastRoundMatchupSet, resolve
+      );
+      const tuple = [
+        m.wouldConsecutiveExact,
+        m.wouldExactRepeat,
+        m.wouldGroup3x,
+        m.partnerWould3x,
+        m.wouldBecome3x,
+        m.wouldBecome2x,
+        m.sumOpponentCount,
+        -m.newOpponentPairs,
+        sc
+      ];
+      if (!bestLex || mexLexLess(tuple, bestLex)) {
+        bestLex = tuple;
+        best = { sc, t1: sp.t1, t2: sp.t2 };
+      }
+    }
+    return { team1: best.t1, team2: best.t2, score: best.sc };
+  };
+
+  const buildNormalMexicanoRoundFromActive = (
+    players,
+    active,
+    usedCourts,
+    rounds,
+    roundNo,
+    tournament,
+    playersFull
+  ) => {
+    const rn = Number(roundNo) || 1;
+    const tSub = {
+      ...tournament,
+      rounds: JSON.stringify(
+        safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
+      )
+    };
+    const history = buildMexicanoHistory(rounds);
+    const prevRound = getPreviousRoundDatum(rounds, roundNo);
+    const resolve = makeRosterNameResolve(players);
+    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
+    const lastRoundMatchupSet = getLastRoundMatchupSet(prevRound, resolve);
+    const levelByName = makeLevelByNameMap(playersFull || []);
+
+    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
+    const standingsOrder = board.map((row) => row.name);
+
+    let ordered = [];
+    if (rn === 1) {
+      const act = new Set(active);
+      ordered = players.filter((n) => act.has(n));
+    } else {
+      ordered = orderActiveByStandings(active, standingsOrder, players);
+    }
+
+    const matches = [];
+    let roundScore = 0;
+    for (let c = 0; c < usedCourts; c++) {
+      const quad = ordered.slice(c * 4, c * 4 + 4);
+      if (quad.length < 4) break;
+      const split = pickBestNormalMexicanoQuadSplit(
+        quad, history, lastRoundPartnerSet, lastRoundMatchupSet, resolve, levelByName
+      );
+      roundScore += split.score || 0;
+      matches.push({
+        court: c + 1,
+        team1: split.team1,
+        team2: split.team2,
+        score1: '',
+        score2: ''
+      });
+    }
+    return { matches, roundScore };
   };
 
   /* ---------- round builders ---------- */
@@ -1028,46 +2883,320 @@
    * @param {Array}    [playersFull] - [{name,level,...}] for Balanced mode level display
    */
   function buildMexicanoMatches(players, courts, rounds, roundNo, tournament, playersFull) {
-    const maxCourts = Math.min(courts, Math.floor(players.length / 4));
-    if (maxCourts <= 0) return [];
-    const slots = maxCourts * 4;
-    const active = pickActivePlayersMexicano(players, slots, rounds, roundNo);
+    const cap = computeMexicanoRoundCapacity(players.length, courts);
+    if (cap.usedCourtsPerRound <= 0) return [];
 
-    const rn = Number(roundNo) || 1;
-    const tSub = {
-      ...tournament,
-      rounds: JSON.stringify(
-        safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
-      )
-    };
+    const candidates = enumerateNormalMexicanoFairActiveSets(
+      players, courts, rounds, roundNo, 16
+    );
+    const { gamesPlayed, byeCount } = tallyMexicanoPlayerStats(players, rounds, roundNo);
+    const targets = computeMexicanoSessionTargets(
+      players.length,
+      courts,
+      Math.max(roundNo, getPriorRoundsCompleted(rounds, roundNo).length + 1)
+    );
+    const idealGamesInt = Number.isInteger(targets.idealGamesPerPlayer);
+    const idealByesInt = Number.isInteger(targets.idealByesPerPlayer);
 
-    const history = buildMixHistory(rounds);
-    const prevRound = getPreviousRoundDatum(rounds, roundNo);
-    const resolve = makeRosterNameResolve(players);
-    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
-    const levelByName = makeLevelByNameMap(playersFull || []);
-
-    const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
-    const standingsOrder = board.map((row) => row.name);
-
-    let ordered = [];
-    if (rn === 1) {
-      const act = new Set(active);
-      ordered = players.filter((n) => act.has(n));
-    } else {
-      ordered = orderActiveByStandings(active, standingsOrder, players);
+    let bestMatches = null;
+    let bestTuple = null;
+    for (const active of candidates) {
+      const { matches, roundScore } = buildNormalMexicanoRoundFromActive(
+        players,
+        active,
+        cap.usedCourtsPerRound,
+        rounds,
+        roundNo,
+        tournament,
+        playersFull
+      );
+      const proj = projectMexicanoFairnessAfterRound(players, gamesPlayed, byeCount, active);
+      let fairnessPenalty = 0;
+      if (proj.gamesDiff > 1 || proj.byeDiff > 1) fairnessPenalty += NM_W_FAIRNESS_HARD;
+      let exactPenalty = 0;
+      if (idealGamesInt) {
+        exactPenalty += proj.gamesAfter.reduce(
+          (s, g) => s + Math.abs(g - targets.idealGamesPerPlayer), 0
+        );
+      }
+      if (idealByesInt) {
+        exactPenalty += proj.byesAfter.reduce(
+          (s, b) => s + Math.abs(b - targets.idealByesPerPlayer), 0
+        );
+      }
+      const tuple = [fairnessPenalty, proj.gamesDiff, proj.byeDiff, exactPenalty, roundScore];
+      if (!bestTuple || mexLexLess(tuple, bestTuple)) {
+        bestTuple = tuple;
+        bestMatches = matches;
+      }
     }
-
-    const matches = [];
-    for (let c = 0; c < maxCourts; c++) {
-      const base = c * 4;
-      const quad = ordered.slice(base, base + 4);
-      if (quad.length < 4) break;
-      const { team1, team2 } = pickBestMexicanoQuadSplit(quad, history, lastRoundPartnerSet, resolve, levelByName);
-      matches.push({ court: c + 1, team1, team2, score1: '', score2: '' });
-    }
-    return matches;
+    return bestMatches || [];
   }
+
+  /**
+   * Fairness report for a completed Mexicano session (read-only; tests / debug).
+   */
+  const buildMexicanoFairnessReport = (rosterNames, allRounds, courts, roundCount) => {
+    const names = Array.isArray(rosterNames) ? rosterNames : [];
+    const rounds = Array.isArray(allRounds) ? allRounds : [];
+    const history = buildMexicanoHistory(rounds);
+    const cap = computeMexicanoRoundCapacity(names.length, courts);
+    const roundsCnt = roundCount != null ? Math.floor(Number(roundCount) || 0) : rounds.length;
+    const targets = computeMexicanoSessionTargets(names.length, courts, roundsCnt);
+
+    const gamesByPlayer = Object.fromEntries(names.map((n) => [n, 0]));
+    const byesByPlayer = Object.fromEntries(names.map((n) => [n, 0]));
+    rounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        [...(m.team1 || []), ...(m.team2 || [])].forEach((n) => {
+          if (n in gamesByPlayer) gamesByPlayer[n]++;
+        });
+      });
+    });
+    names.forEach((n) => {
+      byesByPlayer[n] = rounds.length - gamesByPlayer[n];
+    });
+
+    let repeatedPartnerPairCount = 0;
+    let totalPartnerRepeats = 0;
+    history.partnerCount.forEach((c) => {
+      if (c > 1) {
+        repeatedPartnerPairCount++;
+        totalPartnerRepeats += c - 1;
+      }
+    });
+
+    let repeatedOpponentPairCount = 0;
+    let totalOpponentRepeats = 0;
+    let opponentPairsRepeated3x = 0;
+    const repeatedOpponentPairsDetail = [];
+    history.opposeCount.forEach((c, k) => {
+      if (c >= 3) opponentPairsRepeated3x++;
+      if (c > 1) {
+        repeatedOpponentPairCount++;
+        totalOpponentRepeats += c - 1;
+        const sep = k.indexOf('__');
+        repeatedOpponentPairsDetail.push({
+          playerA: sep >= 0 ? k.slice(0, sep) : k,
+          playerB: sep >= 0 ? k.slice(sep + 2) : '',
+          count: c
+        });
+      }
+    });
+    repeatedOpponentPairsDetail.sort((x, y) =>
+      (y.count - x.count) || x.playerA.localeCompare(y.playerA) || x.playerB.localeCompare(y.playerB)
+    );
+
+    let repeatedExactMatches = 0;
+    let repeatedMatchGroups = 0;
+    const repeatedExactMatchesDetail = [];
+    history.matchupCount.forEach((c, k) => {
+      if (c > 1) {
+        repeatedExactMatches += c - 1;
+        repeatedExactMatchesDetail.push({ key: k, count: c });
+      }
+    });
+    history.groupCount.forEach((c) => {
+      if (c > 1) repeatedMatchGroups += c - 1;
+    });
+    repeatedExactMatchesDetail.sort((x, y) =>
+      (y.count - x.count) || String(x.key).localeCompare(String(y.key))
+    );
+
+    const uniqueOpponentsByPlayer = Object.fromEntries(names.map((n) => [n, new Set()]));
+    const uniqueMeetingsByPlayer = Object.fromEntries(names.map((n) => [n, new Set()]));
+    rounds.forEach((r) => {
+      (r.matches || []).forEach((m) => {
+        const t1 = m.team1 || [];
+        const t2 = m.team2 || [];
+        if (t1.length === 2) {
+          uniqueMeetingsByPlayer[t1[0]]?.add(t1[1]);
+          uniqueMeetingsByPlayer[t1[1]]?.add(t1[0]);
+        }
+        if (t2.length === 2) {
+          uniqueMeetingsByPlayer[t2[0]]?.add(t2[1]);
+          uniqueMeetingsByPlayer[t2[1]]?.add(t2[0]);
+        }
+        t1.forEach((a) => {
+          t2.forEach((b) => {
+            uniqueOpponentsByPlayer[a]?.add(b);
+            uniqueOpponentsByPlayer[b]?.add(a);
+            uniqueMeetingsByPlayer[a]?.add(b);
+            uniqueMeetingsByPlayer[b]?.add(a);
+          });
+        });
+      });
+    });
+
+    const oppCounts = names.map((n) => (uniqueOpponentsByPlayer[n] || new Set()).size);
+    const meetCounts = names.map((n) => (uniqueMeetingsByPlayer[n] || new Set()).size);
+    const minimumUniqueOpponentCount = oppCounts.length ? Math.min(...oppCounts) : 0;
+    const averageUniqueOpponentCount = oppCounts.length
+      ? oppCounts.reduce((a, b) => a + b, 0) / oppCounts.length
+      : 0;
+    const minimumUniqueMeetingCount = meetCounts.length ? Math.min(...meetCounts) : 0;
+    const averageUniqueMeetingCount = meetCounts.length
+      ? meetCounts.reduce((a, b) => a + b, 0) / meetCounts.length
+      : 0;
+
+    const gamesArr = names.map((n) => gamesByPlayer[n]);
+    const byesArr = names.map((n) => byesByPlayer[n]);
+    const minMax = (arr) => arr.length
+      ? { min: Math.min(...arr), max: Math.max(...arr), diff: Math.max(...arr) - Math.min(...arr) }
+      : { min: 0, max: 0, diff: 0 };
+    const gamesRange = minMax(gamesArr);
+    const byesRange = minMax(byesArr);
+    const gamesPlayedDifference = gamesRange.diff;
+    const byeDifference = byesRange.diff;
+
+    const warnings = [];
+    if (!Number.isInteger(targets.idealGamesPerPlayer) || !Number.isInteger(targets.idealByesPerPlayer)) {
+      warnings.push('ideal games/byes per player are not integers for this configuration');
+    }
+    if (gamesPlayedDifference > 1) {
+      warnings.push(`games played difference ${gamesPlayedDifference} exceeds 1`);
+    }
+    if (byeDifference > 1) {
+      warnings.push(`bye difference ${byeDifference} exceeds 1`);
+    }
+    if (Number.isInteger(targets.idealGamesPerPlayer) && gamesRange.max > targets.maxExpectedGames) {
+      warnings.push('some players exceeded max expected games');
+    }
+    if (Number.isInteger(targets.idealByesPerPlayer) && byesRange.max > targets.maxExpectedByes) {
+      warnings.push('some players exceeded max expected byes');
+    }
+    if (opponentPairsRepeated3x > 0) {
+      warnings.push(`${opponentPairsRepeated3x} opponent pair(s) repeated 3+ times`);
+    }
+    if (minimumUniqueOpponentCount < 6 && names.length >= 10) {
+      warnings.push(
+        `minimum unique opponents ${minimumUniqueOpponentCount} may be low for ${names.length} players`
+      );
+    }
+    if (repeatedExactMatches > 0) {
+      warnings.push(`${repeatedExactMatches} exact team-vs-team repeat(s)`);
+    }
+
+    return {
+      totalPlayers: names.length,
+      courts: Math.max(0, Number(courts) || 0),
+      rounds: rounds.length,
+      roundCount: roundsCnt,
+      ...cap,
+      ...targets,
+      gamesByPlayer,
+      byesByPlayer,
+      gamesRange,
+      byesRange,
+      gamesPlayedDifference,
+      byeDifference,
+      repeatedPartnerPairs: totalPartnerRepeats,
+      repeatedPartnerPairCount,
+      totalPartnerRepeats,
+      repeatedOpponentPairs: totalOpponentRepeats,
+      repeatedOpponentPairCount,
+      totalOpponentRepeats,
+      opponentPairsRepeated3x,
+      repeatedOpponentPairsDetail,
+      repeatedExactMatches,
+      repeatedMatchGroups,
+      repeatedExactMatchesDetail,
+      uniqueOpponentsByPlayer: Object.fromEntries(
+        names.map((n) => [n, (uniqueOpponentsByPlayer[n] || new Set()).size])
+      ),
+      uniqueMeetingsByPlayer: Object.fromEntries(
+        names.map((n) => [n, (uniqueMeetingsByPlayer[n] || new Set()).size])
+      ),
+      minimumUniqueOpponentCount,
+      averageUniqueOpponentCount,
+      minimumUniqueMeetingCount,
+      averageUniqueMeetingCount,
+      warnings
+    };
+  };
+
+  const rankMexicanoScheduleQuality = (report) => {
+    const gamesDiff = report.gamesPlayedDifference ?? report.gamesRange?.diff ?? 0;
+    const byeDiff = report.byeDifference ?? report.byesRange?.diff ?? 0;
+    let exactTargetPenalty = 0;
+    if (Number.isInteger(report.idealGamesPerPlayer)) {
+      exactTargetPenalty += Object.values(report.gamesByPlayer || {}).reduce(
+        (s, g) => s + Math.abs(g - report.idealGamesPerPlayer), 0
+      );
+    }
+    if (Number.isInteger(report.idealByesPerPlayer)) {
+      exactTargetPenalty += Object.values(report.byesByPlayer || {}).reduce(
+        (s, b) => s + Math.abs(b - report.idealByesPerPlayer), 0
+      );
+    }
+    return {
+      tuple: [
+        gamesDiff,
+        byeDiff,
+        exactTargetPenalty,
+        report.repeatedExactMatches || 0,
+        report.repeatedMatchGroups || 0,
+        report.totalPartnerRepeats || 0,
+        report.totalOpponentRepeats || 0,
+        -(report.minimumUniqueMeetingCount ?? 0)
+      ]
+    };
+  };
+
+  /**
+   * Known-horizon schedule optimizer (tests / debug only; not wired to live UI).
+   */
+  const buildBestMexicanoCandidateSchedule = (roster, courts, roundCount, opts = {}) => {
+    const names = Array.isArray(roster) ? roster.slice() : [];
+    const roundsWanted = Math.max(0, Math.floor(Number(roundCount) || 0));
+    const courtCount = Math.max(0, Math.floor(Number(courts) || 0));
+    const candidateCount = Math.max(
+      50,
+      Math.floor(Number(opts.candidateCount) || 50)
+    );
+    const baseSeed = opts.baseSeed != null ? (opts.baseSeed >>> 0) : 1;
+    const seedList = Array.isArray(opts.seeds) ? opts.seeds : null;
+    const tournamentStub = { rounds: '[]', players: JSON.stringify(names) };
+
+    let bestRounds = null;
+    let bestTuple = null;
+    let bestSeed = baseSeed;
+    let bestQuality = null;
+
+    for (let i = 0; i < candidateCount; i++) {
+      const seed = seedList ? (seedList[i] >>> 0) : ((baseSeed + i * 7919) >>> 0);
+      const rot = names.length ? seed % names.length : 0;
+      const rotated = names.length
+        ? [...names.slice(rot), ...names.slice(0, rot)]
+        : [];
+      const allRounds = [];
+      for (let r = 1; r <= roundsWanted; r++) {
+        const matches = buildMexicanoMatches(
+          rotated, courtCount, allRounds, r, tournamentStub, null
+        );
+        allRounds.push({ round: r, matches });
+      }
+      const report = buildMexicanoFairnessReport(rotated, allRounds, courtCount, roundsWanted);
+      const quality = rankMexicanoScheduleQuality(report);
+      if (!bestTuple || mexLexLess(quality.tuple, bestTuple)) {
+        bestTuple = quality.tuple;
+        bestRounds = allRounds;
+        bestSeed = seed;
+        bestQuality = quality;
+      }
+    }
+
+    const finalReport = buildMexicanoFairnessReport(
+      names, bestRounds || [], courtCount, roundsWanted
+    );
+    return {
+      rounds: bestRounds || [],
+      report: finalReport,
+      seed: bestSeed,
+      quality: bestQuality,
+      candidatesTried: candidateCount
+    };
+  };
 
   /**
    * Mix + Mexicano: equal M/F; same benching and per-gender standing order as Mexicano.
@@ -1170,18 +3299,47 @@
     fairnessTierCmp,
     shuffleFairnessRuns,
     pickActivePlayersNormal,
+    pickActivePlayersMixBalancedGender,
+    enumerateFairActiveSets,
+    buildMixDynamicMatches,
+    buildMixFairnessHistory,
+    buildMixFairnessReport,
+    buildBestMixCandidateSchedule,
+    buildMatchesForActiveMix,
+    makeMixSeededRandom,
+    rankMixScheduleQuality,
+    summarizeMixOpponentQuality,
+    countMixOpponentRepeatsInRound,
+    countMixNewOpponentPairsInRound,
+    projectMixUniqueOpponentStats,
+    countMixPartnerRepeatsInRound,
+    lexLess,
+    scoreMixMatchPair,
+    splitMixQuad,
+    groupKeyOf4,
     pickActiveFixedPairs,
     pickActiveFixedPairsMexicano,
     pickActivePlayersMexicano,
+    computeMexicanoRoundCapacity,
+    computeMexicanoSessionTargets,
+    pickNormalMexicanoActivePlayers,
     buildNormalPairs,
     buildBestNormalMatches,
     buildMixHistory,
+    buildMexicanoHistory,
+    scoreNormalMexicanoMatch,
     scoreMexicanoTwoTeams,
+    pickBestNormalMexicanoQuadSplit,
     pickBestMexicanoQuadSplit,
     buildBestFixedPairMatches,
     buildFixedPairsMexicanoMatches,
     buildMexicanoMatches,
-    buildMixMexicanoMatches
+    buildMexicanoFairnessReport,
+    buildBestMexicanoCandidateSchedule,
+    rankMexicanoScheduleQuality,
+    buildMixMexicanoMatches,
+    scoreMexOpponentPairs,
+    mexSplitOpponentLexMetrics,
   };
 
   if (typeof module !== 'undefined' && module.exports) {

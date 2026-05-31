@@ -65,6 +65,7 @@ test('2-1 is not a tie', () => assert.strictEqual(isMexGamesScoreTie(2, 1), fals
 /* ---- isMexMatchComplete ---- */
 console.log('\nisMexMatchComplete');
 const bo3 = { gamesTarget: 2, bestOf: 3 };
+const bo4 = { gamesTarget: 2, bestOf: 4 };
 const bo5 = { gamesTarget: 3, bestOf: 5 };
 
 // In this scoring system all bestOf games are played (no early stop).
@@ -75,6 +76,8 @@ test('bo3: 3-0 is complete (all 3 games played)', () => assert.strictEqual(isMex
 test('bo3: 0-3 is complete', () => assert.strictEqual(isMexMatchComplete(0, 3, bo3), true));
 test('bo3: 2-0 is NOT complete (only 2 of 3 games played)', () => assert.strictEqual(isMexMatchComplete(2, 0, bo3), false));
 test('bo3: 1-1 tie is NOT complete', () => assert.strictEqual(isMexMatchComplete(1, 1, bo3), false));
+test('bo4: 2-2 tie IS complete (all 4 games played)', () => assert.strictEqual(isMexMatchComplete(2, 2, bo4), true));
+test('bo4: 1-3 is complete', () => assert.strictEqual(isMexMatchComplete(1, 3, bo4), true));
 test('bo3: 1-0 is not complete', () => assert.strictEqual(isMexMatchComplete(1, 0, bo3), false));
 test('bo5: 3-2 is complete (all 5 games played)', () => assert.strictEqual(isMexMatchComplete(3, 2, bo5), true));
 test('bo5: 5-0 is complete', () => assert.strictEqual(isMexMatchComplete(5, 0, bo5), true));
@@ -102,7 +105,6 @@ test('bo3: over-capped 5-5 is normalized to fit within bestOf', () => {
 
 /* ---- gamesOppFromEntered ---- */
 console.log('\ngamesOppFromEntered');
-const bo4 = { gamesTarget: 2, bestOf: 4 };
 test('bo3: complementary (2 → 1)', () => assert.strictEqual(gamesOppFromEntered(2, bo3), 1));
 test('bo3: complementary (0 → 3)', () => assert.strictEqual(gamesOppFromEntered(0, bo3), 3));
 test('bo3: complementary (3 → 0)', () => assert.strictEqual(gamesOppFromEntered(3, bo3), 0));

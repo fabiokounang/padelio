@@ -93,8 +93,9 @@
     const maxTotal = profile.bestOf;
     const a = Number(g1) || 0;
     const b = Number(g2) || 0;
-    if (isMexGamesScoreTie(a, b)) return false;
+    // All scheduled games played — including final ties (e.g. 2-2 in best of 4).
     if (a + b >= maxTotal) return true;
+    if (isMexGamesScoreTie(a, b)) return false;
     const leader = Math.max(a, b);
     const trailer = Math.min(a, b);
     if (leader >= W && trailer >= W - 1) return true;

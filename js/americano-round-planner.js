@@ -869,12 +869,22 @@
     return { matches: [], error: lastErr };
   }
 
-  root.PadelioAmericanoPlanner = {
+  const _exports = {
     planAmericanoRound,
     buildSessionStats,
     pickActivePlayersNormal,
     getPriorRoundsCompleted,
-    getPreviousRoundDatum
+    getPreviousRoundDatum,
+    DEFAULT_PLAYER_LEVEL,
+    POWER_LEVEL_PARTNER_ALPHA,
+    POWER_LEVEL_MATCH_BETA
   };
-  root.planAmericanoRound = planAmericanoRound;
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = _exports;
+  } else {
+    const g = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : this;
+    g.PadelioAmericanoPlanner = _exports;
+    g.planAmericanoRound = planAmericanoRound;
+  }
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : this);
