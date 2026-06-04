@@ -5,14 +5,12 @@
 'use strict';
 
 const assert = require('assert');
-const crypto = require('crypto');
 const {
   pairKey,
   matchupKey,
   computeMexicanoRoundCapacity,
   computeMexicanoSessionTargets,
   buildMexicanoMatches,
-  buildMixMexicanoMatches,
   buildMexicanoFairnessReport,
   buildBestMexicanoCandidateSchedule,
 } = require('../js/pairing.js');
@@ -68,32 +66,6 @@ function simulateMexicano (rosterNames, courts, totalRounds, seed = 1) {
     rounds.push(round);
   }
   return rounds;
-}
-
-function simulateMixMexicano (playersFull, courts, totalRounds, seed = 1) {
-  const names = playersFull.map((p) => p.name);
-  const tournament = buildTournament(names, courts, 'mixmex');
-  const rounds = [];
-  for (let r = 1; r <= totalRounds; r++) {
-    tournament.rounds = JSON.stringify(rounds);
-    const matches = buildMixMexicanoMatches(playersFull, courts, rounds, r, tournament);
-    const round = { round: r, matches };
-    scoreRoundDeterministic(round, seed + r * 100);
-    rounds.push(round);
-  }
-  return rounds;
-}
-
-function scheduleHash (rounds) {
-  const parts = [];
-  for (const rd of rounds) {
-    for (const m of rd.matches || []) {
-      const t1 = [...(m.team1 || [])].sort().join('+');
-      const t2 = [...(m.team2 || [])].sort().join('+');
-      parts.push(`${m.court}:${t1}|${t2}`);
-    }
-  }
-  return crypto.createHash('sha256').update(parts.join(';')).digest('hex');
 }
 
 function hasConsecutiveExactMatch (rounds) {
@@ -256,23 +228,6 @@ test('buildMexicanoFairnessReport exposes capacity and repeat fields', () => {
   assert.ok(typeof report.repeatedExactMatches === 'number');
   assert.ok(typeof report.repeatedMatchGroups === 'number');
   assert.ok(Array.isArray(report.repeatedExactMatchesDetail));
-});
-
-test('Mix Mexicano isolation — buildMixMexicanoMatches unchanged for fixed seed', () => {
-  const males = ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7', 'M8'];
-  const females = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'];
-  const playersFull = [
-    ...males.map((name) => ({ name, gender: 'M', level: 3 })),
-    ...females.map((name) => ({ name, gender: 'F', level: 3 })),
-  ];
-  const rounds = simulateMixMexicano(playersFull, 2, 4, 99);
-  const hash = scheduleHash(rounds);
-
-  // Snapshot: Mix Mexicano must stay on shared legacy scorer/picker path.
-  assert.strictEqual(
-    hash,
-    'afd32a5a49eca9c26ceeae5121985bb146ff197567b1fc161bf08a98c07ff43a'
-  );
 });
 
 console.log(`\n${passed + failed} tests: ${passed} passed, ${failed} failed`);

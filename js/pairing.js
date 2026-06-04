@@ -1028,11 +1028,13 @@
     courts,
     allRounds,
     roundNo,
-    maxCandidates = 16
+    maxCandidates = 16,
+    slotsOverride = null
   ) => {
     const arr = Array.isArray(allNames) ? allNames : [];
-    const cap = computeMexicanoRoundCapacity(arr.length, courts);
-    const want = cap.playingPlayersPerRound;
+    const want = slotsOverride != null
+      ? Math.max(0, Math.floor(Number(slotsOverride) || 0))
+      : computeMexicanoRoundCapacity(arr.length, courts).playingPlayersPerRound;
     if (want <= 0) return [[]];
     if (want >= arr.length) return [arr.slice()];
 
@@ -2832,17 +2834,311 @@
     return { matches, roundScore };
   };
 
-  /* ---------- round builders ---------- */
-  const buildFixedPairsMexicanoMatches = (allPairObjs, courts, allRounds, roundNo, tournament) => {
-    const maxCourts = Math.min(courts, Math.floor(allPairObjs.length / 2));
-    if (maxCourts <= 0) return [];
-    const needPairs = maxCourts * 2;
-    const active = pickActiveFixedPairsMexicano(allPairObjs, needPairs, allRounds, roundNo);
+  /* ---------- Fixed Mexicano: dynamic capacity & fairness (fixed partners) ---------- */
+  const FXM_W_FAIRNESS_HARD = 1000000;
+
+  const computeFixedMexicanoRoundCapacity = (pairCount, courts) => {
+    const pairs = Math.max(0, Math.floor(Number(pairCount) || 0));
+    const c = Math.max(0, Math.floor(Number(courts) || 0));
+    const maxPairsPerRound = c * 2;
+    const rawPlaying = Math.min(pairs, maxPairsPerRound);
+    const playingPairsPerRound = Math.floor(rawPlaying / 2) * 2;
+    const usedCourtsPerRound = playingPairsPerRound / 2;
+    const byePairsPerRound = pairs - playingPairsPerRound;
+    return {
+      playingPairsPerRound,
+      byePairsPerRound,
+      usedCourtsPerRound,
+      playingPlayersPerRound: playingPairsPerRound * 2,
+      byePlayersPerRound: byePairsPerRound * 2,
+      maxPairsPerRound
+    };
+  };
+
+  const computeFixedMexicanoSessionTargets = (pairCount, courts, roundCount) =>
+    computeMexicanoSessionTargets(
+      Math.max(0, Math.floor(Number(pairCount) || 0)) * 2,
+      courts,
+      roundCount
+    );
+
+  const tallyFixedMexicanoPairStats = (allPairs, allRounds, roundNo, tKey, resolve) => {
+    const priorRounds = getPriorRoundsCompleted(allRounds, roundNo);
+    const lastRound = getPreviousRoundDatum(allRounds, roundNo);
+    const gamesPlayed = new Map();
+    const byeCount = new Map();
+    allPairs.forEach((p) => {
+      const k = tKey(p);
+      gamesPlayed.set(k, 0);
+      byeCount.set(k, 0);
+    });
+    priorRounds.forEach((r) => {
+      const onCourt = new Set();
+      (r.matches || []).forEach((m) => {
+        for (const team of [m.team1, m.team2]) {
+          if (team && team.length === 2) {
+            const k2 = pairKey(resolve(team[0]), resolve(team[1]));
+            if (gamesPlayed.has(k2)) {
+              gamesPlayed.set(k2, (gamesPlayed.get(k2) || 0) + 1);
+              onCourt.add(k2);
+            }
+          }
+        }
+      });
+      allPairs.forEach((p) => {
+        const k = tKey(p);
+        if (!onCourt.has(k)) byeCount.set(k, (byeCount.get(k) || 0) + 1);
+      });
+    });
+    const playedLastRound = new Set();
+    if (lastRound) {
+      (lastRound.matches || []).forEach((m) => {
+        for (const team of [m.team1, m.team2]) {
+          if (team && team.length === 2) {
+            playedLastRound.add(pairKey(resolve(team[0]), resolve(team[1])));
+          }
+        }
+      });
+    }
+    const mustPlay = lastRound
+      ? allPairs.filter((p) => !playedLastRound.has(tKey(p)))
+      : [];
+    return { gamesPlayed, byeCount, mustPlay, lastRound, priorRounds };
+  };
+
+  const projectFixedMexicanoFairnessAfterRound = (allPairs, gamesPlayed, byeCount, activePairs, tKey) => {
+    const activeKeys = new Set(activePairs.map(tKey));
+    const gamesAfter = [];
+    const byesAfter = [];
+    for (const p of allPairs) {
+      const k = tKey(p);
+      const on = activeKeys.has(k);
+      const g = (gamesPlayed.get(k) || 0) + (on ? 1 : 0);
+      const b = (byeCount.get(k) || 0) + (on ? 0 : 1);
+      gamesAfter.push(g, g);
+      byesAfter.push(b, b);
+    }
+    const gamesDiff = gamesAfter.length ? Math.max(...gamesAfter) - Math.min(...gamesAfter) : 0;
+    const byeDiff = byesAfter.length ? Math.max(...byesAfter) - Math.min(...byesAfter) : 0;
+    return { gamesDiff, byeDiff, gamesAfter, byesAfter };
+  };
+
+  const enumerateFixedMexicanoFairActiveSets = (
+    allPairs,
+    courts,
+    allRounds,
+    roundNo,
+    tKey,
+    resolve,
+    maxCandidates = 16
+  ) => {
+    const arr = Array.isArray(allPairs) ? allPairs : [];
+    const cap = computeFixedMexicanoRoundCapacity(arr.length, courts);
+    const want = cap.playingPairsPerRound;
+    if (want <= 0) return [[]];
+    if (want >= arr.length) return [arr.slice()];
+
+    const { gamesPlayed, byeCount, mustPlay, lastRound } =
+      tallyFixedMexicanoPairStats(arr, allRounds, roundNo, tKey, resolve);
+    const pos = new Map(arr.map((p, i) => [tKey(p), i]));
+
+    if (!lastRound) {
+      const pool = [...arr];
+      const capN = Math.max(1, Math.floor(Number(maxCandidates) || 1));
+      const combos = [];
+      const combo = [];
+      const dfs = (start) => {
+        if (combos.length >= capN) return;
+        if (combo.length === want) {
+          combos.push([...combo]);
+          return;
+        }
+        for (let k = start; k < pool.length; k++) {
+          if (pool.length - k < want - combo.length) break;
+          combo.push(pool[k]);
+          dfs(k + 1);
+          combo.pop();
+          if (combos.length >= capN) return;
+        }
+      };
+      dfs(0);
+      if (combos.length === 0) combos.push(pool.slice(0, want));
+      return combos;
+    }
+
+    let forced = [];
+    if (mustPlay.length > want) {
+      const sortedMust = [...mustPlay].sort((a, b) =>
+        (gamesPlayed.get(tKey(a)) || 0) - (gamesPlayed.get(tKey(b)) || 0) ||
+        (byeCount.get(tKey(b)) || 0) - (byeCount.get(tKey(a)) || 0) ||
+        (pos.get(tKey(a)) ?? 0) - (pos.get(tKey(b)) ?? 0)
+      );
+      return [sortedMust.slice(0, want)];
+    }
+    forced = mustPlay.slice();
+    const forcedSet = new Set(forced.map(tKey));
+    const remaining = want - forced.length;
+    const pool = arr.filter((p) => !forcedSet.has(tKey(p)));
+
+    const keyed = pool.map((p) => ({
+      pair: p,
+      games: gamesPlayed.get(tKey(p)) || 0,
+      byes: byeCount.get(tKey(p)) || 0,
+      idx: pos.get(tKey(p))
+    }));
+    keyed.sort((a, b) =>
+      a.games - b.games ||
+      a.byes - b.byes ||
+      a.idx - b.idx
+    );
+
+    if (remaining >= pool.length) {
+      return [[...forced, ...pool]];
+    }
+
+    const capN = Math.max(1, Math.floor(Number(maxCandidates) || 1));
+    const combos = [];
+    const combo = [];
+    const dfs = (start) => {
+      if (combos.length >= capN) return;
+      if (combo.length === remaining) {
+        combos.push([...forced, ...combo]);
+        return;
+      }
+      for (let k = start; k < keyed.length; k++) {
+        if (keyed.length - k < remaining - combo.length) break;
+        combo.push(keyed[k].pair);
+        dfs(k + 1);
+        combo.pop();
+        if (combos.length >= capN) return;
+      }
+    };
+    dfs(0);
+    if (combos.length === 0) {
+      combos.push([...forced, ...keyed.slice(0, remaining).map((x) => x.pair)]);
+    }
+    return combos;
+  };
+
+  /** Fixed Mexicano matchup score (no within-team partner penalty; partners stay fixed). */
+  const scoreFixedMexicanoPairMatch = (
+    p1,
+    p2,
+    history,
+    lastRoundMatchupSet,
+    resolve,
+    levelByName
+  ) => {
+    const { opposeCount, matchupCount, groupCount } = history;
+    const a1 = resolve(p1.m);
+    const a2 = resolve(p1.f);
+    const b1 = resolve(p2.m);
+    const b2 = resolve(p2.f);
+    const pairA = { m: a1, f: a2 };
+    const pairB = { m: b1, f: b2 };
+    const mk = matchupKey(pairA, pairB);
+    const gk = groupKeyOf4(a1, a2, b1, b2);
+    let s = 0;
+    s += scoreMexOpponentPairs(pairA, pairB, opposeCount);
+    const cross = [
+      [a1, b1], [a1, b2], [a2, b1], [a2, b2]
+    ];
+    for (const [x, y] of cross) {
+      const meetings =
+        (history.partnerCount.get(pairKey(x, y)) || 0) +
+        (opposeCount.get(pairKey(x, y)) || 0);
+      if (meetings > 0) s += meetings * NM_W_MEETING;
+      else s -= NM_B_NEW_MEETING;
+    }
+    const exactCount = matchupCount.get(mk) || 0;
+    s += exactCount * NM_W_EXACT_MATCH;
+    if (lastRoundMatchupSet.has(mk)) s += NM_W_CONSECUTIVE_EXACT;
+    s += (groupCount.get(gk) || 0) * NM_W_GROUP;
+    if (levelByName && levelByName.size) {
+      const sum = (x, y) =>
+        getLevelForPairing(levelByName, resolve, x) +
+        getLevelForPairing(levelByName, resolve, y);
+      s += POWER_LEVEL_MATCH_BETA * Math.abs(sum(a1, a2) - sum(b1, b2));
+    }
+    return s;
+  };
+
+  const buildBestFixedMexicanoMatches = (
+    selectedPairs,
+    history,
+    lastRoundMatchupSet,
+    resolve,
+    levelByName
+  ) => {
+    const k = selectedPairs.length;
+    if (k < 2 || k % 2 !== 0) return { matches: [], roundScore: 0 };
+    const numCourts = k / 2;
+
+    const scorePlan = (plan) => {
+      let total = 0;
+      for (const [p1, p2] of plan) {
+        total += scoreFixedMexicanoPairMatch(
+          p1, p2, history, lastRoundMatchupSet, resolve, levelByName
+        );
+      }
+      return total;
+    };
+
+    if (k <= 12) {
+      const all = [];
+      enumerateFixedPairMatchings([...selectedPairs], all);
+      let bestScore = Infinity;
+      let bestPlan = null;
+      for (const plan of all) {
+        if (plan.length !== numCourts) continue;
+        const sc = scorePlan(plan);
+        if (sc < bestScore) {
+          bestScore = sc;
+          bestPlan = plan;
+        }
+      }
+      if (bestPlan) {
+        return {
+          matches: fixedPairMatchingsToCourts(bestPlan),
+          roundScore: bestScore
+        };
+      }
+    }
+
+    const lastMu = lastRoundMatchupSet || new Set();
+    const greedy = buildBestFixedPairMatches(
+      selectedPairs,
+      history,
+      lastMu
+    );
+    let roundScore = 0;
+    if (greedy.length === numCourts) {
+      for (const m of greedy) {
+        const p1 = { m: m.team1[0], f: m.team1[1] };
+        const p2 = { m: m.team2[0], f: m.team2[1] };
+        roundScore += scoreFixedMexicanoPairMatch(
+          p1, p2, history, lastRoundMatchupSet, resolve, levelByName
+        );
+      }
+    }
+    return { matches: greedy, roundScore };
+  };
+
+  const buildFixedMexicanoRoundFromActive = (
+    allPairObjs,
+    activePairs,
+    usedCourts,
+    allRounds,
+    roundNo,
+    tournament,
+    playersFull
+  ) => {
     const flatNames = allPairObjs.flatMap((p) => [p.m, p.f]);
     const resolve = makeRosterNameResolve(flatNames);
     const tKey = (p) => pairKey(resolve(p.m), resolve(p.f));
     const keyToIdx = new Map();
     allPairObjs.forEach((p, i) => { keyToIdx.set(tKey(p), i); });
+
     const rn = Number(roundNo) || 1;
     const tSub = {
       ...tournament,
@@ -2850,11 +3146,16 @@
         safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
       )
     };
+    const history = buildMexicanoHistory(allRounds);
+    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
+    const lastRoundMatchupSet = getLastRoundMatchupSet(prevRound, resolve);
+    const levelByName = makeLevelByNameMap(playersFull || []);
+
     const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const pt = new Map(board.map((r) => [r.name, r.points]));
     const teamPts = (p) => (pt.get(resolve(p.m)) || 0) + (pt.get(resolve(p.f)) || 0);
     const rankByKey = new Map();
-    [...active]
+    [...activePairs]
       .sort((a, b) => {
         const d = teamPts(b) - teamPts(a);
         if (d !== 0) return d;
@@ -2864,13 +3165,91 @@
 
     let ordered;
     if (rn === 1) {
-      ordered = [...active].sort(
+      ordered = [...activePairs].sort(
         (a, b) => (keyToIdx.get(tKey(a)) ?? 0) - (keyToIdx.get(tKey(b)) ?? 0)
       );
     } else {
-      ordered = orderPairsByTeamPoints(active, rankByKey, tKey);
+      ordered = orderPairsByTeamPoints(activePairs, rankByKey, tKey);
     }
-    return buildFixedPairsMexicanoCourtMatches(ordered);
+
+    if (ordered.length < 2) return { matches: [], roundScore: 0 };
+    const matches = buildFixedPairsMexicanoCourtMatches(ordered);
+    let roundScore = 0;
+    for (let c = 0; c < matches.length; c++) {
+      const m = matches[c];
+      roundScore += scoreFixedMexicanoPairMatch(
+        { m: m.team1[0], f: m.team1[1] },
+        { m: m.team2[0], f: m.team2[1] },
+        history,
+        lastRoundMatchupSet,
+        resolve,
+        levelByName
+      );
+    }
+    return { matches, roundScore };
+  };
+
+  /* ---------- round builders ---------- */
+  const buildFixedPairsMexicanoMatches = (allPairObjs, courts, allRounds, roundNo, tournament, playersFull) => {
+    const cap = computeFixedMexicanoRoundCapacity(allPairObjs.length, courts);
+    if (cap.usedCourtsPerRound <= 0) return [];
+
+    const flatNames = allPairObjs.flatMap((p) => [p.m, p.f]);
+    const resolve = makeRosterNameResolve(flatNames);
+    const tKey = (p) => pairKey(resolve(p.m), resolve(p.f));
+
+    const candidates = enumerateFixedMexicanoFairActiveSets(
+      allPairObjs, courts, allRounds, roundNo, tKey, resolve, 16
+    );
+    const { gamesPlayed, byeCount } = tallyFixedMexicanoPairStats(
+      allPairObjs, allRounds, roundNo, tKey, resolve
+    );
+    const targets = computeFixedMexicanoSessionTargets(
+      allPairObjs.length,
+      courts,
+      Math.max(roundNo, getPriorRoundsCompleted(allRounds, roundNo).length + 1)
+    );
+    const idealGamesInt = Number.isInteger(targets.idealGamesPerPlayer);
+    const idealByesInt = Number.isInteger(targets.idealByesPerPlayer);
+
+    let bestMatches = null;
+    let bestTuple = null;
+    for (const active of candidates) {
+      if (active.length !== cap.playingPairsPerRound) continue;
+      const { matches, roundScore } = buildFixedMexicanoRoundFromActive(
+        allPairObjs,
+        active,
+        cap.usedCourtsPerRound,
+        allRounds,
+        roundNo,
+        tournament,
+        playersFull
+      );
+      if (!matches.length) continue;
+
+      const proj = projectFixedMexicanoFairnessAfterRound(
+        allPairObjs, gamesPlayed, byeCount, active, tKey
+      );
+      let fairnessPenalty = 0;
+      if (proj.gamesDiff > 1 || proj.byeDiff > 1) fairnessPenalty += FXM_W_FAIRNESS_HARD;
+      let exactPenalty = 0;
+      if (idealGamesInt) {
+        exactPenalty += proj.gamesAfter.reduce(
+          (s, g) => s + Math.abs(g - targets.idealGamesPerPlayer), 0
+        );
+      }
+      if (idealByesInt) {
+        exactPenalty += proj.byesAfter.reduce(
+          (s, b) => s + Math.abs(b - targets.idealByesPerPlayer), 0
+        );
+      }
+      const tuple = [fairnessPenalty, proj.gamesDiff, proj.byeDiff, exactPenalty, roundScore];
+      if (!bestTuple || mexLexLess(tuple, bestTuple)) {
+        bestTuple = tuple;
+        bestMatches = matches;
+      }
+    }
+    return bestMatches || [];
   };
 
   /**
@@ -3198,34 +3577,225 @@
     };
   };
 
-  /**
-   * Mix + Mexicano: equal M/F; same benching and per-gender standing order as Mexicano.
-   */
-  function buildMixMexicanoMatches(playersFull, courts, allRounds, roundNo, tournament) {
-    const malesAll = playersFull.filter((p) => p.gender === 'M').map((p) => p.name);
-    const femalesAll = playersFull.filter((p) => p.gender === 'F').map((p) => p.name);
-    const maxCourts = Math.min(
-      courts,
-      Math.floor(malesAll.length / 2),
-      Math.floor(femalesAll.length / 2)
+  /* ---------- Mix Mexicano: dynamic capacity, fairness, scoring (isolated from Normal) ---------- */
+  const MM_W_EXACT_MATCH = 100000;
+  const MM_W_CONSECUTIVE_EXACT = 500000;
+  const MM_W_GROUP = 50000;
+  const MM_W_PARTNER = 20000;
+  const MM_W_PARTNER_REPEAT2 = 100000;
+  const MM_W_MEETING = 3000;
+  const MM_B_NEW_MEETING = 1000;
+  const MM_W_FAIRNESS_HARD = 1000000;
+  const MIX_MEX_PARALLEL_BIAS = 12;
+
+  const computeMixMexicanoRoundCapacity = (maleCount, femaleCount, courts) => {
+    const m = Math.max(0, Math.floor(Number(maleCount) || 0));
+    const f = Math.max(0, Math.floor(Number(femaleCount) || 0));
+    const c = Math.max(0, Math.floor(Number(courts) || 0));
+    const effectiveCourtsPerRound = Math.min(c, Math.floor(m / 2), Math.floor(f / 2));
+    const playingPerGender = effectiveCourtsPerRound * 2;
+    return {
+      effectiveCourtsPerRound,
+      usedCourtsPerRound: effectiveCourtsPerRound,
+      playingPerGender,
+      malePlayingPerRound: playingPerGender,
+      femalePlayingPerRound: playingPerGender,
+      maleByesPerRound: Math.max(0, m - playingPerGender),
+      femaleByesPerRound: Math.max(0, f - playingPerGender),
+      maxPlayersPerRound: playingPerGender * 2
+    };
+  };
+
+  const computeMixMexicanoSessionTargets = (maleCount, femaleCount, courts, roundCount) => {
+    const cap = computeMixMexicanoRoundCapacity(maleCount, femaleCount, courts);
+    const rounds = Math.max(0, Math.floor(Number(roundCount) || 0));
+    const m = Math.max(0, Math.floor(Number(maleCount) || 0));
+    const f = Math.max(0, Math.floor(Number(femaleCount) || 0));
+    const slotsPerGender = rounds * cap.playingPerGender;
+    const idealGamesPerMale = m > 0 ? slotsPerGender / m : 0;
+    const idealGamesPerFemale = f > 0 ? slotsPerGender / f : 0;
+    const idealByesPerMale = m > 0 ? (rounds * cap.maleByesPerRound) / m : 0;
+    const idealByesPerFemale = f > 0 ? (rounds * cap.femaleByesPerRound) / f : 0;
+    return {
+      ...cap,
+      roundCount: rounds,
+      idealGamesPerMale,
+      idealGamesPerFemale,
+      idealByesPerMale,
+      idealByesPerFemale,
+      minExpectedGamesMale: Math.floor(idealGamesPerMale),
+      maxExpectedGamesMale: Math.ceil(idealGamesPerMale),
+      minExpectedByesMale: Math.floor(idealByesPerMale),
+      maxExpectedByesMale: Math.ceil(idealByesPerMale),
+      minExpectedGamesFemale: Math.floor(idealGamesPerFemale),
+      maxExpectedGamesFemale: Math.ceil(idealGamesPerFemale),
+      minExpectedByesFemale: Math.floor(idealByesPerFemale),
+      maxExpectedByesFemale: Math.ceil(idealByesPerFemale)
+    };
+  };
+
+  const enumerateMixMexicanoFairActiveSets = (
+    genderPool,
+    slotsNeeded,
+    allRounds,
+    roundNo,
+    maxCandidates = 12
+  ) =>
+    enumerateNormalMexicanoFairActiveSets(
+      genderPool, 0, allRounds, roundNo, maxCandidates, slotsNeeded
     );
-    if (maxCourts <= 0) return [];
-    const need = maxCourts * 2;
-    const activeM = pickActivePlayersMexicano(malesAll, need, allRounds, roundNo);
-    const activeF = pickActivePlayersMexicano(femalesAll, need, allRounds, roundNo);
+
+  const scoreMixMexicanoMatch = (
+    team1,
+    team2,
+    history,
+    lastRoundPartnerSet,
+    lastRoundMatchupSet,
+    resolve,
+    levelByName
+  ) => {
+    const { partnerCount, opposeCount, matchupCount, groupCount } = history;
+    const a1 = resolve(team1[0]);
+    const a2 = resolve(team1[1]);
+    const b1 = resolve(team2[0]);
+    const b2 = resolve(team2[1]);
+    const pairA = { m: a1, f: a2 };
+    const pairB = { m: b1, f: b2 };
+    const mk = matchupKey(pairA, pairB);
+    const gk = groupKeyOf4(a1, a2, b1, b2);
+    let s = 0;
+    const pA = partnerCount.get(pairKey(a1, a2)) || 0;
+    const pB = partnerCount.get(pairKey(b1, b2)) || 0;
+    s += pA * MM_W_PARTNER + (pA >= 2 ? MM_W_PARTNER_REPEAT2 : 0);
+    s += pB * MM_W_PARTNER + (pB >= 2 ? MM_W_PARTNER_REPEAT2 : 0);
+    s += (lastRoundPartnerSet.has(pairKey(a1, a2)) ? 80000 : 0);
+    s += (lastRoundPartnerSet.has(pairKey(b1, b2)) ? 80000 : 0);
+    s += scoreMexOpponentPairs(pairA, pairB, opposeCount);
+    const all4 = [a1, a2, b1, b2];
+    for (let i = 0; i < 4; i++) {
+      for (let j = i + 1; j < 4; j++) {
+        const meetings =
+          (partnerCount.get(pairKey(all4[i], all4[j])) || 0) +
+          (opposeCount.get(pairKey(all4[i], all4[j])) || 0);
+        if (meetings > 0) s += meetings * MM_W_MEETING;
+        else s -= MM_B_NEW_MEETING;
+      }
+    }
+    const exactCount = matchupCount.get(mk) || 0;
+    s += exactCount * MM_W_EXACT_MATCH;
+    if (lastRoundMatchupSet.has(mk)) s += MM_W_CONSECUTIVE_EXACT;
+    s += (groupCount.get(gk) || 0) * MM_W_GROUP;
+    if (levelByName && levelByName.size) {
+      const sum = (x, y) =>
+        getLevelForPairing(levelByName, resolve, x) +
+        getLevelForPairing(levelByName, resolve, y);
+      s += POWER_LEVEL_MATCH_BETA * Math.abs(sum(a1, a2) - sum(b1, b2));
+    }
+    return s;
+  };
+
+  const mixMexCourtLexMetrics = (team1, team2, history, lastRoundMatchupSet, resolve) => {
+    const a1 = resolve(team1[0]);
+    const a2 = resolve(team1[1]);
+    const b1 = resolve(team2[0]);
+    const b2 = resolve(team2[1]);
+    const pairA = { m: a1, f: a2 };
+    const pairB = { m: b1, f: b2 };
+    const mk = matchupKey(pairA, pairB);
+    const gk = groupKeyOf4(a1, a2, b1, b2);
+    const { partnerCount, matchupCount, groupCount } = history;
+    const exactCount = matchupCount.get(mk) || 0;
+    const pRep =
+      ((partnerCount.get(pairKey(a1, a2)) || 0) >= 2 ? 1 : 0) +
+      ((partnerCount.get(pairKey(b1, b2)) || 0) >= 2 ? 1 : 0);
+    const opp = mexSplitOpponentLexMetrics(pairA, pairB, history);
+    return {
+      wouldExactRepeat: exactCount > 0 ? 1 : 0,
+      wouldConsecutiveExact: lastRoundMatchupSet.has(mk) ? 1 : 0,
+      wouldGroup3x: (groupCount.get(gk) || 0) >= 2 ? 1 : 0,
+      partnerWould3x: pRep,
+      ...opp
+    };
+  };
+
+  const pickBestMixMexicanoCourtPairing = (
+    m0,
+    m1,
+    f0,
+    f1,
+    history,
+    lastRoundPartnerSet,
+    lastRoundMatchupSet,
+    resolve,
+    levelByName
+  ) => {
+    const parallel = {
+      parallel: true,
+      t1: [m0, f0],
+      t2: [m1, f1]
+    };
+    const cross = {
+      parallel: false,
+      t1: [m0, f1],
+      t2: [m1, f0]
+    };
+    let best = null;
+    let bestLex = null;
+    for (const sp of [parallel, cross]) {
+      let sc = scoreMixMexicanoMatch(
+        sp.t1, sp.t2, history, lastRoundPartnerSet, lastRoundMatchupSet, resolve, levelByName
+      );
+      if (!sp.parallel) sc += MIX_MEX_PARALLEL_BIAS;
+      const pairA = { m: resolve(sp.t1[0]), f: resolve(sp.t1[1]) };
+      const pairB = { m: resolve(sp.t2[0]), f: resolve(sp.t2[1]) };
+      const m = mixMexCourtLexMetrics(sp.t1, sp.t2, history, lastRoundMatchupSet, resolve);
+      const tuple = [
+        m.wouldConsecutiveExact,
+        m.wouldExactRepeat,
+        m.wouldGroup3x,
+        m.partnerWould3x,
+        m.wouldBecome3x,
+        m.wouldBecome2x,
+        m.sumOpponentCount,
+        -m.newOpponentPairs,
+        sc
+      ];
+      if (!bestLex || mexLexLess(tuple, bestLex)) {
+        bestLex = tuple;
+        best = { sc, t1: sp.t1, t2: sp.t2 };
+      }
+    }
+    return { team1: best.t1, team2: best.t2, score: best.sc };
+  };
+
+  const buildMixMexicanoRoundFromActive = (
+    malesAll,
+    femalesAll,
+    activeM,
+    activeF,
+    effectiveCourts,
+    allRounds,
+    roundNo,
+    tournament,
+    playersFull
+  ) => {
     const rn = Number(roundNo) || 1;
+    const rosterNames = [...malesAll, ...femalesAll];
     const tSub = {
       ...tournament,
       rounds: JSON.stringify(
         safeJsonParse(tournament?.rounds, []).filter((r) => Number(r.round) < rn)
       )
     };
+    const history = buildMexicanoHistory(allRounds);
+    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
+    const resolve = makeRosterNameResolve(rosterNames);
+    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
+    const lastRoundMatchupSet = getLastRoundMatchupSet(prevRound, resolve);
+    const levelByName = makeLevelByNameMap(playersFull || []);
 
     const board = computeLeaderboardSorted(tSub, 'points', { applyMatchCompensation: false });
     const standingsOrder = board.map((row) => row.name);
-    const rosterNames = [...malesAll, ...femalesAll];
-    const resolve = makeRosterNameResolve(rosterNames);
-    const prevRound = getPreviousRoundDatum(allRounds, roundNo);
 
     let orderedM;
     let orderedF;
@@ -3239,32 +3809,196 @@
       orderedF = orderActiveByStandings(activeF, standingsOrder, femalesAll);
     }
 
-    const history = buildMixHistory(allRounds);
-    const lastRoundPartnerSet = getLastRoundPartnerSet(prevRound, resolve);
-    const levelByName = makeLevelByNameMap(playersFull);
-
     const matches = [];
-    for (let c = 0; c < maxCourts; c++) {
+    let roundScore = 0;
+    for (let c = 0; c < effectiveCourts; c++) {
       const m0 = orderedM[c * 2];
       const m1 = orderedM[c * 2 + 1];
       const f0 = orderedF[c * 2];
       const f1 = orderedF[c * 2 + 1];
       if (!m0 || !m1 || !f0 || !f1) break;
-      const A1 = [m0, f0]; const A2 = [m1, f1];
-      const B1 = [m0, f1]; const B2 = [m1, f0];
-      const sA = scoreMexicanoTwoTeams(A1, A2, history, lastRoundPartnerSet, resolve, levelByName);
-      const sB = scoreMexicanoTwoTeams(B1, B2, history, lastRoundPartnerSet, resolve, levelByName);
-      const useA = sA <= sB;
+      const split = pickBestMixMexicanoCourtPairing(
+        m0, m1, f0, f1,
+        history, lastRoundPartnerSet, lastRoundMatchupSet, resolve, levelByName
+      );
+      roundScore += split.score || 0;
       matches.push({
         court: c + 1,
-        team1: useA ? A1 : B1,
-        team2: useA ? A2 : B2,
+        team1: split.team1,
+        team2: split.team2,
         score1: '',
         score2: ''
       });
     }
-    return matches;
+    return { matches, roundScore };
+  };
+
+  /**
+   * Mix Mexicano: equal M/F per court (2M+2F), Swiss per gender, Mexicano-style fairness.
+   */
+  function buildMixMexicanoMatches(playersFull, courts, allRounds, roundNo, tournament) {
+    const malesAll = playersFull.filter((p) => p.gender === 'M').map((p) => p.name);
+    const femalesAll = playersFull.filter((p) => p.gender === 'F').map((p) => p.name);
+    const cap = computeMixMexicanoRoundCapacity(malesAll.length, femalesAll.length, courts);
+    if (cap.effectiveCourtsPerRound <= 0) return [];
+
+    const need = cap.playingPerGender;
+    const maleCandidates = enumerateMixMexicanoFairActiveSets(
+      malesAll, need, allRounds, roundNo, 16
+    );
+    const femaleCandidates = enumerateMixMexicanoFairActiveSets(
+      femalesAll, need, allRounds, roundNo, 16
+    );
+
+    const statsM = tallyMexicanoPlayerStats(malesAll, allRounds, roundNo);
+    const statsF = tallyMexicanoPlayerStats(femalesAll, allRounds, roundNo);
+    const horizon = Math.max(
+      roundNo,
+      getPriorRoundsCompleted(allRounds, roundNo).length + 1
+    );
+    const targets = computeMixMexicanoSessionTargets(
+      malesAll.length, femalesAll.length, courts, horizon
+    );
+    const idealGamesMInt = Number.isInteger(targets.idealGamesPerMale);
+    const idealGamesFInt = Number.isInteger(targets.idealGamesPerFemale);
+    const idealByesMInt = Number.isInteger(targets.idealByesPerMale);
+    const idealByesFInt = Number.isInteger(targets.idealByesPerFemale);
+    const history = buildMexicanoHistory(allRounds);
+
+    let bestMatches = null;
+    let bestTuple = null;
+    for (const activeM of maleCandidates) {
+      if (activeM.length !== need) continue;
+      for (const activeF of femaleCandidates) {
+        if (activeF.length !== need) continue;
+        const { matches, roundScore } = buildMixMexicanoRoundFromActive(
+          malesAll,
+          femalesAll,
+          activeM,
+          activeF,
+          cap.effectiveCourtsPerRound,
+          allRounds,
+          roundNo,
+          tournament,
+          playersFull
+        );
+        if (!matches.length) continue;
+
+        const projM = projectMexicanoFairnessAfterRound(
+          malesAll, statsM.gamesPlayed, statsM.byeCount, activeM
+        );
+        const projF = projectMexicanoFairnessAfterRound(
+          femalesAll, statsF.gamesPlayed, statsF.byeCount, activeF
+        );
+        let fairnessPenalty = 0;
+        if (projM.gamesDiff > 1 || projM.byeDiff > 1) fairnessPenalty += MM_W_FAIRNESS_HARD;
+        if (projF.gamesDiff > 1 || projF.byeDiff > 1) fairnessPenalty += MM_W_FAIRNESS_HARD;
+
+        let exactPenalty = 0;
+        if (idealGamesMInt) {
+          exactPenalty += projM.gamesAfter.reduce(
+            (s, g) => s + Math.abs(g - targets.idealGamesPerMale), 0
+          );
+        }
+        if (idealGamesFInt) {
+          exactPenalty += projF.gamesAfter.reduce(
+            (s, g) => s + Math.abs(g - targets.idealGamesPerFemale), 0
+          );
+        }
+        if (idealByesMInt) {
+          exactPenalty += projM.byesAfter.reduce(
+            (s, b) => s + Math.abs(b - targets.idealByesPerMale), 0
+          );
+        }
+        if (idealByesFInt) {
+          exactPenalty += projF.byesAfter.reduce(
+            (s, b) => s + Math.abs(b - targets.idealByesPerFemale), 0
+          );
+        }
+
+        const gamesDiff = Math.max(projM.gamesDiff, projF.gamesDiff);
+        const byeDiff = Math.max(projM.byeDiff, projF.byeDiff);
+        const partnerRepeats = countMixPartnerRepeatsInRound(matches, history.partnerCount);
+        const oppRepeats = countMixOpponentRepeatsInRound(matches, history.opposeCount);
+        const tuple = [
+          fairnessPenalty,
+          gamesDiff,
+          byeDiff,
+          exactPenalty,
+          partnerRepeats,
+          oppRepeats,
+          roundScore
+        ];
+        if (!bestTuple || mexLexLess(tuple, bestTuple)) {
+          bestTuple = tuple;
+          bestMatches = matches;
+        }
+      }
+    }
+    return bestMatches || [];
   }
+
+  const buildMixMexicanoFairnessReport = (
+    maleRoster,
+    femaleRoster,
+    allRounds,
+    courts,
+    roundCount
+  ) => {
+    const males = Array.isArray(maleRoster) ? maleRoster : [];
+    const females = Array.isArray(femaleRoster) ? femaleRoster : [];
+    const names = [...males, ...females];
+    const rounds = Array.isArray(allRounds) ? allRounds : [];
+    const cap = computeMixMexicanoRoundCapacity(males.length, females.length, courts);
+    const roundsCnt = roundCount != null ? Math.floor(Number(roundCount) || 0) : rounds.length;
+    const targets = computeMixMexicanoSessionTargets(
+      males.length, females.length, courts, roundsCnt
+    );
+
+    const base = buildMexicanoFairnessReport(names, rounds, courts, roundsCnt);
+    const gamesM = males.map((n) => base.gamesByPlayer[n] ?? 0);
+    const gamesF = females.map((n) => base.gamesByPlayer[n] ?? 0);
+    const byesM = males.map((n) => base.byesByPlayer[n] ?? 0);
+    const byesF = females.map((n) => base.byesByPlayer[n] ?? 0);
+    const minMax = (arr) => arr.length
+      ? { min: Math.min(...arr), max: Math.max(...arr), diff: Math.max(...arr) - Math.min(...arr) }
+      : { min: 0, max: 0, diff: 0 };
+
+    const warnings = [...(base.warnings || [])];
+    if (males.length !== females.length) {
+      warnings.push(
+        `Male and female counts differ (${males.length}M / ${females.length}F); ` +
+        'bye balance is enforced per gender.'
+      );
+    }
+    const maleGamesRange = minMax(gamesM);
+    const femaleGamesRange = minMax(gamesF);
+    const maleByesRange = minMax(byesM);
+    const femaleByesRange = minMax(byesF);
+    if (maleGamesRange.diff > 1) {
+      warnings.push(`male games played difference ${maleGamesRange.diff} exceeds 1`);
+    }
+    if (femaleGamesRange.diff > 1) {
+      warnings.push(`female games played difference ${femaleGamesRange.diff} exceeds 1`);
+    }
+
+    return {
+      ...base,
+      ...cap,
+      ...targets,
+      totalMales: males.length,
+      totalFemales: females.length,
+      maleGamesRange,
+      femaleGamesRange,
+      maleByesRange,
+      femaleByesRange,
+      gamesPlayedDifferenceMale: maleGamesRange.diff,
+      gamesPlayedDifferenceFemale: femaleGamesRange.diff,
+      byeDifferenceMale: maleByesRange.diff,
+      byeDifferenceFemale: femaleByesRange.diff,
+      warnings
+    };
+  };
 
   /* ---------- dual export ---------- */
   const _exports = {
@@ -3332,12 +4066,20 @@
     pickBestNormalMexicanoQuadSplit,
     pickBestMexicanoQuadSplit,
     buildBestFixedPairMatches,
+    computeFixedMexicanoRoundCapacity,
+    computeFixedMexicanoSessionTargets,
     buildFixedPairsMexicanoMatches,
     buildMexicanoMatches,
     buildMexicanoFairnessReport,
     buildBestMexicanoCandidateSchedule,
     rankMexicanoScheduleQuality,
+    computeMixMexicanoRoundCapacity,
+    computeMixMexicanoSessionTargets,
+    enumerateMixMexicanoFairActiveSets,
+    scoreMixMexicanoMatch,
+    pickBestMixMexicanoCourtPairing,
     buildMixMexicanoMatches,
+    buildMixMexicanoFairnessReport,
     scoreMexOpponentPairs,
     mexSplitOpponentLexMetrics,
   };

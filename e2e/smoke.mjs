@@ -57,8 +57,8 @@ async function main() {
   await page.waitForTimeout(2500);
 
   const versionText = await page.locator('#app-version').textContent();
-  if (!versionText || !/Version\s+1\.6\.8/i.test(versionText.trim())) {
-    throw new Error(`Expected #app-version "Version 1.6.9", got: ${versionText}`);
+  if (!versionText || !/Version\s+1\.6\.14/i.test(versionText.trim())) {
+    throw new Error(`Expected #app-version "Version 1.6.14", got: ${versionText}`);
   }
 
   const lzOk = await page.evaluate(() => typeof window.LZString !== 'undefined');
