@@ -463,6 +463,125 @@
 
   const isMixLikeMode = (m) => m === 'mix' || m === 'mixmex';
 
+  const getPlayersOnCourtInRound = (roundData, resolve) => {
+    const onCourt = new Set();
+    if (!roundData?.matches) return onCourt;
+    roundData.matches.forEach((m) => {
+      ['team1', 'team2'].forEach((side) => {
+        (m[side] || []).forEach((raw) => {
+          const key = playerNameDuplicateKey(resolve(raw));
+          if (key) onCourt.add(key);
+        });
+      });
+    });
+    return onCourt;
+  };
+
+  const roundHasScoreActivity = (roundData) => {
+    if (!roundData?.matches?.length) return false;
+    for (const m of roundData.matches) {
+      const s1 = m.score1;
+      const s2 = m.score2;
+      const hasScore =
+        (s1 !== '' && s1 != null) || (s2 !== '' && s2 != null);
+      if (hasScore && !(Number(s1) === 0 && Number(s2) === 0)) return true;
+      const mg = m.mx_game;
+      if (mg && (Number(mg.i1) > 0 || Number(mg.i2) > 0)) return true;
+    }
+    return false;
+  };
+
+  const canRegenerateRound = (roundNo) => {
+    if (state.shareViewerMode || !state.currentTournament) return false;
+    const cr = Number(state.currentTournament.current_round) || 1;
+    const rn = Number(roundNo) || 1;
+    if (rn !== cr) return false;
+    const rounds = getRounds();
+    const roundData = rounds.find((r) => Number(r.round) === rn);
+    if (!roundData) return false;
+    return !roundHasScoreActivity(roundData);
+  };
+
+  const computeBenchForRound = (roundData, tournamentLike) => {
+    if (!roundData || !tournamentLike) {
+      return { kind: 'none', count: 0, males: [], females: [], players: [], pairs: [] };
+    }
+    const mode = tournamentLike.mode || 'normal';
+    const playersFull = getPlayersFullFromTournament(tournamentLike);
+    const rosterNames = playersFull.map((p) => p.name);
+    const resolve = makeRosterNameResolve(rosterNames);
+    const onCourt = getPlayersOnCourtInRound(roundData, resolve);
+
+    if (isFixedPairRosterMode(mode)) {
+      const benchPairs = [];
+      const benchIndividuals = [];
+      for (let i = 0; i + 1 < playersFull.length; i += 2) {
+        const n1 = playersFull[i].name;
+        const n2 = playersFull[i + 1].name;
+        const k1 = playerNameDuplicateKey(resolve(n1));
+        const k2 = playerNameDuplicateKey(resolve(n2));
+        const on1 = onCourt.has(k1);
+        const on2 = onCourt.has(k2);
+        if (!on1 && !on2) {
+          benchPairs.push(`${fixCommonNameTypos(n1)} & ${fixCommonNameTypos(n2)}`);
+        } else if (!on1) {
+          benchIndividuals.push(fixCommonNameTypos(n1));
+        } else if (!on2) {
+          benchIndividuals.push(fixCommonNameTypos(n2));
+        }
+      }
+      if (playersFull.length % 2 === 1) {
+        const lone = playersFull[playersFull.length - 1].name;
+        const kl = playerNameDuplicateKey(resolve(lone));
+        if (!onCourt.has(kl)) benchIndividuals.push(fixCommonNameTypos(lone));
+      }
+      const count = benchPairs.length + benchIndividuals.length;
+      return { kind: 'fixed', count, pairs: benchPairs, players: benchIndividuals };
+    }
+
+    if (isMixLikeMode(mode)) {
+      const males = [];
+      const females = [];
+      playersFull.forEach((p) => {
+        const k = playerNameDuplicateKey(resolve(p.name));
+        if (onCourt.has(k)) return;
+        if (p.gender === 'F') females.push(p.name);
+        else males.push(p.name);
+      });
+      return { kind: 'mix', count: males.length + females.length, males, females };
+    }
+
+    const players = playersFull
+      .map((p) => p.name)
+      .filter((n) => !onCourt.has(playerNameDuplicateKey(resolve(n))));
+    return { kind: 'players', count: players.length, players };
+  };
+
+  const renderBenchHtml = (bench) => {
+    const chip = (label) =>
+      `<span class="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-100/95 text-amber-900 dark:bg-amber-500/20 dark:text-amber-50 border border-amber-300/60 dark:border-amber-500/35">${escapeHtml(fixCommonNameTypos(label))}</span>`;
+    if (bench.count === 0) return '';
+    if (bench.kind === 'mix') {
+      let html = '';
+      if (bench.males.length) {
+        html +=
+          `<div class="mb-2"><span class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Male bench</span>` +
+          `<div class="flex flex-wrap gap-1.5 mt-1">${bench.males.map((n) => chip(n)).join('')}</div></div>`;
+      }
+      if (bench.females.length) {
+        html +=
+          `<div><span class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Female bench</span>` +
+          `<div class="flex flex-wrap gap-1.5 mt-1">${bench.females.map((n) => chip(n)).join('')}</div></div>`;
+      }
+      return html;
+    }
+    if (bench.kind === 'fixed') {
+      const items = [...bench.pairs, ...bench.players];
+      return `<div class="flex flex-wrap gap-1.5">${items.map((n) => chip(n)).join('')}</div>`;
+    }
+    return `<div class="flex flex-wrap gap-1.5">${bench.players.map((n) => chip(n)).join('')}</div>`;
+  };
+
   const buildMixHistory = () => {
     const rounds = getRounds();
     const partnerCount = new Map();  // key: pairKey(M,F) => times partnered
@@ -2280,7 +2399,7 @@
   };
 
   /** Locked in js/version.js — do not change here. */
-  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.14';
+  const APP_VERSION = typeof window.PADELIO_VERSION === 'string' ? window.PADELIO_VERSION : '1.6.15';
 
   const defaultConfig = { app_title: 'Padelio' };
 
@@ -4826,6 +4945,63 @@
     ind.textContent = `Round ${cr} · ${c} court${c > 1 ? 's' : ''}`;
   };
 
+  const renderRoundBenchPanel = (roundData, tournamentLike) => {
+    const panel = $('round-bench-panel');
+    const content = $('round-bench-content');
+    if (!panel || !content) return;
+    const t = tournamentLike || state.currentTournament;
+    if (!roundData || !t) {
+      panel.classList.add('hidden');
+      return;
+    }
+    const bench = computeBenchForRound(roundData, t);
+    if (bench.count === 0) {
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+    content.innerHTML = renderBenchHtml(bench);
+  };
+
+  const updateRoundActionButtons = () => {
+    const btn = $('btn-regenerate-round');
+    if (!btn) return;
+    if (state.shareViewerMode || !state.currentTournament) {
+      btn.classList.add('hidden');
+      return;
+    }
+    btn.classList.remove('hidden');
+    const cr = Number(state.currentTournament.current_round) || 1;
+    const viewing = Number(state.viewingRound ?? cr) || cr;
+    const can = viewing === cr && canRegenerateRound(cr);
+    btn.disabled = !can;
+    btn.classList.toggle('opacity-40', !can);
+    btn.classList.toggle('cursor-not-allowed', !can);
+  };
+
+  const regenerateCurrentRound = async () => {
+    syncCurrentTournament();
+    if (!state.currentTournament) return;
+    const roundNo = Number(state.currentTournament.current_round) || 1;
+    if (!canRegenerateRound(roundNo)) {
+      toast('Cannot shuffle again — enter scores first or open the current round.');
+      return;
+    }
+    if (
+      !window.confirm(
+        'Shuffle this round again? Matchups will change. Past rounds stay the same.'
+      )
+    ) {
+      return;
+    }
+    const rounds = getRounds().filter((r) => Number(r.round) !== roundNo);
+    setRounds(rounds);
+    await generateRound();
+    state.viewingRound = roundNo;
+    renderSpecificRound(roundNo);
+    toast('Round shuffled again.');
+  };
+
   const renderSpecificRound = (roundNumber) => {
     syncCurrentTournament();
     if (!state.currentTournament) return;
@@ -4837,6 +5013,7 @@
     updateRoundIndicator();
 
     if (!roundData) {
+      $('round-bench-panel')?.classList.add('hidden');
       const c = $('courts-container');
       if (c) {
         c.innerHTML = `
@@ -4846,11 +5023,14 @@
         `;
       }
       updateRoundArrowState();
+      updateRoundActionButtons();
       return;
     }
 
+    renderRoundBenchPanel(roundData, state.currentTournament);
     renderCourts(roundData);
     updateRoundArrowState();
+    updateRoundActionButtons();
   };
 
   /* ---------- Score editing ---------- */
@@ -4968,6 +5148,7 @@
 
     setRounds(rounds);
     debouncedSaveTournament();
+    updateRoundActionButtons();
   };
 
   const commitScore = (matchIdx, team) => {
@@ -5017,6 +5198,7 @@
       setRounds(rounds);
       saveCurrentTournament().catch(() => {});
       maybeRefreshDesktopLeaderboard();
+      updateRoundActionButtons();
       return;
     }
 
@@ -5054,6 +5236,7 @@
     setRounds(rounds);
     saveCurrentTournament().catch(() => {});
     maybeRefreshDesktopLeaderboard();
+    updateRoundActionButtons();
   };
 
   /* ---------- Round navigation ---------- */
@@ -6977,9 +7160,18 @@
             }
           )
           .join('');
+        const bench = shareData ? computeBenchForRound(round, shareData) : { count: 0 };
+        const benchBlock =
+          bench.count > 0
+            ? `<div class="mb-3 rounded-xl border border-amber-200/70 dark:border-amber-800/45 bg-amber-50/80 dark:bg-amber-950/35 px-3 py-2">
+                <p class="text-[10px] font-bold uppercase tracking-wide text-amber-800/90 dark:text-amber-200/90 mb-1.5">Waiting this round</p>
+                ${renderBenchHtml(bench)}
+              </div>`
+            : '';
         return `
           <div class="mb-8">
             <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3 sticky top-0 bg-white/92 dark:bg-slate-950/90 py-2 border-b border-slate-200/80 dark:border-white/10">Round ${Number(round.round) || '?'}</h3>
+            ${benchBlock}
             ${matches}
           </div>
         `;
@@ -7277,7 +7469,7 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.14');
+        const reg = await navigator.serviceWorker.register('/service-worker.js?v=1.6.15');
 
         reg.addEventListener('updatefound', () => {
           const sw = reg.installing;
@@ -7429,6 +7621,8 @@
   window.applyCourtsChange = applyCourtsChange;
   window.stepCourtsChangeDraft = stepCourtsChangeDraft;
   window.changeTournamentCourts = changeTournamentCourts;
+
+  window.regenerateCurrentRound = regenerateCurrentRound;
 
   window.openSubstitutePlayerModal = openSubstitutePlayerModal;
   window.closeSubstitutePlayerModal = closeSubstitutePlayerModal;

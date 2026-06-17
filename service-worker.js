@@ -1,7 +1,7 @@
 // service-worker.js
-const VERSION = "v1.6.14";
+const VERSION = "v1.6.15";
 const CACHE_NAME = `padel-cache-${VERSION}`;
-const STYLES_URL = "/styles.css?v=1.6.14";
+const STYLES_URL = "/styles.css?v=1.6.15";
 
 const URLS_TO_CACHE = [
   "/",
