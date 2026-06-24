@@ -1638,6 +1638,8 @@ html.dark .lb-rename-btn--save {
 
   .host-rounds-footer {
     display: flex;
+    align-items: center;
+    gap: 0.875rem;
     justify-content: center;
   }
 

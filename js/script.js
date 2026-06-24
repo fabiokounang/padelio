@@ -2464,6 +2464,10 @@
     if (!state.currentTournament) return;
     const raw = JSON.stringify(roundsArr);
     state.currentTournament.rounds = raw;
+    const idx = state.tournaments.findIndex(
+      (t) => t.__backendId === state.currentTournament.__backendId
+    );
+    if (idx >= 0) state.tournaments[idx] = { ...state.tournaments[idx], rounds: raw };
     _roundsCache = { raw, data: roundsArr };
   };
 
