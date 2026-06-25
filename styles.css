@@ -1699,7 +1699,6 @@ html.dark .lb-rename-btn--save {
   .share-rounds-container {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
     width: 100%;
     max-width: 100%;
   }
@@ -1709,7 +1708,13 @@ html.dark .lb-rename-btn--save {
   }
 
   .share-round-courts {
-    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .share-round-courts > *:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   #page-home {
