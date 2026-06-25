@@ -7139,24 +7139,37 @@
     el.innerHTML = list
       .sort((a, b) => Number(a.round) - Number(b.round))
       .map((round) => {
+        const matchCount = (round.matches || []).length;
+        const courtGridClass = matchCount >= 2
+          ? 'share-round-courts grid grid-cols-1 sm:grid-cols-2 gap-3'
+          : 'share-round-courts grid grid-cols-1 gap-3 max-w-sm mx-auto';
         const matches = (round.matches || [])
           .map(
             (match) => {
               const courtLabel = formatCourtLabel(match.court, shareData);
+              const s1 = match.score1;
+              const s2 = match.score2;
+              const hasScore = (s1 !== '' && s1 != null) || (s2 !== '' && s2 != null);
+              const score1Str = hasScore ? escapeHtml(String(s1 ?? '0')) : '—';
+              const score2Str = hasScore ? escapeHtml(String(s2 ?? '0')) : '—';
               return `
-          <div class="bg-emerald-50/95 dark:bg-emerald-900/40 rounded-2xl p-3 border border-emerald-300/75 dark:border-emerald-700/40 mb-3">
-            <div class="text-center text-xs text-emerald-700 dark:text-emerald-400 mb-2 font-medium">${escapeHtml(courtLabel)}</div>
-            <div class="flex items-center gap-3 text-sm">
-              <div class="flex-1 text-center space-y-1">
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[0]))}</div>
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team1?.[1]))}</div>
-                <div class="text-lg font-bold text-emerald-800 dark:text-emerald-300 mt-1">${escapeHtml(String(match.score1 ?? '—'))}</div>
-              </div>
-              <div class="text-emerald-700 dark:text-emerald-500 font-extrabold text-xs">vs</div>
-              <div class="flex-1 text-center space-y-1">
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2?.[0]))}</div>
-                <div class="font-medium">${escapeHtml(fixCommonNameTypos(match.team2?.[1]))}</div>
-                <div class="text-lg font-bold text-emerald-800 dark:text-emerald-300 mt-1">${escapeHtml(String(match.score2 ?? '—'))}</div>
+          <div class="bg-emerald-50/95 dark:bg-emerald-900/40 rounded-2xl border border-emerald-300/75 dark:border-emerald-700/40 overflow-hidden">
+            <div class="bg-emerald-100/80 dark:bg-emerald-800/50 text-center text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold py-1.5 border-b border-emerald-200/70 dark:border-emerald-700/30">${escapeHtml(courtLabel)}</div>
+            <div class="p-3">
+              <div class="flex items-center gap-2 text-sm">
+                <div class="flex-1 text-center">
+                  <div class="font-semibold text-slate-800 dark:text-slate-100 leading-snug">${escapeHtml(fixCommonNameTypos(match.team1?.[0]))}</div>
+                  <div class="font-medium text-slate-600 dark:text-slate-300 text-xs leading-snug">${escapeHtml(fixCommonNameTypos(match.team1?.[1]))}</div>
+                </div>
+                <div class="shrink-0 flex items-center gap-1.5">
+                  <span class="text-lg font-extrabold text-emerald-800 dark:text-emerald-200 tabular-nums min-w-[1.5ch] text-right">${score1Str}</span>
+                  <span class="text-[10px] text-emerald-600/80 dark:text-emerald-400/70 font-bold">—</span>
+                  <span class="text-lg font-extrabold text-emerald-800 dark:text-emerald-200 tabular-nums min-w-[1.5ch] text-left">${score2Str}</span>
+                </div>
+                <div class="flex-1 text-center">
+                  <div class="font-semibold text-slate-800 dark:text-slate-100 leading-snug">${escapeHtml(fixCommonNameTypos(match.team2?.[0]))}</div>
+                  <div class="font-medium text-slate-600 dark:text-slate-300 text-xs leading-snug">${escapeHtml(fixCommonNameTypos(match.team2?.[1]))}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -7167,28 +7180,26 @@
         const bench = shareData ? computeBenchForRound(round, shareData) : { count: 0 };
         const benchBlock =
           bench.count > 0
-            ? `<div class="mb-3 rounded-xl border border-amber-200/70 dark:border-amber-800/45 bg-amber-50/80 dark:bg-amber-950/35 px-3 py-2">
+            ? `<div class="rounded-xl border border-amber-200/70 dark:border-amber-800/45 bg-amber-50/80 dark:bg-amber-950/35 px-3 py-2">
                 <p class="text-[10px] font-bold uppercase tracking-wide text-amber-800/90 dark:text-amber-200/90 mb-1.5">Waiting this round</p>
                 ${renderBenchHtml(bench)}
               </div>`
             : '';
         return `
-          <div class="mb-8">
-            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white mb-3 sticky top-0 bg-white/92 dark:bg-slate-950/90 py-2 border-b border-slate-200/80 dark:border-white/10">Round ${Number(round.round) || '?'}</h3>
+          <div class="share-round-section">
+            <div class="flex items-center gap-3 mb-3">
+              <h3 class="text-sm font-extrabold text-slate-900 dark:text-white whitespace-nowrap">Round ${Number(round.round) || '?'}</h3>
+              <div class="flex-1 h-px bg-slate-200/80 dark:bg-white/10"></div>
+            </div>
             ${benchBlock}
-            ${matches}
+            <div class="${courtGridClass}">
+              ${matches}
+            </div>
           </div>
         `;
       })
       .join('');
-    const maxMatchesInRound = list.reduce(
-      (max, round) => Math.max(max, (round.matches || []).length),
-      0
-    );
-    const gridOnDesktop = isTournamentDesktopLayout() && maxMatchesInRound >= 2;
-    el.className = gridOnDesktop
-      ? 'share-rounds-container host-courts-container--grid space-y-2'
-      : 'share-rounds-container space-y-2';
+    el.className = 'share-rounds-container';
   };
 
   const switchShareTab = (tab) => {

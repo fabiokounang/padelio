@@ -1696,32 +1696,20 @@ html.dark .lb-rename-btn--save {
     align-items: center;
   }
 
-  .share-rounds-container.host-courts-container--grid,
   .share-rounds-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
     width: 100%;
     max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: center;
-    gap: 1rem;
   }
 
-  .share-rounds-container:not(.host-courts-container--grid) {
-    grid-template-columns: minmax(0, 26rem);
-    max-width: 26rem;
-  }
-
-  .share-rounds-container > * {
-    margin: 0;
+  .share-round-section {
     width: 100%;
   }
 
-  /* Odd last child (e.g. 3rd, 5th court) spans both columns — full width. */
-  .share-rounds-container.host-courts-container--grid > *:last-child:nth-child(odd),
-  .share-rounds-container > *:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
+  .share-round-courts {
+    width: 100%;
   }
 
   #page-home {
